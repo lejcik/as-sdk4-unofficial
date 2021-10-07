@@ -279,7 +279,9 @@ CThreadQueue::ThreadBase(void *param)
   d = NULL;
 
   // spustime nas thread
-  return SalamanderDebug->CallWithCallStack(threadBody, threadParam);
+  // TODO: enable debug!
+//  return SalamanderDebug->CallWithCallStack(threadBody, threadParam);
+  return threadBody(threadParam);
 }
 
 HANDLE
@@ -337,7 +339,8 @@ CThreadQueue::StartThread(unsigned (WINAPI *body)(void *), void *param, unsigned
     if (threadHandle != NULL) *threadHandle = thread;
     if (threadID != NULL) *threadID = tid;
 
-    SalamanderDebug->TraceAttachThread(thread, tid);
+	// TODO: enable debug!
+//    SalamanderDebug->TraceAttachThread(thread, tid);
     ResumeThread(thread);
 
     WaitForSingleObject(Continue, INFINITE);   // pockame na predani dat do CThreadQueue::ThreadBase
@@ -365,7 +368,8 @@ CThread::UniversalBody(void *param)
 {
   CThread *thread = (CThread *)param;
   CALL_STACK_MESSAGE2("CThread::UniversalBody(thread name = \"%s\")", thread->Name);
-  SalamanderDebug->SetThreadNameInVCAndTrace(thread->Name);
+  // TODO: enable debug!
+  // SalamanderDebug->SetThreadNameInVCAndTrace(thread->Name);
 
   unsigned ret = thread->Body();  // spusteni tela threadu
 
