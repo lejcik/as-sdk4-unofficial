@@ -22,9 +22,9 @@
 #define VERSINFO_xstr(s) VERSINFO_str(s)
 #define VERSINFO_str(s) #s
 
-#define VERSINFO_SALAMANDER_MAJOR       3
+#define VERSINFO_SALAMANDER_MAJOR       4
 #define VERSINFO_SALAMANDER_MINORA      0
-#define VERSINFO_SALAMANDER_MINORB      8
+#define VERSINFO_SALAMANDER_MINORB      0
 
 #if (VERSINFO_SALAMANDER_MINORB == 0)  // nulu na setinach nepiseme 2.50 -> 2.5
 #define VERSINFO_SALAMANDER_VERSION     VERSINFO_xstr(VERSINFO_SALAMANDER_MAJOR) "." VERSINFO_xstr(VERSINFO_SALAMANDER_MINORA) VERSINFO_BETAVERSION_TXT
@@ -191,8 +191,9 @@
 //             nova cisla verzi je nutne zapsat do vetve "default", a pak
 //             teprve sem (kompletni seznam je jen v "default" vetvi)
 //   (100 - 4.0 beta 1 - build z VC2013)
+//   102 - 4.0 - build z VC2019
 
-#define LAST_VERSION_OF_SALAMANDER         81
-#define REQUIRE_LAST_VERSION_OF_SALAMANDER "This plugin requires Altap Salamander 3.08 (" SAL_VER_PLATFORM ") or later."
+#define LAST_VERSION_OF_SALAMANDER         102
+#define REQUIRE_LAST_VERSION_OF_SALAMANDER "This plugin requires Altap Salamander 4.0 (" SAL_VER_PLATFORM ") or later."
 
 #endif // __SPL_VERS_H
