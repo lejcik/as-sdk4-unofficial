@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets">
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros"></PropertyGroup>
+  <PropertyGroup>
+    <_ProjectFileVersion>14.0.25431.1</_ProjectFileVersion>
+    <OutDir>$(CURRENT_SALBIN)$(ShortVSVer)\$(Configuration)_$(ShortPlatform)\plugins\$(ShortProjectName)\lang\</OutDir>
+    <IntDir>$(OutDir)Intermediate\</IntDir>
+    <TargetName>english</TargetName>
+<TargetExt>.slg</TargetExt>
+<GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <Link>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <DataExecutionPrevention>true</DataExecutionPrevention>
+      <NoEntryPoint>true</NoEntryPoint>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>..\..\shared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>WINVER=0x0501;_LANG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup></ItemGroup>
+</Project>

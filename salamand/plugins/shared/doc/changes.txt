@@ -1,0 +1,606 @@
+******************************************************************************************
+                     Altap Salamander 2.51 (SalamanderVersion >= 22)
+******************************************************************************************
+
+
+
+Changes in Altap Salamander 2.51 (SalamanderVersion >= 22)
+==========================================================
+
+-added MSGBOXEX_SHIELDONDEFBTN: shield icon (UAC on Vista) on default button in messagebox
+-following methods work newly also with other reparse points (not only junction points)
+ on NT/W2K/XP/Vista and with substed drives:
+ CSalamanderGeneralAbstract::GetDiskFreeSpace
+ CSalamanderGeneralAbstract::SalGetDiskFreeSpace
+ CSalamanderGeneralAbstract::SalGetVolumeInformation
+ CSalamanderGeneralAbstract::SalGetDriveType
+-added MENU_TRACK_HIDEACCEL: if this flag is set, the acceleration keys will not be underlined
+ (specify when menu is opened by mouse event)
+
+
+
+New plugin methods called by Altap Salamander 2.51 (SalamanderVersion >= 22)
+============================================================================
+
+CPluginInterfaceAbstract::UninstallUnregisteredComponents
+
+
+
+New methods in Altap Salamander 2.51 (SalamanderVersion >= 22)
+==============================================================
+
+CSalamanderGeneralAbstract::PathsAreOnTheSameVolume
+
+
+
+******************************************************************************************
+                     Altap Salamander 2.52 (SalamanderVersion >= 25)
+******************************************************************************************
+
+
+
+Changes in Altap Salamander 2.52 (SalamanderVersion >= 25)
+==========================================================
+
+-CSalamanderConnectAbstract::SetChangeDriveMenuItem adds item for FS also to Drive bars
+-use CSalamanderConnectAbstract::SetIconListForGUI instead of
+ CSalamanderConnectAbstract::SetBitmapWithIcons
+-ignores parameter 'buyNowURL' in CSalamanderPluginEntryAbstract::ShowNotRegisteredDlg
+-added declaration for global variable containing version of running
+ Salamander: SalamanderVersion; plugin should define this variable and initialize it
+ by calling CSalamanderPluginEntryAbstract::GetVersion()
+-added event FSE_PATHCHANGED for CPluginFSInterfaceAbstract::Event
+-_set_new_handler used to eliminate allocation problems in Salamander and plugins
+ using salrtl.dll or Alloc/Realloc/Free methods of CSalamanderGeneralAbstract:
+ if there is low memory, Salamander asks user to free some memory and retry
+ allocation or to terminate Salamander
+-FSTRYCLOSE_ERRORCLOSEDETACHEDFS is not used anymore (it was low memory problem)
+-new FS service: FS_SERVICE_SHOWSECURITYINFO: CPluginFSInterfaceAbstract::ShowSecurityInfo
+-CPluginFSInterfaceAbstract::HandleMenuMsg is obsolete, use
+ CPluginFSInterfaceAbstract::HandleMenuMsg2 for new plugins
+-CPluginInterfaceForFSAbstract::ExecuteChangeDriveMenuItem is obsolete, use
+ CPluginInterfaceForFSAbstract::ExecuteChangeDriveMenuItem2 for new plugins
+-CPluginInterfaceForFSAbstract::ChangeDriveMenuItemContextMenu is obsolete, use
+ CPluginInterfaceForFSAbstract::ChangeDriveMenuItemContextMenu2 for new plugins
+-CPluginInterfaceForFSAbstract::ExecuteChangeDrivePostCommand is obsolete, use
+ CPluginInterfaceForFSAbstract::ExecuteChangeDrivePostCommand2 for new plugins
+-MSGBOXEX_ESCAPEENABLED works also in MB_ABORTRETRYIGNORE messageboxes, ESC key
+ generates IDCANCEL
+-CHPPFR_LOWMEMORY is not used anymore (it was low memory problem)
+-added SALCFG_SELECTWHOLENAME: BOOL, should be whole name selected (including extension)
+ when entering new filename? (for dialog boxes F2:QuickRename, Alt+F5:Pack, etc.)
+-CSalamanderGeneralAbstract::GetErrorText: if 'buf' is NULL or 'bufSize' is 0, error
+ text is returned in internal buffer (buffer is shared among all threads, so you should
+ use it immediately or copy it to some local buffer; buffer is for at least 10 messages)
+-CSalamanderGeneralAbstract::IsFirstInstance16beta2OrLater was renamed to
+ IsFirstInstance252beta1OrLater; newly it searches for running instances of Altap
+ Salamander 2.52 beta 1 or later with the same SID (sessions and integrity levels can
+ differ), so it supports Fast User Switching
+-CSalamanderGeneralAbstract::GetChangeDriveMenuItemVisibility and
+ SetChangeDriveMenuItemVisibility: visibility of item for FS also on Drive bars
+-CSalamanderGeneralAbstract::DisconnectFSFromPanel: if the last disk path visited in
+ the panel is no longer accessible, it goes to "rescue" path (see
+ SALCFG_IFPATHISINACCESSIBLEGOTO) and only if it fails, it goes to the root of the
+ first fixed drive
+-WM_USER_TBENUMBUTTON is obsolete, use WM_USER_TBENUMBUTTON2 for new plugins
+-TLBI_ITEM_INFO is obsolete, use TLBI_ITEM_INFO2 for new plugins
+-added TLBI_MASK_OVERLAY: retrieves or sets the 'HOverlay' member of TLBI_ITEM_INFO2
+-CGUIToolBarAbstract::InsertItem is obsolete, use CGUIToolBarAbstract::InsertItem2
+ for new plugins
+-CGUIToolBarAbstract::SetItemInfo is obsolete, use CGUIToolBarAbstract::SetItemInfo2
+ for new plugins
+-CGUIToolBarAbstract::GetItemInfo is obsolete, use CGUIToolBarAbstract::GetItemInfo2
+ for new plugins
+
+
+
+New plugin methods called by Altap Salamander 2.52 (SalamanderVersion >= 25)
+============================================================================
+
+CPluginFSInterfaceAbstract::HandleMenuMsg2
+CPluginFSInterfaceAbstract::GetNoItemsInPanelText
+CPluginFSInterfaceAbstract::ShowSecurityInfo
+
+CPluginInterfaceForFSAbstract::EnsureShareExistsOnServer
+CPluginInterfaceForFSAbstract::ExecuteChangeDriveMenuItem2
+CPluginInterfaceForFSAbstract::ChangeDriveMenuItemContextMenu2
+CPluginInterfaceForFSAbstract::ExecuteChangeDrivePostCommand2
+
+
+
+New methods in Altap Salamander 2.52 (SalamanderVersion >= 25)
+==============================================================
+
+CSalamanderDebugAbstract::SetThreadNameInVC
+CSalamanderDebugAbstract::SetThreadNameInVCAndTrace
+
+CSalamanderConnectAbstract::SetIconListForGUI
+
+CSalamanderGeneralAbstract::Realloc
+CSalamanderGeneralAbstract::GetPanelEnumFilesParams
+CSalamanderGeneralAbstract::PostRefreshPanelFS2
+CSalamanderGeneralAbstract::LoadStr
+CSalamanderGeneralAbstract::ChangePanelPathToRescuePathOrFixedDrive
+CSalamanderGeneralAbstract::SetPluginIsNethood
+CSalamanderGeneralAbstract::OpenNetworkContextMenu
+CSalamanderGeneralAbstract::DuplicateBackslashes
+CSalamanderGeneralAbstract::StartThrobber
+CSalamanderGeneralAbstract::StopThrobber
+CSalamanderGeneralAbstract::ShowSecurityIcon
+CSalamanderGeneralAbstract::RemoveCurrentPathFromHistory
+CSalamanderGeneralAbstract::OpenPurchasePage
+CSalamanderGeneralAbstract::IsUserAdmin
+CSalamanderGeneralAbstract::IsRemoteSession
+CSalamanderGeneralAbstract::SalWNetAddConnection2Interactive
+CSalamanderGeneralAbstract::GetWindowsVersion
+CSalamanderGeneralAbstract::GetMouseWheelScrollChars
+CSalamanderGeneralAbstract::GetSalamanderZLIB
+CSalamanderGeneralAbstract::GetFileIcon2
+
+CGUIToolBarAbstract::InsertItem2
+CGUIToolBarAbstract::SetItemInfo2
+CGUIToolBarAbstract::GetItemInfo2
+
+CSalamanderGUIAbstract::CreateIconList
+CSalamanderGUIAbstract::DestroyIconList
+CSalamanderGUIAbstract::PrepareToolTipText
+
+CSalamanderZLIBAbstract::DeflateInit
+CSalamanderZLIBAbstract::Deflate
+CSalamanderZLIBAbstract::DeflateEnd
+CSalamanderZLIBAbstract::InflateInit
+CSalamanderZLIBAbstract::Inflate
+CSalamanderZLIBAbstract::InflateEnd
+
+
+
+******************************************************************************************
+                     Altap Salamander 2.52 (SalamanderVersion >= 27)
+******************************************************************************************
+
+
+
+New methods in Altap Salamander 2.52 (SalamanderVersion >= 27)
+==============================================================
+
+CSalamanderGeneralAbstract::GetSalamanderPNG
+CSalamanderGeneralAbstract::GetSalamanderCrypt
+
+CSalamanderPNGAbstract::LoadPNGBitmap
+CSalamanderPNGAbstract::LoadRawPNGBitmap
+
+CSalamanderCryptAbstract::AESInit
+CSalamanderCryptAbstract::AESEncrypt
+CSalamanderCryptAbstract::AESDecrypt
+CSalamanderCryptAbstract::AESEnd
+CSalamanderCryptAbstract::SHA1Init
+CSalamanderCryptAbstract::SHA1Update
+CSalamanderCryptAbstract::SHA1Final
+
+CGUIIconListAbstract::CreateFromRawPNG
+
+
+
+******************************************************************************************
+                     Altap Salamander 2.52 (SalamanderVersion >= 29)
+******************************************************************************************
+
+
+
+Changes in Altap Salamander 2.52 (SalamanderVersion >= 29)
+==========================================================
+
+-added Password Manager events: PME_MASTERPASSWORDCREATED, PME_MASTERPASSWORDCHANGED, and
+ PME_MASTERPASSWORDREMOVED
+-added constant for OpenHtmlHelpForSalamander(): HTMLHELP_SALID_PWDMANAGER
+-added SALCFG_AUTOCOPYSELTOCLIPBOARD
+-CFileData::Ext is pointer to the rightmost dot in Name, NEWLY: including dot at the
+ beginning of Name (Windows understands such dot as extension delimiter, unlike Unix
+ where such dot means hidden file)
+-CSalamanderGeneralAbstract::Alloc/Realloc and other methods for allocating memory
+ (including malloc/realloc/calloc functions from RTL if plugin is using salrtl.dll)
+ can return NULL in case that there is insufficient memory and user chooses Ignore
+ button in allocation error message box (reason: if plugin is allocating big block
+ of memory, e.g. 700MB, it may not be possible to allocate it due to fragmentation
+ of process address space, so it's reasonable to handle such situations in plugin
+ by expecting NULL from allocation methods)
+
+
+
+New plugin methods called by Altap Salamander 2.52 (SalamanderVersion >= 29)
+============================================================================
+
+CPluginInterfaceAbstract::PasswordManagerEvent
+
+
+
+New methods in Altap Salamander 2.52 (SalamanderVersion >= 29)
+==============================================================
+
+CSalamanderGeneralAbstract::SetPluginUsesPasswordManager
+CSalamanderGeneralAbstract::GetSalamanderPasswordManager
+CSalamanderGeneralAbstract::OpenHtmlHelpForSalamander
+
+CSalamanderPasswordManagerAbstract::IsUsingMasterPassword
+CSalamanderPasswordManagerAbstract::IsMasterPasswordSet
+CSalamanderPasswordManagerAbstract::AskForMasterPassword
+CSalamanderPasswordManagerAbstract::EncryptPassword
+CSalamanderPasswordManagerAbstract::DecryptPassword
+CSalamanderPasswordManagerAbstract::IsPasswordEncrypted
+
+
+
+******************************************************************************************
+                     Altap Salamander 2.53 (SalamanderVersion >= 33)
+******************************************************************************************
+
+
+
+Changes in Altap Salamander 2.53 (SalamanderVersion >= 33)
+==========================================================
+
+-new constant SALCMDLINE_MAXLEN: longest possible command from Altap Salamander's
+ command line which can be send to plugin file system
+-CPluginFSInterfaceAbstract::ExecuteCommandLine(): parameter 'command' can contain
+ string with length up to SALCMDLINE_MAXLEN (it was up to MAX_PATH-1 in older versions)
+
+
+
+New methods in Altap Salamander 2.53 (SalamanderVersion >= 33)
+==============================================================
+
+CSalamanderZLIBAbstract::InflateInit2
+
+CSalamanderGUIAbstract::SetSubjectTruncatedText
+
+CSalamanderGeneralAbstract::GetSalamanderBZIP2
+
+
+
+******************************************************************************************
+                     Altap Salamander 2.53 (SalamanderVersion >= 36)
+******************************************************************************************
+
+
+
+New methods in Altap Salamander 2.53 (SalamanderVersion >= 36)
+==============================================================
+
+CSalamanderDebugAbstract::TraceConnectToServer
+
+CSalamanderGeneralAbstract::GetFocusedItemMenuPos
+CSalamanderGeneralAbstract::LockMainWindow
+
+
+
+******************************************************************************************
+                     Altap Salamander 2.53 (SalamanderVersion >= 37)
+******************************************************************************************
+
+
+
+Changes in Altap Salamander 2.53 (SalamanderVersion >= 37)
+==========================================================
+
+-new CGUIToolbarHeaderAbstract for header above listboxe or listview, see Salamander
+ configuration: Options > Configuration > Hot Paths or User Menu.
+-added ToolbarHeader constants: TLBHDRMASK_MODIFY, TLBHDRMASK_NEW, TLBHDRMASK_DELETE, 
+ TLBHDRMASK_SORT, TLBHDRMASK_UP, TLBHDRMASK_DOWN
+-added ToolbarHeader constants: TLBHDR_MODIFY, TLBHDR_NEW, TLBHDR_DELETE, 
+ TLBHDR_SORT, TLBHDR_UP, TLBHDR_DOWN
+-new constant FUNCTION_DYNAMICMENUEXT means that plugin is "dynamic menu
+ extension": plugin menu is always rebuilt when plugin is loaded and just before
+ opening in Plugins menu or from Plugin bar (and also before opening Keyboard
+ Shortcuts dialog from Plugins Manager), see CPluginInterfaceForMenuExtAbstract::BuildMenu
+
+
+
+New plugin methods called by Altap Salamander 2.53 (SalamanderVersion >= 37)
+============================================================================
+
+CPluginInterfaceForMenuExtAbstract::BuildMenu
+
+
+
+New methods in Altap Salamander 2.53 (SalamanderVersion >= 37)
+==============================================================
+
+CGUIIconListAbstract::CreateAsCopy
+CGUIIconListAbstract::GetImageList
+
+CSalamanderGUIAbstract::AttachToolbarHeader
+
+CSalamanderBuildMenuAbstract::AddMenuItem
+CSalamanderBuildMenuAbstract::AddSubmenuStart
+CSalamanderBuildMenuAbstract::AddSubmenuEnd
+CSalamanderBuildMenuAbstract::SetIconListForMenu
+
+CGUIToolbarHeaderAbstract::EnableToolbar
+CGUIToolbarHeaderAbstract::CheckToolbar
+CGUIToolbarHeaderAbstract::SetNotifyWindow
+
+CSalamanderGeneralAbstract::PostPluginMenuChanged
+CSalamanderGeneralAbstract::GetMenuItemHotKey
+
+
+
+******************************************************************************************
+                     Altap Salamander 2.53 (SalamanderVersion >= 39)
+******************************************************************************************
+
+
+
+Changes in Altap Salamander 2.53 (SalamanderVersion >= 39)
+==========================================================
+
+-new constant PLUGINEVENT_SETTINGCHANGE: Salamander received WM_SETTINGCHANGE, recreated
+ fonts (toolbars, menubars) and letting it know to plugins.
+
+
+
+******************************************************************************************
+                     Altap Salamander 2.53 (SalamanderVersion >= 41)
+******************************************************************************************
+
+
+
+Changes in Altap Salamander 2.53 (SalamanderVersion >= 41)
+==========================================================
+
+-CSalamanderGeneralAbstract::PostMenuExtCommand: when 'waitForSalIdle' is TRUE,
+ call to CPluginInterfaceForMenuExtAbstract::ExecuteMenuItem contains valid 'salamander'
+ parameter (earlier it was always NULL).
+-CSalamanderGeneralAbstract::ExpandPluralFilesDirs: added possibility to specify index
+ of parameter to use for parameter dependent text in plural string. It also means that
+ you can use any number of parameter dependent texts with specified index of parameter
+ to use.
+
+
+
+******************************************************************************************
+                     Altap Salamander 3.0 (SalamanderVersion >= 54)
+******************************************************************************************
+
+
+
+Changes in Altap Salamander 3.0 (SalamanderVersion >= 54)
+==========================================================
+
+-We have abadoned VC6, all modules (core and all plugins) are newly compiled with
+ VC9 (VC 2008). It means also new RTL - SALRTL9.DLL. New version of Salamander rejects
+ to load older plugins because of incompatibility with old version of RTL (SALRTL.DLL
+ from VC6).
+-CSalamanderPluginEntryAbstract::SetBasicPluginData2 renamed to SetBasicPluginData
+ (obsolete version of SetBasicPluginData was removed) - just rename call to
+ SetBasicPluginData2 to SetBasicPluginData in your own plugins.
+-CSalamanderGeneralAbstract::GetFileIcon2 renamed to GetFileIcon (obsolete version
+ of GetFileIcon was removed) - if you are using obsolete version of GetFileIcon,
+ you will have to add two parameters: TRUE, FALSE - removed variant of GetFileIcon
+ just called: GetFileIcon2(path, pathIsPIDL, hIcon, iconSize, TRUE, FALSE).
+-CSalamanderPluginEntryAbstract::ShowNotRegisteredDlg: removed parameter 'buyNowURL'
+ (it was already ignored).
+-CPluginInterfaceAbstract::GetVersion was removed (it was already ignored).
+-CPluginFSInterfaceAbstract::HandleMenuMsg2 renamed to HandleMenuMsg (obsolete version
+ of HandleMenuMsg was removed).
+-CPluginInterfaceForFSAbstract::ExecuteChangeDriveMenuItem2 renamed to
+ ExecuteChangeDriveMenuItem (obsolete version of ExecuteChangeDriveMenuItem was removed).
+-CPluginInterfaceForFSAbstract::ChangeDriveMenuItemContextMenu2 renamed to
+ ChangeDriveMenuItemContextMenu (obsolete version of ChangeDriveMenuItemContextMenu was removed).
+-CPluginInterfaceForFSAbstract::ExecuteChangeDrivePostCommand2 renamed to
+ ExecuteChangeDrivePostCommand (obsolete version of ExecuteChangeDrivePostCommand was removed).
+-CSalamanderGeneralAbstract::GetMouseWheelMsg was removed. It is no longer needed.
+ Mouse wheel message is always WM_MOUSEWHEEL.
+-SALPNG_CREATEDDB was removed (it was used only for Windows 95).
+-WINDOWS_VERSION_95, WINDOWS_VERSION_95_AND_LATER, WINDOWS_VERSION_95OSR2_AND_LATER,
+ WINDOWS_VERSION_98_AND_LATER, WINDOWS_VERSION_ME_AND_LATER, WINDOWS_VERSION_NT_AND_LATER,
+ and WINDOWS_VERSION_2000_AND_LATER were removed (Salamander works only under Windows 2000/XP/Vista/7).
+-CSalamanderGeneralAbstract::SalGetFileSize: 'fullName' parameter was removed (it was used only
+ when running under Windows 95).
+-CSalamanderGeneralAbstract::IsFirstInstance252beta1OrLater was renamed to
+ IsFirstInstance3OrLater; AS 3.0 has separated task list from older AS versions
+-We have added support for links to CSalamanderGeneralAbstract::SalMessageBoxEx.
+ See MSGBOXEX_PARAMS structure: URL and URLText members. If not used, they must
+ be NULL. It will work well if you clear structure before use, e.g.:
+  MSGBOXEX_PARAMS params;
+  memset(&params, 0, sizeof(params));
+-CSalamanderGeneralAbstract::CheckAndCreateDirectory: added 'manualCrDir' parameter (if TRUE,
+ CheckAndCreateDirectory rejects to create directory with space at the beginning of name).
+-CSalamanderGeneralAbstract::SalCreateDirectoryEx: support for creating directories
+ with names ending with space or dot character (not supported by shell, but filesystem
+ supports them).
+-SALCFG_USEOPENNOTEXPLORE was removed (new method for opening folder in Explorer does not support it).
+-CPluginFSInterfaceAbstract::OpenActiveFolder: removed parameter 'useOpenNotExplore'
+ (new method for opening folder in Explorer does not support it).
+
+
+
+New methods in Altap Salamander 3.0 (SalamanderVersion >= 54)
+==============================================================
+
+CSalamanderGeneralAbstract::SalRegQueryValue
+CSalamanderGeneralAbstract::SalRegQueryValueEx
+CSalamanderConnectAbstract::ForceRemovePanelArchiver
+CSalamanderGeneralAbstract::SalGetFileAttributes
+
+
+
+******************************************************************************************
+                     Altap Salamander 3.0 (SalamanderVersion >= 56)
+******************************************************************************************
+
+
+
+Changes in Altap Salamander 3.0 (SalamanderVersion >= 56)
+==========================================================
+
+-WinLibLT: new virtual method CDialog::NotifDlgJustCreated. We use it to call
+ CSalamanderGUIAbstract::ArrangeHorizontalLines for new dialog. It makes dialog
+ pretty also in current DPI (can be 100% to 200%). It makes regular spaces between
+ section titles and their horizontal lines and behind radiobox/checkbox labels
+ when used on groupboxes.
+-Win32 API calls lstrcpy, lstrcpyn, lstrlen, and lstrcat were replaced by our
+ own variants because these API calls are not crashing when working with invalid
+ pointers or NULL. We want to see problem as close to its source as possible, it
+ makes bug fixing much easier.
+-CCallStackMsgContext::PushCallerAddress was only 32-bit, fixed to 64-bit in x64
+ version (DWORD_PTR instead of DWORD).
+
+
+
+New methods in Altap Salamander 3.0 (SalamanderVersion >= 56)
+=============================================================
+
+CSalamanderGUIAbstract::ArrangeHorizontalLines
+
+
+
+******************************************************************************************
+                     Altap Salamander 3.0 (SalamanderVersion >= 60)
+******************************************************************************************
+
+
+
+Changes in Altap Salamander 3.0 (SalamanderVersion >= 60)
+==========================================================
+
+-SalEnumSelection enumerator: added 'parent' and 'errorOccured' parameters.
+-SalEnumSelection2 enumerator: changed type of 'errorOccured' parameter from (BOOL *) to (int *).
+-'errorOccured' parameter of SalEnumSelection and SalEnumSelection2 enumerators:
+ added three possible values: SALENUM_SUCCESS, SALENUM_ERROR, and SALENUM_CANCEL.
+
+
+
+******************************************************************************************
+                     Altap Salamander 3.0 (SalamanderVersion >= 62)
+******************************************************************************************
+
+
+
+Changes in Altap Salamander 3.0 (SalamanderVersion >= 62)
+==========================================================
+
+-CSalamanderGeneralAbstract::SalGetFullName: added 'nameBufSize' parameter.
+-CSalamanderGeneralAbstract::SalParsePath: added 'pathBufSize' parameter.
+-CPluginInterfaceForArchiverAbstract::UnpackWholeArchive: added 'delArchiveWhenDone'
+ and 'archiveVolumes' parameters. When user selects "Delete archive after unpacking"
+ in Unpack dialog, 'delArchiveWhenDone' is TRUE and plugin should return all files
+ of archive (in case of multi-volume archive) to be deleted after unpacking.
+
+
+
+******************************************************************************************
+                     Altap Salamander 3.0 (SalamanderVersion >= 64)
+******************************************************************************************
+
+
+
+New methods in Altap Salamander 3.0 (SalamanderVersion >= 64)
+=============================================================
+
+CSalamanderGeneralAbstract::LoadStrW
+
+
+
+Changes in Altap Salamander 3.0 (SalamanderVersion >= 64)
+==========================================================
+
+-CSalamanderPluginEntryAbstract::GetRegistrationKeyInfo: added 'lifetimeLic', 'keyVersion',
+ and 'oldRegKeyFound' parameters.
+-CSalamanderGeneralAbstract::ReadRegistrationKey: added 'keyContentIsUTF8' parameter.
+-checkkey.*: added support for registration keys for Altap Salamander 3.0:
+ unicode content (UTF-8), support for lifetime keys, and reading key version.
+
+
+
+******************************************************************************************
+                     Altap Salamander 3.01 (SalamanderVersion >= 66)
+******************************************************************************************
+
+
+
+Changes in Altap Salamander 3.01 (SalamanderVersion >= 66)
+===========================================================
+
+-We have added inline functions: SalIsWindowsVersionOrGreater and SalGetVersionEx.
+ They solve deprecation of GetVersionEx Win32 API call.
+
+
+
+******************************************************************************************
+                     Altap Salamander 3.07 (SalamanderVersion >= 78)
+******************************************************************************************
+
+
+
+Changes in Altap Salamander 3.07 (SalamanderVersion >= 78)
+===========================================================
+
+-CFileData::IconOverlayIndex can be used also from plugins (it was only for internal use)
+-new constant: VALID_DATA_ICONOVERLAY - if set to valid data mask
+ (see CSalamanderDirectoryAbstract::SetValidData), plugin can set icon-overlay
+ index in CFileData::IconOverlayIndex, otherwise CFileData::IconOverlayIndex is
+ set to ICONOVERLAYINDEX_NOTUSED automatically as in earlier versions of Salamander
+-buffer overrun fix in CSalamanderGeneralAbstract::GetRootPath: if UNC root path is longer
+ than MAX_PATH, it will be cut to MAX_PATH-2 characters and backslash will be appended
+ (this is possible because such long UNC root path is certainly invalid)
+-CPluginDataInterfaceAbstract::GetInfoLineContent is called also for empty panel
+ to get Information Line text for plugin FS with empty listing (impossible in archives)
+
+
+
+New methods in Altap Salamander 3.07 (SalamanderVersion >= 78)
+===============================================================
+
+CSalamanderGeneralAbstract::IsPathOnSSD
+CSalamanderGeneralAbstract::IsUNCPath
+CSalamanderGeneralAbstract::ResolveSubsts
+CSalamanderGeneralAbstract::ResolveLocalPathWithReparsePoints
+CSalamanderGeneralAbstract::GetResolvedPathMountPointAndGUID
+CSalamanderGeneralAbstract::PointToLocalDecimalSeparator
+CSalamanderGeneralAbstract::SetPluginIconOverlays
+
+
+
+******************************************************************************************
+                     Altap Salamander 3.07 (SalamanderVersion >= 79)
+******************************************************************************************
+
+
+
+Changes in Altap Salamander 3.07 (SalamanderVersion >= 79)
+===========================================================
+
+-SalEnumSelection2 enumerator: added new mode: 'enumFiles' == 3, same as 'enumFiles' == 1,
+ but all symbolic links to files will be returned with file size of link target file
+ (not with zero size like in mode 'enumFiles' == 1)
+
+
+
+New methods in Altap Salamander 3.07 (SalamanderVersion >= 79)
+===============================================================
+
+CSalamanderGeneralAbstract::SalGetFileSize2
+CSalamanderGeneralAbstract::GetLinkTgtFileSize
+CSalamanderGeneralAbstract::DeleteDirLink
+CSalamanderGeneralAbstract::ClearReadOnlyAttr
+CSalamanderGeneralAbstract::IsCriticalShutdown
+CSalamanderGeneralAbstract::CloseAllOwnedEnabledDialogs
+
+CGUIProgressBarAbstract::SetProgress2
+
+CSalamanderDebugAbstract::AddModuleWithPossibleMemoryLeaks
+
+
+
+******************************************************************************************
+                     Altap Salamander 3.08 (SalamanderVersion >= 81)
+******************************************************************************************
+
+
+
+Changes in Altap Salamander 3.08 (SalamanderVersion >= 81)
+===========================================================
+
+
+
+-new constant: MSGBOXEX_YESNOOKCANCEL - message box with Yes, No, OK, and Cancel buttons

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="windows-1250"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="lang_base"
+	OutputDirectory="$(CURRENT_SALBIN)$(ShortVSVer)\$(ConfigurationName)_$(ShortPlatform)\plugins\$(ShortProjectName)\lang"
+	IntermediateDirectory="$(OutDir)\Intermediate"
+	UseOfMFC="0"
+	ATLMinimizesCRunTimeLibraryUsage="false"
+	CharacterSet="2"
+	>
+	<Tool
+		Name="VCLinkerTool"
+		GenerateDebugInformation="false"
+		GenerateManifest="false"
+		IgnoreAllDefaultLibraries="true"
+		LinkLibraryDependencies="false"
+		OutputFile="$(OutDir)\english.slg"
+		DataExecutionPrevention="2"
+		ResourceOnlyDLL="true"
+		SuppressStartupBanner="true"
+	/>
+	<Tool
+		Name="VCResourceCompilerTool"
+		AdditionalIncludeDirectories="..\..\shared"
+		Culture="1033"
+		PreprocessorDefinitions="WINVER=0x0500;_LANG"
+	/>
+	<Tool
+		Name="VCManifestTool"
+		EmbedManifest="false"
+	/>
+</VisualStudioPropertySheet>

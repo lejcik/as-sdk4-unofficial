@@ -1,0 +1,28 @@
+Altap Salamander SDK License Agreement
+
+This Altap Salamander Software Developer Kit (the "SDK") is supplied
+to you by Altap in consideration of your agreement to the following
+terms, and your use, installation, modification or redistribution of
+this SDK constitutes acceptance of these terms. If you do not agree
+to the terms of this License Agreement, do not install or use this SDK.
+
+Altap grants to you a nonexclusive, nontransferable, royalty-free license
+to use the items in the SDK only for the purpose of development of
+software designed to function with Altap Salamander.
+
+This SDK contains x64 and x86 special builds of Altap Salamander, their
+license agreements are enclosed in their DOC directories:
+C:\AS_SDK\bin\vc2019\SDK_x86\doc\license.txt
+and
+C:\AS_SDK\bin\vc2019\SDK_x64\doc\license.txt.
+
+You expressly acknowledge and agree that use of the SDK is at your sole
+risk. The SDK is provided "AS IS" and without warranty of any kind and 
+ALTAP EXPRESSLY DISCLAIMS ALL WARRANTIES, EXPRESS AND IMPLIED, INCLUDING,
+BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE and NON-INFRINGEMENT.
+
+IN NO EVENT SHALL ALTAP BE LIABLE FOR ANY SPECIAL, INDIRECT, INCIDENTAL
+OR CONSEQUENTIAL ARISING IN ANY WAY OUT OF THE USE, REPRODUCTION, 
+MODIFICATION AND/OR DISTRIBUTION OF THE SDK, EVEN IF ALTAP HAS BEEN 
+ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.

@@ -1,0 +1,536 @@
+Predevsim vas chceme upozornit, ze existuje program Trace Server (viz
+trace_server.txt), ktery vypisuje chyby a warningy z celeho Salamandera
+a vetsiny pluginu (viz makra TRACE_E a TRACE_I - doporucujeme pouzivat
+i ve vasich pluginech). Zde nejdulezitejsi jsou hlaseni o chybach pri
+pouzivani pluginoveho rozhrani. Tato hlaseni pomohou vysvetlit mnoho
+zakladnich problemu (neinicializovane knihovny, spatne/neocekavane
+parametry, atd.).
+
+********************************************************************************
+********************************************************************************
+Obecne
+********************************************************************************
+********************************************************************************
+
+> Hrozi mi, ze bude plugin volany z vice threadu zaroven?
+
+Ne, tedy az na vyjimky a ty jsou dobre oznaceny (viz napr.
+CPluginDataInterfaceAbstract::GetPluginIcon). U vsech metod
+CSalamanderGeneral je dole v komentari poznamka odkud je mozne
+metodu pouzit (libovolny thread / hlavni thread / jine,
+specialni podminky).
+
+********************************************************************************
+********************************************************************************
+File-systemovy plugin
+********************************************************************************
+********************************************************************************
+
+> - ted uz jsem se v tom trochu zorientoval, ale mozna by mi porad pomohlo mit
+> zdrojaky z nejakeho jednodussiho pluginu implementujiciho FS, nemate neco
+> takoveho?
+
+Obavam se, ze DemoPlug je nejjednodussi.
+
+Problem DemoPluginu je v tom, ze je tam predvedene pouziti asi
+vsech dostupnych metod, takze je to prirozene trochu spletite,
+ale verim ze se presto rychle zorientujes. Pro tebe budou dulezite
+moduly demoplug.cpp (pripojeni pluginu do Salamandera), fs1.cpp +
+fs2.cpp (definice file-systemu) a mozna i menu.cpp (asi budes
+potrebovat par polozek v menu pluginu - connect/disconnect/atd.).
+
+Urcite se te netykaji: archiver.cpp (archivatory), thumbldr.cpp
+(vyroba thumbnailu) a viewer.cpp (viewery).
+
+Navrhuju si v prvni fazi trochu zjednodusit zivot: udelej prozatim
+jen otevreni/zavreni FS, listovani cesty a pohyb po adresarich.
+Operace na FS nech na druhou etapu. Mrkni na
+CPluginFSInterface::GetSupportedServices(), vraci naORove
+implementovane funkce FS, pro prvni etapu bych tam dal jen:
+return 0. ;-) Metody umistene v headru pod GetSupportedServices()
+tim padem staci "zaslepit" (Salamander je nezavola - jde jen
+o kompilator, aby nehlasil chyby).
+
+********************************************************************************
+
+> Je nejaka moznost jak zistat CSalamanderForOperationsAbstract mimo funkce,
+> ktere ho dostavaji jako parametr? Jde mi o progress dialog pro hromadne operace.
+> (napr. pro operace CPluginFSInterface::Delete, CopyOrMoveFromFS, atd.)
+
+Diky rozmanitosti jednotlivych FS jsem se ani nesnazil to nejak globalne
+podporit, aneb kazdy FS si dela sve specificke progres-dialogy. Jedna ukazka
+je CDeleteProgressDlg v DemoPluginu (jeden progress-control), patch na dva
+progresy bude asi trivos.
+
+Napr. WinSCP ma svuj vlastni progress dialog s time-left,
+transfer-speed, atd. FTP ma tez svuj progress (obsahuje i seznam threadu,
+ktere v operaci pusobi). RegEdit nema zadne progresy, operace jsou kratke
+a zatim si nikdo nestezoval (kdyz se to stane tercem kritiky, dopiseme je
+tam). Vidim to tak, ze to nechame chvilku krystalizovat, a pak se uvidi,
+treba dojdeme k tomu, ze podporime nejaky zakladni typ progress dialogu
+a umoznime zmenu resourcu dialogu, aby si kazdy plugin mel sanci udelat
+sve upravy. Nicmene zatim je to moc nejasne na to, abysme se do neceho
+podobneho pousteli.
+
+********************************************************************************
+
+> CPluginFSInterfaceAbstract::IsOurPath()
+>    - mam skutecne fyzicky overovat, ze ta cesta existuje? K cemu se to
+>      presne pouziva?
+
+Jde o to, jestli je sance pozadovanou cestu otevrit v soucasnem
+FS (ale CPluginFSInterfaceAbstract::ChangePath pak jeste porad
+muze vratit chybu, napr. pri neexistujici ceste). Pouziva se to
+pri volani CSalamanderGeneralAbstract::ChangePanelPathToPluginFS -
+- pokud je v panelu pozadovane FS nebo aspon FS ze stejneho pluginu
+jako pozadovane FS, zavola se mu tahle metoda a pokud vrati TRUE,
+dojde jen ke zmene cesty ve stavajicim FS. V opacnem pripade dojde
+k zavreni soucasneho FS a otevreni noveho FS pro pozadovanou
+cestu.
+
+Priklad z FTP pluginu: je-li otevrena cesta
+"ftp://ftp.altap.cz/pub", vraci metoda TRUE pro vsechny
+cesty ze serveru "ftp.altap.cz" (ke zmene cesty se pak
+pouzije jen prikaz "CWD", spojeni na server se vyuzije
+stavajici). Ovsem pokud chce uzivatel zmenit cestu napr.
+na "ftp://ftp.microsoft.com/", vrati se FALSE, aby doslo
+k zavreni spojeni a otevreni noveho FS se spojenim na
+"ftp.microsoft.com".
+
+********************************************************************************
+
+> Co je detachnuty FS? Jak attachnout detachnuty FS?
+>    Musim si sam zajistit pridani ikonky detachnuteho FS, pres
+>    kterou se zpatky attachne?
+
+Odpojeni (detachnuti) FS od panelu bylo zavedeno kvuli moznosti
+mit vic otevrenych "instanci" FS zaroven (v panelech muzou byt
+jen dva). Motivace je napr. u FTP ta, ze otevreni spojeni se
+serverem je casove narocne (navic muze byt limitovane poctem
+prijimanych uzivatelu na serveru, takze pri ziskani spojeni
+muze jit o stesti) a tudiz uzivatel bude jiste radsi, kdyz bude
+mit moznost nechat spojeni otevrene i behem prace na jinych
+serverech.
+
+Odpojeny FS vznikne tak, ze pri zmene cesty v panelu dojde
+k potrebe zavrit FS (CPluginFSInterfaceAbstract::IsOurPath()
+vrati FALSE - napr. zmena cesty zpet na "C:\") a metoda
+CPluginFSInterfaceAbstract::TryCloseOrDetach vrati, ze ma
+dojit jen k odpojeni FS od panelu (misto k zavreni FS).
+
+Pripojeni odpojeneho FS do panelu je mozne dvema zpusoby.
+Prirozenejsi je ten, ze uzivatel vybere z Change Drive menu
+(Alt+F1/F2) polozku reprezentujici odpojeny FS (kazdy odpojeny
+FS ma v tomto menu polozku). Druhy zpusob zavisi na pluginu
+(napr. reakce na prikaz z menu pluginu), staci zavolat metodu
+CSalamanderGeneralAbstract::ChangePanelPathToDetachedFS.
+
+Ikonka do Change Drive menu (Alt+F1/F2) se ziskava vzdy metodou
+CPluginFSInterfaceAbstract::GetChangeDriveOrDisconnectItem, nezavisi
+na tom, jestli je FS odpojeny nebo aktivni v panelu. Pokud
+plugin tuto metodu neimplementuje, zadna polozka se do menu
+neprida.
+
+********************************************************************************
+
+> CPluginFSInterfaceAbstract::ReleaseObject()
+>    - ma to nejaky vyznam? muzu nechat prazdne?
+
+Zavirani FS je rozdeleno do dvou metod (volaji se v tomto
+poradi): CPluginFSInterfaceAbstract::ReleaseObject() a
+CPluginInterfaceForFSAbstract::CloseFS(). Lisi se hlavne tim,
+ze v ReleaseObject() je mozne otevirat okna (listing FS je
+jeste v panelu, je mozne prekreslovat), kdezto v
+CloseFS() se jiz zadna okna (ani messageboxy) otevirat nesmi
+(v panelu uz neni listing, neni mozne prekreslovat).
+
+Doporucenim je v ReleaseObject() uvolnit data FS a v CloseFS()
+uvolnit samotny objekt FS.
+
+********************************************************************************
+
+> Jak otevrit vic instanci FS z jednoho pluginu?
+>    - kdyz z ExecuteChangeDriveMenuItem() zavolam ChangePanelPathToPluginFS()
+>      a muj plugin je uz otevreny, tak to logicky neudela nic. Tak jak otevrit
+>      druhou instanci? Nejdri detachnout tu aktualni? A jak?
+
+V jednom panelu muze byt jen jedna instance FS. Dalsi instance
+FS existuji jako odpojene od panelu (detachnute).
+
+Odpojeny FS vznikne tak, ze pri zmene cesty v panelu dojde
+k potrebe zavrit FS (CPluginFSInterfaceAbstract::IsOurPath()
+vrati FALSE - napr. zmena cesty zpet na "C:\") a metoda
+CPluginFSInterfaceAbstract::TryCloseOrDetach vrati, ze ma
+dojit jen k odpojeni FS od panelu (misto k zavreni FS).
+
+********************************************************************************
+
+> Jak poznam, jestli cesta v CPluginFSInterfaceAbstract::IsOurPath() neni
+> na jiny FS? Kdyz mi prijde "/xxx/xxx" jak vim ze to je na SCP a ne na FTP?
+> Jak resit situaci, kdy uzivatel meni cestu na serveru, na kterem uz je
+> pripojen (jak rozlisit, jestli chce mit dve spojeni nebo jen zmenit cestu
+> v te soucasne instanci FS)?
+
+Do tveho pluginu chodi jen dotazy na tvoje cesty. Pokud bude v panelu
+cesta "scp://www.altap.cz/" (v tve instanci FS) a dojde k pozadavku
+na zmenu cesty na "ftp://www.altap.cz/", pozna Salamander podle prefixu
+"ftp:", ze se nova cesta nemuze otevrit v soucasne instanci FS v panelu
+(jmeno FS "ftp" je z jineho pluginu) a rovnou soucasnou instanci FS
+necha zavrit (nebo odpojit).
+
+Co se tyce dvou spojeni na jeden server, tak u FTP jsem to vyresil
+tak, ze Change Directory (Shift+F7) se spokoji jen s nastavenim
+nove cesty ve stavajici instanci FS. Pokud chce uzivatel otevrit
+nove spojeni (mit pak fyzicky dve spojeni na jeden server), musi
+pouzit prikaz "Connect to FTP Server..." (nebo Alt+F1 / FTP Client).
+
+********************************************************************************
+
+> Jak po zadani vsech parametru spojeni v Connect dialogu
+> otevrit novou instanci FS v panelu?
+
+Pro predani vsech parametru spojeni z connect dialogu (napr.
+u FTP jde o dialog "Connect to FTP Server") do nove instance
+FS v panelu je mozne pouzit napr. nasledujici postup:
+-ulozit vsechny parametry do globalni struktury, nastavit
+ platnost struktury (nejaka globalka typu BOOL; je treba
+ rozlisit predavani vsech parametru od pripadu prosteho
+ zadani cesty s prazdnym fs-user-part (napr. "ftp:"))
+-zavolat metodu
+ CSalamanderGeneralAbstract::ChangePanelPathToPluginFS()
+ s prazdnym retezcem v parametru 'fsUserPart'
+-v CPluginFSInterface::ChangePath() rozpoznat prazdny
+ retezec v parametru 'userPart', overit platnost struktury
+ (tu globalku typu BOOL) a je-li platna, pouzit parametry
+ z globalni struktury
+
+********************************************************************************
+
+> V menu disku je volba "As Other Panel". Tim se mi zavola OpenFS(). Jak
+> ziskam referenci na ten druhy panel? A hlavne jak poznam ze je to volane
+> kvuli "as other panel", tj. ze vubec mam hledat a duplikovat nastaveni
+> druheho panelu.
+
+Postup jak dospet ke stejne ceste v druhem panelu je nakodovany
+v Salamanderovi. Plugin to nemusi resit. Z pohledu pluginu dojde
+jen k otevreni nove instance FS a ke zmene cesty k teto instanci
+na konkretni cestu (nemusi resit, ze se shoduje s cestou v druhem
+panelu).
+
+Dalsi informace viz dalsi dotaz v tomto FAQu.
+
+********************************************************************************
+
+> U SCP/SFTP (ale i u FTP) je vic parametru pripojeni nez se
+> vejde do cesty (heslo, proxy, preferovany protokol, atd.).
+> Kde je ziskam pri pouziti "As Other Panel" z Change Drive
+> menu (Alt+F1/F2)?
+
+Podobny problem je i u hot-path (Shift+Ctrl+cislice je ulozeni,
+Ctrl+cislice je pouziti), historie prochazeni (Alt+sipka
+vlevo/vpravo) a v List of Working Directories (Alt+F12).
+
+Nenasel jsem zadne reseni obecneho a bezproblemoveho ukladani
+techto "dalsich" informaci (napr. z pohledu upgradu pluginu aneb
+zmeny formatu techto informaci; navic jsou tu problemy jako: co
+delat pokud uzivatel rucne edituje hot-path - nechat poeditovat,
+zahodit nebo jen zkopirovat tyto "dalsi" informace?). Ukladani do
+retezce s vyznacenim verze v kazdem z nich a podobne me prijde
+dost komplikovane a jako zdroj chyb. Muj dojem je, ze to proste
+nestoji za to. Navic napr. hesla by se ukladat vubec nemela,
+neni je jak zabezpecit (teda pokud nebudeme uzivatele otravovat
+s nejakym obecnym heslem pro tyto ucely, coz mi prijde krajne
+nevhodne).
+
+Takze jak to resit: neco se da ulozit primo do cesty (napr.
+znamy format "ftp://user@server:port/path-on-server"), zbytek
+se da bud ziskat ze seznamu uzivatelem definovanych spojeni
+(bookmarks/favorites) nebo z prave otevrenych spojeni (treba
+prioritne podle umisteni v panelu (aktivni/neaktivni), pak
+brat odpojene instance FS - viz
+CSalamanderGeneralAbstract::GetPanelPluginFS, seznam odpojenych
+instanci FS se da snadno ziskat ze seznamu vsech instanci FS,
+ktery si plugin muze vytvaret sam). Nejjednodussi reseni je
+doptat se na chybejici informace uzivatele (napr. FTP se pokazde
+pta na heslo). Dalsi reseni je uvadet v ceste jmeno
+definovaneho spojeni ("scp://bookmark-name/path-on-server"),
+a pak uz jen podle tohoto jmena dohledavat v seznamu spojeni
+(tak to dela tusim PuTTY - setkal jsem se s tim pri praci
+s "plink"). Nevyhoda tohoto pristupu je, ze pres nej nelze
+resit "quick connect" (zadani parametru spojeni bez ulozeni
+spojeni do seznamu).
+
+Myslim, ze konkretne v pripade SCP by bohate vyhovovalo,
+kdybys pri prvnim volani ChangePath v nove vytvorene
+instanci FS zkontroloval jestli nejde o volani z Connect
+dialogu (se vsema parametrama v globalce) a pokud ne,
+zkusil bys ziskat ty parametry z instance FS v neaktivnim
+panelu (pouze shoduji-li se parametry pripojeni (server,
+user,port)), no a pokud by se ani to nepovedlo, doptat
+se usera (neco podobneho Connect dialogu). Ziskane
+parametry (vsemi tremi zpusoby) si uloz do instance FS,
+kde ti budou k dispozici pro vsechny dalsi zmeny cesty
+v te instanci FS.
+
+********************************************************************************
+
+> Pri pripojovani zobrazuju stav pomoci CreateSafeWaitWindow() a
+> navazujicich metod. Protoze potrebuju menit v okne text a podle dokumentace
+> se velikost po zmene neupravi, vyresil jsem to tak ze po vytvoreni mu poslu
+> string (konstatni = staticky) se spoustou mezer, aby okno bylo dost dlouhe
+> pro vsechny. Z nejakeho zahadneho duvodu je to okeneko pokazne jinak velke.
+> Nevim jestli je ta velikost uplne nahodna, ale urcite se tam ty dalsi texty
+> nekdy vejdou a nekdy nevejdou.
+
+Velikost se pocita podle aktualni sire hl. okna Salama, sire cele obrazovky
+a tez zalomeni textu do toho okenka do vice radku. Aneb je to celkem
+netrivialni, myslim ze lepsi reseni je okenko vzdy zrusit a otevrit znovu
+(cas cekani pred zobrazenim okenka by mel byt sdileny, aneb snizovat ho s
+plynoucim casem az k nule). Okenko si pamatuje pozadi, takze ty vymeny
+budou blikat zcela minimalne, nejspis to ani nepujde postrehnout.
+
+Tohle wait-okenko se u FTP nepouziva, vyrobil jsem tam jeho nemodalni
+variantu (hl. okno Salamandera se prekresluje a da se do nej prepnout).
+Nicmene celkem nechutne to zkomplikovalo cely kod, takze vrele
+nedoporucuju (chtel jsem to vyvest pro dalsi pluginy, ale je to
+utopie).
+
+********************************************************************************
+
+> CPluginFSInterfaceAbstract::ExecuteCommandLine() nema menit cestu, protoze
+> hrozi odpojeni FS. Tyka se to jen toho, ze nemam volat ChangePanelPathToPluginFS()
+> a podobne metody?
+
+Jde jen o to, ze po volani ChangePanelPathToPluginFS() a podobnych
+muze prestat existovat objekt, ze ktereho si ji zavolal (instance
+FS, ktere se zavolala metoda ExecuteCommandLine()). Pokud potrebujes
+zavolat ChangePanelPathToPluginFS() nebo podobnou, dej parametry
+volani do nejakych globalek a pouzij
+CSalamanderGeneralAbstract::PostMenuExtCommand s 'waitForSalIdle'=TRUE.
+Je potreba zadat i platnost tech globalnich dat, protoze by se
+mohlo stat, ze pouzijes CSalamanderGeneralAbstract::PostMenuExtCommand
+vickrat (data v globalkach premazes + misto vice prikazu provedes
+jeden vickrat). Provedeni postnuteho prikazu se zavola az v "idle"
+rezimu, viz CPluginInterfaceForMenuExtAbstract::ExecuteMenuItem.
+
+********************************************************************************
+
+> Prijde mi dost nestastne ze po zavolani PostUnloadThisPlugin() mi
+> Salamander vola dalsi metody. Zatim jsem to vyresil tak ze po zavolani
+> PostUnloadThisPlugin() vracim z GetCurrentPath() a metody co meni cestu
+> (nepamatuju si jmeno) FALSE. Hrozi mi zavolani jeste neceho jineho?
+
+Nac pouzivas PostUnloadThisPlugin()? Jestli je to reakce na chybu,
+tak to neni uplne dobry, lepsi reseni je vratit chybu z metody,
+ve ktery prave jsi. Chyby propadaji do dalsich urovni a Salamander
+se s nima vyrovnava podle standardnich schemat (treba u cest se to
+umi vratit na stavajici cestu v panelu nebo kdyz to nejde jinak
+tak prepnout aspon na root cestu na pevnem disku, kde na temer 100%
+k chybe nedojde).
+
+Normalne je uplne zbytecny unloadit plugin, to se dela jen ve
+specialnich pripadech jako je automaticky load pluginu po startu
+Salama (treba CheckVer (kontrola novejsi verze Salama+pluginu
+pres inet), atd.).
+
+Kazdopadne PostUnloadThisPlugin() neni substituce za ExitProcess(),
+protoze znamena jen unload DLLka (presneji .SPL), ale adresni
+prostor zustava komplet v cinnosti (nezavrene handly souboru,
+nedealokovana pamet na spolecnem heapu nebo systemovem heapu,
+atd.).
+
+********************************************************************************
+
+> Proc neexistuje k ViewFile() defaultni implementace? Tj. ze kdyz ji
+> nenaimplementuju, tak se provede stahnuti do docasneho adresare, prohlednuti
+> a smazani.
+
+Neuvedomuju si presny duvod, ale kdyby to slo pres to automaticky
+kopirovani ze serveru, znamenalo by to zase zkomplikovani metod
+pro kopirovani (nevim jestli ses k nim uz dostal) - napr. to tahani
+by melo probihat bez dotazu uzivateli a napopredi (ceka se na
+obdrzeni souboru, aby se predal do vieweru, to se u normalniho
+kopirovani nevyzaduje), atd.
+
+Mam pocit, ze je to celkem trivos, takze nevidim duvod ke zmenam.
+
+********************************************************************************
+
+> Byl jsem totalne vyrizeny a zmateny z popisu CopyOrMoveFromFS(), nicmene
+> jsem se dostal k tomu, ze predpokladam ze se mi zavola jen s modem 1 a 5.
+> Okenko na urceni cile a parametru kopirovani si implementuju sam. Staci to
+> tak? Jen mi prijde divne, ze kdyz mam v druhem panelu jiny plugin a zmacknu
+> F5, tak dostanu prazdnou cestu (coz mi vyhovuje). Kdezto kdyz drag&dropnu
+> souboru ode mne k nemu, tak v ceste dostanu cestu do toho ciziho FS (coz se
+> mi nelibi). Neni to trochu nekonzistentni chovani?
+
+Tahle metoda je dost slozita z podstaty, takze neni divu, ze
+je i slozite popsana a slozite pochopitelna. Je to komplikovane hlavne
+kvuli tomu, ze umoznuje ukazat std. Copy/Move okno a rozpoznat
+cilove cesty (pripadne vytvorit jeji neexistujici cast) a
+masky Salamandrim aparatem (resi jestli jde o prepis souboru
+nebo o pridani do podadresare nebo jen o prejmenovani - to vse
+ma stejny zadani cile od usera a lisi se to jen stavem na disku
+(exituje soubor stejneho jmena, exituje podadresar stejneho
+jmena, nebo jmeno je nepouzite)). Coz nelze udelat jinak,
+nez ze se vola pro jednu operaci opakovane (poprve se vola
+vzdy s mode==1 nebo mode==5).
+
+Proste napr. pri prvnim volani s mode==1, kdyz vratis FALSE
+a 'cancelOrHandlePath' take FALSE, mas jistotu, ze v zapeti
+(po std. dialogu) Salamander zavola CopyOrMoveFromFS() znovu
+s mode==2 (to 'mode' je neco jako kontext volani) a cestou,
+kterou zadal user.
+
+Pri mode==5 tam chodi komplet cilova cesta, protoze
+narozdil od mode==1 nevis, kde se na ni zeptat (nemusi byt
+v druhem panelu). Svoje fs-name (muze se zmenit proti tvojemu
+navrhu) ziskas pres CSalamanderGeneralAbstract::GetPluginFSName(),
+test na shodu je trivos (fs-name v cilove ceste saha az k prvni
+':' + nejde ani o klasicke ("c:") ani o UNC ("\\server\share")
+cestu).
+
+********************************************************************************
+
+> Jak mam zjistit cilovou cestu pro kopirovani/presun z FS na disk?
+> Zadne jine cilove cesty moje FS neumi.
+
+Jde o implementaci CPluginFSInterfaceAbstract::CopyOrMoveFromFS.
+Na tuhle praci s cestama je tam prave navratovka FALSE +
+'cancelOrHandlePath'=TRUE + 'operationMask'=TRUE/FALSE
+(podporuje/nepodporuje operacni masky). Uspesny vysledek
+(cil. cesta+maska) prijde pri mode==3, chyba pri mode==4,
+je to myslim celkem zadara. Navic to nezavisi na tom,
+jestli mas svuj nebo std. Copy dialog.
+
+BTW, "operacni maska" = maska pro zmenu jmena souboru/adresare,
+treba "*.txt" zmeni priponu na ".txt" a nazev ponecha jaky byl
+(primitivni op. maska bez '?' a '*' je de facto prejmenovani).
+Resi to CSalamanderGeneralAbstract::MaskName().
+
+********************************************************************************
+
+> Jak spravne udelat Disconnect v CPluginFSInterfaceAbstract::ContextMenu()?
+> Pokud to dobre chapu nemel bych volat ChangePanelPathToXXXX(), protoze tim
+> zrusim sam sebe. Myslim ze by to nemelo vadit, pokud je to posledni krok
+> metody, ale pro jistotu se ptam jestli neni lepsi reseni.
+
+Resil bych to jako u FTP pres postnuti prikazu menu:
+SalamanderGeneral->PostMenuExtCommand(FTPCMD_DISCONNECT, TRUE);
+Pripadne si udelej dva prikazy (pro levy a pravy panel)
+nebo si udelej globalku pro 'int panel'. Bohuzel ty prikazy
+menu nemaji parametr, pres ktery by ten 'int panel' sel
+predat, casem bych to mel pridat, zatim jsem se k tomu
+nedostal.
+
+********************************************************************************
+
+> Viewovani: Jak se zajisti ze po zmene vzdaleneho souboru se soubor
+> v cache smaze?
+
+Pokud se soubor zmeni, muzes cache invalidatnout, viz
+CSalamanderGeneralAbstract::RemoveOneFileFromCache.
+
+********************************************************************************
+
+> Porad mi to nemaze cache pro viewer, koukal jsem na DemoPlug a nenasel
+> jsem rozdil, ale DemoPlug funguje :-) nejaka rada?
+
+Asi otevreny handle, asi po stazeni souboru nechavas otevreny handle
+souboru nebo neco podobnyho. Na tyhle chyby pouzivame MHANDLES.*
+(v adresari u spl_xxx.h), pouziti viz DemoPlugin, mozna by ti to lecos
+vychytalo (nam uz se to bohate vyplatilo, pouzivame to v celym Salamovi).
+
+********************************************************************************
+
+> Za jakych okolnosti se mi stane, ze cesta v panelu je jen "winscp:"? Ted se
+> mi to stalo, po te co mi vytimoutovalo spojeni. Asi neco delam blbe, ale na
+> druhou stranu ja nikdy v GetCurrentPath() nevracim prazdnou cestu, mimo
+> pripadu kdyz vratim false.
+
+Salamander zobrazuje jen to, co mu vrati GetCurrentPath(), kdyz
+mu vrati FALSE, tak ukaze jen "winscp:".
+
+Myslim, ze idealni bude, kdyz po zmene cesty ulozis aktualni cestu
+do bufferu a budes v GetCurrentPath() jen vracet ten buffer,
+pak te zadny rozpadnuti spojeni nemuze ohrozit.
+
+Uvazoval jsem tak, ze spojeni se muze rozpadnout (nebo taky
+FS prijde na to, ze uz je delsi dobu rozpadly) jen pri:
+- zmene cesty + listovani (tam je reseni asi jasny)
+- GetFullFSPath() - jen ohlasis uzivateli chybu a vratis
+  error, zmena cesty proste neprobehne
+- GetFSFreeSpace() - vrati -1 a udaj se nezobrazi
+- operacich (Copy/Move/Delete/View/DriveInfo atd.) -
+  jen ohlasis uzivateli chybu a nic se nekona (cesta je
+  vylistovana, netreba panikarit), user muze operaci zopakovat
+  pozdeji (treba uz mu to pak bude schopny navazat nove
+  spojeni, atd.)
+
+********************************************************************************
+
+> Prestoze z metody CPluginFSInterface::ListCurrentPath() vracim
+> iconsType==pitFromRegistry, nezobrazuji se mi ikonky v panelech, proc?
+
+Nejspis u jmen souboru nerozpoznavas priponu:
+-dir->SetValidData() musi obsahovat VALID_DATA_EXTENSION
+-vypocet CFileData::Ext viz DemoPlugin (tecka na zacatku jmena
+ je taky pripona + pokud neexistuje pripona, ukazuje Ext na konec jmena +
+ adresare maji "priponu" jen je-li TRUE v SALCFG_SORTBYEXTDIRSASFILES)
+
+********************************************************************************
+
+> Zkousel jsem dodelat podporu pro vic jmen FS. Nechal jsem "winscp" jako
+> 0-te jmeno a pridal "scp" a "sftp". Chci se zeptat jestli jde zmenit
+> dodatecne jmeno FS konkretni instance FS. Mam problem s timhle: z
+> ExecuteChangeDriveMenuItem() volam ChangePanelPathToPluginFS() a ten uz chce
+> vedet nazev FS, ale ja ho jeste vedet nemusim, protoze tam mam rezim "SFTP
+> (allow SCP fallback)" a v tom pripade se skuctecny FS dozvim az po
+> pripojeni, ale to uz instance FS davno existuje a musi mit prirazene jmeno
+> FS. Da se to zmenit dodatecne?
+
+Jmeno FS se da zmenit tak, ze z ChangePath vratis v 'fsName'
+nove jmeno FS. Takze otevrit FS muzes treba s "winscp" a az
+zjistis co to bude (scp/sftp), tak:
+-pokud tou dobou budes v ChangePath, staci vratit prislusne FS jmeno
+-pokud to zjistis v ListCurrentPath, muzes z ni vratit chybu, to zpusobi
+ volani ChangePath, odkud muzes vratit korektni FS jmeno a z nasledneho
+ volani ListCurrentPath vratis listing + uspech
+-jinak vyvolas refresh FS, a pak z ChangePath vratis prislusne FS jmeno
+
+********************************************************************************
+
+> Mam problem - pripojeni FS a vylistovani root adresare je v pohode, ale kdyz
+> jsem implementoval vsechno potrebny (podle me) do ChangePath, ExecuteOnFS a
+> ListCurrentPath, abych mohl vlezt do jednoho adresare v tom rootu, tak to
+> nechce fungovat - volani ChangePanelPathToPluginFS v ExecuteOnFS nema zadnej
+> efekt, nevleze to do ChangePath, ani kdyz v IsOurPath vracim vzdycky TRUE,
+> takze se vlastne aktualni cesta nezmeni a ListCurrentPath vylistuje zase
+> tu samou cestu. Cim to muze bejt?
+
+Zmeny cest na FS jsou optimalizovane pro pripad, ze v panelu jiz je otevrena
+pozadovana cesta (zmena cesty v tomto pripade nema smysl). Salamander zjistuje,
+jestli doslo k teto shode pres metodu CPluginFSInterface::IsCurrentPath.
+Takze pokud z metody IsCurrentPath vracis vzdy TRUE, ChangePath se ti pro
+otevreny FS nikdy nezavola (toto volani se vzdy vyoptimalizuje).
+
+********************************************************************************
+
+> Pres PostMenuExtCommand nejde predat zadne parametry, jak to resit?
+
+********************************************************************************
+
+Ty parametry do menu chybi z duvodu podstatne snazsi implementace na strane
+Salamandera. Navic by se musely resit nejaky dealokace tech parametru v pripade
+unloadu pluginu pred dorucenim, atd. Da se to docela jednoduse obejit:
+udelas si globalni pole struktur, ktery obsahuji vsechny potrebne parametry
+(klidne alokovane retezce, atd.), kdyz chces postnout prikaz, nejprve naplnis
+jednu polozku do toho pole, a pak teprve postnes prikaz (s jednim vybranym ID),
+az prikaz dojde, vyzvednes si tu polozku z pole a s ni vsechny parametry, a pak
+prvek pole zrusis. Kdyz dojde k unloadu pluginu, zrusis vsechny zbyle prvky
+pole (tim se elegantne resi ten zmineny problem s unloadem). Prirozene muzes
+pri prijmu prikazu vycerpat vsechny prvky pole, aby se provedly co nejdrive,
+pri prijmu dalsich prikazu menu uz pak nebudes delat nic (pole bude
+prazdne). Pokud by tech prikazu bylo enormni mnozstvi, muzes i tohle
+vyoptimalizovat (neposilat dalsi prikaz se stejnym ID dokud predchozi odeslany
+nedorazil).

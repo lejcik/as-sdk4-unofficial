@@ -1,0 +1,217 @@
+Progress dialogy pro archivátory
+********************************
+Autor: David Andrš
+
+Tento dokument popisuje, jak vytváøet standardní progress dialogy, tzn. dialogy s ukazatelem dlouho
+trvající èinnosti, kterou jsou v pøípadì archivátorù hlavnì vybalování a zabalovaní.
+
+Hlavní úskalí progress dialogù tkví v tom, že musíme pøedem vìdìt, kolik toho budeme dìlat. Èili je
+nutné nejdøíve spoèítat nìjaké èíslo, které bude vyjadøovat celkovou "délku" èinnost. Napøíklad pøi
+vybalování souborù to bude celková velikost vybalovaných souborù.
+
+Operace s progress dialogy poskytuje tøída CSalamanderForOperationsAbstract. Ukazatel na instanci
+této tøídy je pøedán do všech metod zabývajících se pakováním/rozbalováním.
+
+
+Druhy progress dialogù
+======================
+
+V Salamanderovi lze používat dva druhy progress dialogù -- s jedním progress barem nebo se dvìma
+progress bary. Typ progress dialogu urèuje druhý parameter metody
+
+  OpenProgressDialog(const char *title, BOOL twoProgressBars, HWND parent, BOOL fileProgress).
+
+Snažíme se používat hlavnì dvouprogressové dialogy. S obìma typy se pracuje témìø stejnì, až na malé
+detaily, které objasníme níže.
+
+
+Životní cyklus progress dialogù
+===============================
+
+Promìnná salamander je ukazatel na instaci tøídy CSalamanderForOperationsAbstract, která vstupuje do
+pakovacích/rozbalovacích metod.
+
+
+Jednoprogressový dialog
+-----------------------
+
+  // zjistìní celkové "délky" èinnosti
+  ...
+
+  salamander->OpenProgressDialog("titulek", FALSE, NULL, FALSE);
+  salamander->ProgressDialogAddText("operace", FALSE);
+
+  // první progress je nastaven na nulu, druhý, který pøedstavuje celkovou operaci, nastavíme na
+  // totalSize, což je celková délka èinnosti - v tomto pøípadì suma velikosti jednotlivých souborù
+  salamander->ProgressSetTotalSize(totalSize, CQuadWord(-1, -1));
+  // progress nastavíme na nulu (to abysme nìco vidìli :-D)
+  salamander->ProgressSetSize(CQuadWord(0, 0), CQuadWord(-1, -1), TRUE);
+
+  while (cinnost_trva)
+  {
+    // každá iterace cyklu pøedstavuje zpracování jedné èásti celkové operace
+
+    // 'part' je pocet zpracovanych (dilcich) bytu - inkrement, o ktery se zvysi progress
+    // delayedPaint==TRUE, abychom nebrzdili
+    if (!salamander->ProgressAddSize(part, TRUE))
+    {
+      salamander->ProgressDialogAddText("canceling operation, please wait...", FALSE);
+      salamander->ProgressEnableCancel(FALSE);
+      cinnost_trva = FALSE;
+    }
+  }
+
+  salamander->CloseProgressDialog();
+
+
+Dvouprogressový dialog
+----------------------
+
+  // zjistìní celkové "délky" èinnosti
+  ...
+
+  salamander->OpenProgressDialog("titulek", TRUE, NULL, FALSE);
+  salamander->ProgressDialogAddText("operace", FALSE);
+
+  // první progress je nastaven na nulu, druhý, který pøedstavuje celkovou operaci, nastavíme na
+  // totalSize, což je celková délka èinnosti - v tomto pøípadì suma velikosti jednotlivých souborù
+  salamander->ProgressSetTotalSize(CQuadWord(0, 0), totalSize);
+
+  while (cinnost_trva)
+  {
+    // každá iterace cyklu pøedstavuje zpracování jednoho souboru
+
+    // první progress nastavíme na nulu (to abysme nìco vidìli :-D)
+    salamander->ProgressSetSize(CQuadWord(0, 0), CQuadWord(-1, -1), TRUE);
+    // nastavíme, jak dlouhá bude tato operace, druhý progress necháváme na pokoji
+    salamander->ProgressSetTotalSize(fileSize, CQuadWord(-1, -1));
+
+    while (!zpracovan_cely_soubor)
+    {
+      // 'part' je pocet zpracovanych (dilcich) bytu - inkrement, o ktery se zvysi progress
+      // delayedPaint==TRUE, abychom nebrzdili
+      if (!salamander->ProgressAddSize(part, TRUE))
+      {
+        salamander->ProgressDialogAddText("canceling operation, please wait...", FALSE);
+        salamander->ProgressEnableCancel(FALSE);
+        cinnost_trva = FALSE;
+        break;   // preruseni akce
+      }
+    }
+  }
+
+  salamander->CloseProgressDialog();
+
+
+Poznamky
+--------
+
+- Metoda ProgressAddSize obslouží zvýšení jednoho (pøíp. obou) progress barù, takže se nemusíme
+  starat o nìjaké pomìry, atd.
+
+- Zpracovaní jednoho souboru je vhodné napsat do funkce, zlepší se tím èitelnost kódu a lépe se
+  spravuje a udržuje.
+
+- Pozor na spravné ošetøení prázdných adresáøù a souborù s nulovou délkou. Má-li soubor nulovou
+  délku, potom pøiètení inkrementu v metodì ProgressAddSize nezpùsobí posunutí progress baru. Tomu
+  èelíme pøiètením jednièky k délce souboru. Stejný trik mùžeme použít pro prádzné adresáøe. Pozor:
+  je nutné zmìnit i 'totalSize'.
+
+- Pokud nelze používat pøírùstky a tedy metodu ProgressAddSize, jinými slovy máme v prùbìhu
+  zpracovaní pozici progress baru, lze použít metodu ProgressSetSize(). Staèí pouze zamìnit,
+  nemusíme mìnit kód výše.
+
+- Parametr 'delayedPaint' nastavený na FALSE zpùsobí, že progress dialog èeká na své pøekreslení.
+  Toho využíváme pøi psaní zpráv jako "canceling operation, please wait...". Pokud vypisujeme
+  soubory, které pakujeme/vybalujeme, nepoužíváme delayedPaint, abychom nebrzdili operaci (aby to
+  mìl uživatel rychle hotový a nemusel èekat)
+
+
+Co zobrazovat v progress dialogu
+================================
+
+V následujících sekcích popíšeme, co by mìl archivátor zobrazovat na progress dialogu v jednotlivých
+operacích.
+
+title: bude ukazovat, co má být titulku
+následuje seznam nápisù, co by se mìl objevit v progress dialogu.
+
+
+ListArchive
+-----------
+
+Netøeba nic zobrazovat, pokud je listing archivem rychlý - což vìtšinou bývá.
+
+
+UnpackArchive
+-------------
+
+title: "Unpacking archive"
+"Reading archive items..."
+"Unpacking..."
+"File1"
+"File2"
+...
+"FileN"
+
+Progress bìží od "File1" do "FileN"
+
+
+UnpackOneFile
+-------------
+
+title: "Unpacking archive"
+"File1"
+
+Progress bìží v prùbìhu "File1"
+
+
+UnpackWholeArchive
+------------------
+
+title: "Unpacking archive"
+"Reading archive items..."
+"Unpacking..."
+"File1"
+"File2"
+...
+"FileN"
+
+Progress bìží od "File1" do "FileN"
+
+
+PackToArchive
+-------------
+
+title: "Packing archive"
+"Reading directory tree..."
+"Packing..."
+"File1"
+"File2"
+...
+"FileN"
+["Removing files..."]
+
+Progress bìží od "File1" do "FileN"
+Text "Removing files" se objevuje pouze pøi pøesunu souborù do archivu.
+
+Pøi odstraòování souborù je možné pustit progress. U dvouprogressového dialogu pøièteme k totalSize
+poèet vymazávaných souborù. Pøed mazáním nastavíme první progress na poèet souborù, a pak pøi každém
+vymazání pøièteme jednièku.
+
+U jednoprogressovýho dialogu, nastavíme progress na nulu, a totalSize jako poèet vymazávaných
+souborù, inkrementujeme opìt po jednièce.
+
+Výpis vymazáných souborù se nedoporuèuje.
+
+
+DeleteFromArchive
+-----------------
+
+title: "Updating archive"
+"Reading archive items..."
+"Removing..."
+"File1"
+"File2"
+...
+"FileN"

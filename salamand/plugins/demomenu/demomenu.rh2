@@ -1,0 +1,26 @@
+//****************************************************************************
+//
+// Copyright (c) ALTAP, spol. s r.o. All rights reserved.
+//
+// This is a part of the Altap Salamander SDK library.
+//
+// The SDK is provided "AS IS" and without warranty of any kind and 
+// ALTAP EXPRESSLY DISCLAIMS ALL WARRANTIES, EXPRESS AND IMPLIED, INCLUDING,
+// BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS
+// FOR A PARTICULAR PURPOSE and NON-INFRINGEMENT.
+//
+//****************************************************************************
+
+#pragma once
+
+#if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+#error this file is not editable by Microsoft Visual C++
+#endif //defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
+
+#define IDS_PLUGINNAME           46
+#define IDS_ABOUT                47
+#define IDS_PLUGIN_DESCRIPTION   48
+#define IDS_PLUGIN_HOME          49
+#define IDS_TESTCMD              50
+
+#define IDH_TESTCMD              900

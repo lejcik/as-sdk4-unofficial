@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="windows-1250"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="plugin_release"
+	WholeProgramOptimization="1"
+	>
+	<Tool
+		Name="VCCLCompilerTool"
+		Optimization="1"
+		InlineFunctionExpansion="1"
+		PreprocessorDefinitions="NDEBUG"
+		StringPooling="true"
+		RuntimeLibrary="2"
+		EnableFunctionLevelLinking="true"
+	/>
+	<Tool
+		Name="VCLinkerTool"
+		AdditionalOptions="/ALIGN:4096 /ignore:4108"
+		AdditionalDependencies="salrtl9.lib salrtlp9.lib"
+		LinkIncremental="1"
+		GenerateDebugInformation="true"
+		OptimizeReferences="2"
+		RandomizedBaseAddress="2"
+	/>
+	<Tool
+		Name="VCResourceCompilerTool"
+		PreprocessorDefinitions="NDEBUG"
+	/>
+</VisualStudioPropertySheet>

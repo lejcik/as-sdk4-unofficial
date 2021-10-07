@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="windows-1250"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="plugin_base"
+	OutputDirectory="$(CURRENT_SALBIN)$(ShortVSVer)\$(ConfigurationName)_$(ShortPlatform)\plugins\$(ProjectName)"
+	IntermediateDirectory="$(OutDir)\Intermediate"
+	UseOfMFC="0"
+	ATLMinimizesCRunTimeLibraryUsage="false"
+	CharacterSet="2"
+	>
+	<Tool
+		Name="VCCLCompilerTool"
+		AdditionalOptions="/MP"
+		AdditionalIncludeDirectories="..\..\shared"
+		PreprocessorDefinitions="_MT;WIN32;_WINDOWS;_USRDLL"
+		DefaultCharIsUnsigned="true"
+		UsePrecompiledHeader="2"
+		PrecompiledHeaderThrough="precomp.h"
+		WarningLevel="3"
+		SuppressStartupBanner="true"
+		DebugInformationFormat="3"
+		UseFullPaths="true"
+	/>
+	<Tool
+		Name="VCLinkerTool"
+		IgnoreImportLibrary="true"
+		LinkLibraryDependencies="false"
+		AdditionalDependencies="comctl32.lib"
+		OutputFile="$(OutDir)\$(ProjectName).spl"
+		SuppressStartupBanner="true"
+		AdditionalLibraryDirectories="..\..\shared\libs\$(ShortPlatform)"
+		GenerateManifest="false"
+		IgnoreAllDefaultLibraries="true"
+		ModuleDefinitionFile="..\$(ProjectName).def"
+		DataExecutionPrevention="2"
+	/>
+	<Tool
+		Name="VCResourceCompilerTool"
+		Culture="1033"
+		AdditionalIncludeDirectories="..\shared;..\..\shared"
+	/>
+	<Tool
+		Name="VCManifestTool"
+		EmbedManifest="false"
+	/>
+</VisualStudioPropertySheet>

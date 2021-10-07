@@ -1,0 +1,35 @@
+//****************************************************************************
+//
+// Copyright (c) ALTAP, spol. s r.o. All rights reserved.
+//
+// This is a part of the Altap Salamander SDK library.
+//
+// The SDK is provided "AS IS" and without warranty of any kind and 
+// ALTAP EXPRESSLY DISCLAIMS ALL WARRANTIES, EXPRESS AND IMPLIED, INCLUDING,
+// BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS
+// FOR A PARTICULAR PURPOSE and NON-INFRINGEMENT.
+//
+//****************************************************************************
+
+//
+// lang.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+#include "..\versinfo.rh2"
+#include "versinfo.rc2"
+
+STRINGTABLE
+{
+ IDS_PLUGINNAME,             "DemoMenu"
+ IDS_ABOUT,                  "About Plugin"
+ IDS_PLUGIN_DESCRIPTION,     "This plugin should help you to make your own menu extension plugin."
+ IDS_PLUGIN_HOME,            "www.altap.cz"
+ IDS_TESTCMD,                "&Test Command"
+}

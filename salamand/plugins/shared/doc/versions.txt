@@ -1,0 +1,54 @@
+Builds of Altap Salamander
+==========================
+
+
+Internal Build (IB)
+-------------------
+
+It is build for internal use only. Only for development inside ALTAP's
+office.
+
+
+Developers Build (DB)
+---------------------
+
+This build is for plugin developers with access to ALTAP's CVS. They can
+get current version of SHARED directory from CVS. After changes in SHARED
+directory we release new DB to allow using new things in SDK.
+
+Link: https://devel.altap.cz/devels/
+
+
+Preview Build (PB)
+------------------
+
+Public preview build for testers. It contains TRACE messages and some other
+support for debugging, so it is intended also for external plugin developers.
+
+Link: http://forum.altap.cz/  Early Access Program (EAP)
+
+
+Beta Version
+------------
+
+Public build for beta testers.
+
+Link: https://www.altap.cz/download.html
+
+
+Release Version
+---------------
+
+Public build for common users.
+
+Link: https://www.altap.cz/download.html
+
+
+Custom Build (CB)
+-----------------
+
+Plugins are marked as CB whenever you build them (with any version of
+SDK 2.53 or later or with SHARED directory from ALTAP's CVS for last
+Developers Build (DB) version). We just want to differentiate versions
+of plugins contained in ALTAP packages (release/beta/PB/DB versions)
+and plugins which you have built yourself.

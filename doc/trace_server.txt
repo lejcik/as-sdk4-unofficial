@@ -1,0 +1,62 @@
+How to use Altap Trace Server
+=============================
+
+Start Altap Trace Server (tserver.exe). You should start it before starting
+Altap Salamander, because Altap Salamander connects to it at startup. SDK
+and Preview Build (PB) versions of Altap Salamander can start Altap Trace
+Server automatically when starting and Altap Trace Server is not running.
+See window menu of Altap Salamander (click icon in top left corner of its
+main window), Autostart Altap Trace Server command.
+
+Altap Trace Server adds icon to system tray. You can open its window by
+clicking on this icon. Several commands are also available in right-click
+context menu on this icon.
+
+You can close Altap Trace Server window using ESC or Alt+F4 or click on
+Close button, but it does not end Altap Trace Server. If you want to end
+Altap Trace Server, choose Exit command from menu Log.
+
+Altap Trace Server can collect messages from many applications at once.
+The default settings is to drop all messages when new process connects and
+to activate Altap Trace Server whenever TRACE_E (error) message arrives.
+See configuration in menu Options / Configuration for all options.
+
+Altap Trace Server can open source file and focus the line with TRACE message
+directly in MS Visual Studio 2008/2013/2015. If you want to enable this
+feature, you need to add OpenEdit9 add-in to VS2008 or install OpenEdit12
+extension to VS2013/VS2015. See how to do it later in this text. When add-in
+is added or extension is installed, you can use Enter key or double click on
+TRACE message (except on Message column) in Altap Trace Server to see it in
+VS2008/VS2013/VS2015.
+
+Adding OpenEdit9 add-in to VS2008: At first, you need to register it, go to
+Start Menu, type "cmd.exe", right-click found "cmd.exe" and choose "Run As
+Administrator". Go to tserver\openedit-vc2008 directory and run:
+regsvr32 openedit9.dll. Add-in should be enabled by default, you can see it
+in VS2008 in menu Tools / Add-ins Manager as "OpenEdit9 - Open Editor in VS".
+
+Installing OpenEdit12 extension to VS2013/VS2015: go to tserver\openedit-vc2013
+directory and run: openedit12.vsix. Select to which versions of VS you want
+to install this extension (VS2013 and/or VS2015). You can see it in VS2013/VS2015
+in menu Tools / Extensions and Updates as OpenEdit12.
+
+If you have enabled "Exact Counter [ms]" column, you can see time between
+focused TRACE message and all other TRACE messages with high precision.
+Simply turn on/off this mode by pressing the Space key.
+
+You can go to next or previous TRACE_E (error) message using Ctrl+Down / Ctrl+Up
+arrows. Or to the first or last TRACE_E (error) message using Ctrl+Home /
+Ctrl+End keys.
+
+
+How to Uninstall Altap Trace Server
+===================================
+
+Altap Trace Server uses the following key in registry: HKEY_CURRENT_USER\
+Software\Altap\Trace Server. If you want to uninstall it, just remove this
+key in registry, if you have registered OpenEdit9 add-in for VS2008, go to
+tserver\openedit-vc2008 directory and run (open cmd.exe "as admin"):
+regsvr32 /u openedit9.dll. If you have installed OpenEdit12 extension for
+VS2013/VS2015, go to VS2013/VS2015 to menu Tools / Extensions and Updates,
+find OpenEdit12, click on it and then click Uninstall button. And finally
+remove tserver directory (with tserver.exe) from your disk.

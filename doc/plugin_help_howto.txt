@@ -1,0 +1,75 @@
+STRUKTURA
+=========
+
+Anglicky help je v podadresari HELP\ENGLISH, cesky v HELP\CZECH, atd.
+Vsechny CHM soubory (Salamander + pluginy) musi byt ulozene v jednom
+adresari (napr. HELP\ENGLISH), jinak by nefungoval merge techto souboru.
+
+
+PRIDANI HELPU PRO PLUGIN
+========================
+
+-nakopirovat z demopluginu adresar HELP do adresare tohoto pluginu:
+  -prejmenovat adresar "pages" (v adresari "hh") na jmeno pluginu + grepnout
+   cely adresar a zamenit "pages" za jmeno pluginu ve vsech souborech (jinak: nefunguje
+   Locate v helpu - postupne to nachazi vsechny shodne pojmenovane soubory)
+  -demoplug.hhc, demoplug.hhk: zatim klidne nechat, pozdeji prekopat
+   obsah podle potreb tohoto pluginu
+  -demoplug.hhp:
+    -nahradit "demoplug" za jmeno tohoto pluginu
+    -najit "Title": zadat nazev tohoto pluginu + "Help" (napr. "WinSCP Help")
+    -najit #include a dat sem .rh tohoto pluginu
+    -sekci [ALIAS] pozdeji prepracovat podle potreb tohoto pluginu
+    -do sekce [MERGE FILES] pridat demoplug.chm
+  -prejmenovat demoplug.* na jmeno tohoto pluginu
+  -v compile.bat nahradit "DEMOPLUG" za jmeno tohoto pluginu
+  -kontaktovat Altap: je potreba pridat tento novy help do salamanderiho helpu
+   a helpu vsech ostatnich pluginu (aby se udelal merge helpu)
+  -zkusit kompilaci: nainstalovat si HTML Help Workshop (volne ke stazeni
+   od MS), otevrit .hhp soubor Enterem (je asociovany), nakompilovat,
+   ziskane .chm nakopirovat do Salamanderiho HELP\ENGLISH a vyzkouset
+
+
+KOD PRO OBSLUHU HELPU V PLUGINU
+===============================
+
+-najit "GetSalamanderGeneral()" a nekam blizko za nej pridat radky:
+      // nastavime jmeno souboru s helpem
+      SalamanderGeneral->SetHelpFileName("plugin.chm");
+  (kde "plugin.chm" nahradime jmenem .chm souboru, ktere ma pridelene plugin)
+ 
+-pokud ma plugin prikazy v menu:
+  -najit "HelpForMenuItem" v .h souboru, vymaznout {return FALSE;} a dat jen strednik
+  -najit "ExecuteMenuItem" v .cpp souboru a pridat za ni:
+      BOOL WINAPI
+      CPluginInterfaceForMenuExt::HelpForMenuItem(HWND parent, int id)
+      {
+        int helpID = 0;
+        switch (id)
+        {
+          case MENUCMD_ENTERDISKPATH: helpID = IDH_ENTERDISKPATH; break;
+        }
+        if (helpID != 0) SalamanderGeneral->OpenHtmlHelp(parent, HHCDisplayContext, helpID, FALSE);
+        return helpID != 0;
+      }
+  (kde radek s "MENUCMD_ENTERDISKPATH" namnozime pro kazdy prikaz menu pluginu)
+
+-pokud chceme help do dialogu a plugin pouziva WinLibLT:
+  -najit "InitializeWinLib" a nekam blizko za nej pridat radek:
+      SetupWinLibHelp(HTMLHelpCallback);
+  -do stejneho modulu pridat nekam na zacatek funkci:
+      void WINAPI HTMLHelpCallback(HWND hWindow, UINT helpID)
+      {
+        SalamanderGeneral->OpenHtmlHelp(hWindow, HHCDisplayContext, helpID, FALSE);
+      }
+  -najit resource dialogu a pridat tlacitko Help s idckem IDHELP
+  -najit prislusne IDD_ dialogu a zadat ho i jako 'helpID' do WinLibLT
+   (obvykle staci ho nakopirovat jeste jednou za stavajici IDD_), napr.:
+      CPathDialog::CPathDialog(HWND parent, char *path, BOOL *filePath)
+        : CCommonDialog(HLanguage, IDD_PATHDLG, IDD_PATHDLG, parent)
+-pokud chceme help do property-sheet dialogu a plugin pouziva WinLibLT:
+  -najit prislusne IDD_ propery-sheet-page v konstruktoru a zadat ho
+   i jako 'helpID' + pridat PSP_HASHELP do 'flags', napr.:
+      CConfigPageFirst::CConfigPageFirst()
+        : CPropSheetPage(NULL, HLanguage, IDD_CFGPAGEFIRST, IDD_CFGPAGEFIRST, PSP_HASHELP, NULL)
+  -najit CPropertyDialog a pridat do konstruktoru do 'flags' PSH_HASHELP

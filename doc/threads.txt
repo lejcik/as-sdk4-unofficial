@@ -1,0 +1,86 @@
+Pouziti vlastnich threadu
+=========================
+
+Pokud se maji z vaseho vlastniho threadu pouzivat call-stack
+makra (at primo nebo neprimo napr. volanim metod rozhrani
+SalamanderGeneral), je nutne provest nekolik kroku:
+
+- info: musite pouzit metodu CSalamanderDebugAbstract::CallWithCallStack,
+  takto vypada jeji mirne zjednoduseny header (pouziti viz nize):
+
+  unsigned CallWithCallStack(unsigned (*threadBody)(void *), void *param);
+
+- predpoklad: mate naprogramovane spousteni threadu - mate funkci
+  MyThread, kterou davate do _beginthreadex() - jeji header:
+
+  unsigned __stdcall MyThread(void *param);
+
+- puvodni MyThread prejmenujete na MyThreadBody s headerem:
+
+  unsigned MyThreadBody(void *param)
+
+- definujete novou MyThread:
+
+  unsigned __stdcall MyThread(void *param)
+  {
+    return SalamanderDebug->CallWithCallStack(MyThreadBody, param);
+  }
+
+  -> jde jen o zalozeni call-stack objektu na zasobniku
+     (aby mela call-stack makra cemu predavat texty) a
+     pak predani rizeni zpet - zavolanim Vasi funkce
+     threadu (MyThreadBody)
+
+- pripadne do MyThread na zacatek muzete jeste dat:
+
+  SetThreadNameInVCAndTrace("My Thread");
+    // v inline funkci SetThreadNameInVCAndTrace se vola:
+    // SalamanderDebug->SetThreadNameInVCAndTrace("My Thread");
+
+  -> vsimnete si v Trace Serveru sloupce "TName", tam
+     se zobrazi toto jmeno, zvysuje to prehlednost Tracu
+
+- pripadne za _beginthreadex jeste muzete pridat:
+
+  SalamanderDebug->TraceAttachThread(thread, tid);
+
+  -> prideli threadu unikatni ID (Thread-ID pridelene operacnim
+     systemem se pri ukoncovani/startovani threadu teoreticky muze
+     opakovat), popis parametru viz komentar metody
+     CSalamanderDebugAbstract::TraceAttachThread
+
+- cekani na ukonceni threadu: tyka se jen funkce _beginthreadex
+  (funkce _beginthread rusi automaticky handle threadu,
+  handle se proto neda pouzivat k cekani na ukonceni threadu):
+
+  WaitForSingleObject(thread, INFINITE);
+  CloseHandle(thread);
+
+
+Tvorba threadu s vyuzitim modulu AUXTOOLS
+=========================================
+
+Zdrojove kody modulu jsou dostupne v shared\auxtools.*.
+Je tam dost komentaru + maly rozsah umozni snadnou
+orientaci primo v kodu.
+
+Zakladni objekt je CThreadQueue, jde o frontu, do ktere
+se metodou StartThread startuji nove thready. Z takto
+nastartovanych threadu lze pouzivat call-stack makra a
+maji pridelene unikatni cislo pro TRACE (jednoznacna
+identifikace zprav v Trace Serveru). Handly ukoncenych
+threadu automaticky zavira objekt fronty. Pro cekani na
+dobehnuti threadu je tedy nutne vyuzit metodu WaitForExit
+(jinak hrozi zavreni handlu threadu behem cekani na
+konec threadu - zavreni muze vyvolat jen StartThread
+volany z jineho threadu). Metoda KillAll slouzi k overeni,
+ze jsou ukoncene vsechny thready z fronty nebo pripadne
+k jejich nasilnemu ukonceni (hodi se pro thready, ktere
+se nestihly ukoncit "legalne").
+
+Pro jednodussi praci s thready je v auxtools.* objekt
+CThread. Princip pouziti je oddedit od CThread svuj vlastni
+objekt threadu. Daji se do nej ulozit parametry startovaneho
+threadu (nemusi se predavat pres strukturu). Ma virtualni
+metodu Body() tvorici jeho spoustene telo. Ukazka pouziti
+je v pluginech DemoPlug a DemoView, viz modul viewer.cpp.

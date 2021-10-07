@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="windows-1250"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="x86"
+	InheritedPropertySheets=".\root.vsprops"
+	>
+	<Tool
+		Name="VCLinkerTool"
+		TargetMachine="1"
+	/>
+	<UserMacro
+		Name="ShortPlatform"
+		Value="x86"
+	/>
+	<UserMacro
+		Name="SalPath"
+		Value="$(CURRENT_SALBIN)$(ShortVSVer)\$(ConfigurationName)_$(ShortPlatform)\salamand.exe"
+	/>
+</VisualStudioPropertySheet>

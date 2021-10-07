@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="windows-1250"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="x64"
+	InheritedPropertySheets=".\root.vsprops"
+	>
+	<Tool
+		Name="VCCLCompilerTool"
+		PreprocessorDefinitions="_WIN64"
+	/>
+	<Tool
+		Name="VCLinkerTool"
+		TargetMachine="17"
+	/>
+	<Tool
+		Name="VCMIDLTool"
+		TargetEnvironment="3"
+	/>
+	<Tool
+		Name="VCResourceCompilerTool"
+		PreprocessorDefinitions="_WIN64"	
+	/>
+	<UserMacro
+		Name="ShortPlatform"
+		Value="x64"
+	/>
+	<UserMacro
+		Name="SalPath"
+		Value="$(CURRENT_SALBIN)$(ShortVSVer)\$(ConfigurationName)_$(ShortPlatform)\salamand.exe"
+	/>
+</VisualStudioPropertySheet>

@@ -1,0 +1,238 @@
+Overview of Sample Plugins
+==========================
+
+This SDK contains four sample plugins: DemoPlug, DemoView, DemoMenu, and UnFAT.
+They are intended to be used as a base for your own plugins. DemoPlug tries to
+show all possibilities of plugin, you can see how to implement archiver
+(packer / unpacker), file viewer, menu extension (add commands to Plugins menu),
+file system, and thumbnail loader. Moreover it contains samples for many
+methods from plugin interface. On the contrary, DemoView is simple base for
+file viewer plugin (with menu extension and thumbnail loader). DemoView is
+derived from DemoPlug. DemoMenu is simple base for menu extension plugin and
+it is also derived from DemoPlug. UnFAT is real archiver (unpacker), you can
+see its source code to understand how to work with methods of
+CSalamanderSafeFileAbstract.
+
+Project files in this SDK use property sheets to make administration of 6
+targets (Debug x86+x64, Release x86+x64, and SDK x86+x64) in each project
+easier. The main advantage is that all projects are assembled from nearly the
+same parts of project configurations (property sheets). These shared property
+sheets are located in C:\AS_SDK\salamand\plugins\shared\vcproj. So it is
+possible to make global changes in all projects, etc. Another advantage is
+that it reduces number of redundant parts of project configurations. We believe
+you will find it useful and will use it also in your project files. For more
+information about property sheets, see "Property Sheets (C++)" topic in MSDN:
+http://msdn.microsoft.com/en-us/library/a4xbdz1e%28v=vs.90%29.aspx
+
+
+How to Build Sample Plugins
+===========================
+
+You can build sample plugins in Microsoft Visual C++ 2008 or Microsoft Visual
+Studio 2015 (C++). Help for each plugin can be built in Microsoft HTML Help
+Workshop 1.3.
+
+Altap Salamander is built in Microsoft Visual C++ 2008. The main reason is
+full compatibility with Windows XP. If you build sample plugins (and your
+own plugins in future) in the same version of Microsoft Visual C++, it can
+use the same dynamic runtime libraries (RTL) as Altap Salamander. They are
+salrtl9.dll and salrtlp9.dll and you can find it in Altap Salamander's
+installation directory and also in salamand\plugins\shared\libs directory
+in this SDK.
+
+Supplied salrtl9.dll and salrtlp9.dll are just user-generated versions of
+standard C/C++ runtime libraries from VC2008. They were generated because
+they do not require Side-by-Side installation (as VC2008 runtime libraries
+do), so it is possible to start Salamander without previous installation
+(e.g. start it directly from USB stick or network drive).
+
+The most common trouble with using more RTL versions is that plugin cannot
+allocate memory in its RTL and pass pointer to Salamander because Salamander
+has different RTL and when it frees such pointer, it's fault (unknown pointer
+for Salamander's RTL). You can solve this by using Alloc/Realloc/Free methods
+of CSalamanderGeneralAbstract interface for pointers shared with Salamander
+(instead of using new/malloc/realloc/free/delete).
+
+When you choose what tool you want to use for building sample plugins, unpack
+SDK to some working directory, we recommend C:\AS_SDK. If you use some other
+directory (no problem), change all "C:\AS_SDK" in this document to your
+directory.
+
+This SDK uses two environment variables: CURRENT_SALBIN and CURRENT_HHCEXE.
+CURRENT_SALBIN is path for build binaries. If you prefer building to the
+directory with source code, do not define this variable. Recommended value is:
+CURRENT_SALBIN=C:\AS_SDK\bin\
+CURRENT_HHCEXE is full path to hhc.exe (part of Microsoft HTML Help Workshop).
+It is needed only when you want to compile help for plugin. Value (x86/x64 Windows):
+CURRENT_HHCEXE=C:\Program Files\HTML Help Workshop\hhc.exe
+or
+CURRENT_HHCEXE=C:\Program Files (x86)\HTML Help Workshop\hhc.exe
+
+You can define these environment variables in Control Panel:
+System and Security / System / Advanced system settings / Environment Variables
+or
+System / Advanced / Environment Variables.
+
+Building of all sample plugins is the same. The following text shows how to build
+DemoPlug, but if you do simple text replacement of all "DemoPlug" to "DemoView",
+"DemoMenu", or "UnFAT", it will work also for these plugins.
+
+How to build DemoPlug plugin in Microsoft Visual C++ 2008:
+-open C:\AS_SDK\salamand\plugins\demoplug\vcproj\demoplug_vc2008.sln
+ in Microsoft Visual C++ 2008
+-open menu Build / Configuration Manager and choose what to build:
+ -configuration: Debug/Release/SDK
+ -platform: Win32/x64
+-start build from menu Build / Rebuild Solution
+-plugin files are in:
+ without CURRENT_SALBIN: C:\AS_SDK\salamand\plugins\demoplug\vcproj\vc2008
+ with CURRENT_SALBIN: %CURRENT_SALBIN%vc2008
+
+How to build DemoPlug plugin in Microsoft Visual Studio 2015 (C++):
+-open C:\AS_SDK\salamand\plugins\demoplug\vcproj\demoplug_vc2015.sln
+ in Microsoft Visual Studio 2015 (C++)
+-open menu Build / Configuration Manager and choose what to build:
+ -configuration: Debug/Release/SDK
+ -platform: Win32/x64
+-start build from menu Build / Rebuild Solution
+-plugin files are in:
+ without CURRENT_SALBIN: C:\AS_SDK\salamand\plugins\demoplug\vcproj\vc2015
+ with CURRENT_SALBIN: %CURRENT_SALBIN%vc2015
+
+How to build DemoPlug help:
+-download and install Microsoft HTML Help Workshop (htmlhelp.exe) from:
+ http://www.microsoft.com/en-us/download/details.aspx?id=21138
+-set CURRENT_HHCEXE environment variable (search CURRENT_HHCEXE earlier in
+ this document) or replace %CURRENT_HHCEXE% in all help\compile.bat files
+ under C:\AS_SDK\salamand\plugins with full path to hhc.exe
+-run C:\AS_SDK\salamand\plugins\demomenu\help\compile.bat
+-created help file is:
+ C:\AS_SDK\salamand\plugins\demomenu\help\demoplug.chm
+ then you can "install" (copy) it to:
+ C:\AS_SDK\bin\vc2008\SDK_x64\help\english\demoplug.chm
+ and
+ C:\AS_SDK\bin\vc2008\SDK_x86\help\english\demoplug.chm
+
+
+How to Test Sample Plugins
+==========================
+
+We recommend (especially for SDK and Debug versions of plugins) to use special
+versions of Altap Salamander contained in this SDK (C:\AS_SDK\bin\vc2008\SDK_x64
+and C:\AS_SDK\bin\vc2008\SDK_x86).
+
+They contain some extra debugging features and support for TRACE messages. For example,
+they test if all monitored opened system handles were closed and if we are working
+properly with internal data arrays. They contain many TRACE messages informing you
+about potentially incorrect use of plugin interface methods.
+
+To use these special versions just start one of them (x64 or x86):
+C:\AS_SDK\bin\vc2008\SDK_x64\salamand.exe or C:\AS_SDK\bin\vc2008\SDK_x86\salamand.exe.
+
+We recommend to turn on starting of Altap Trace Server automatically (if it is not
+already running). See window menu of special SDK version of Altap Salamander (click
+icon in top left corner of Salamander's main window), tick Autostart Altap Trace Server
+item. All TRACE messages are sent to the Altap Trace Server application. See how to
+use Altap Trace Server in trace_server.txt file.
+
+Well and now finally start Altap Salamander, go to menu Plugins / Plugins Manager,
+click Add button, find demoplug.spl (it can be Debug, Release, or SDK version),
+and click Open to add DemoPlug to Altap Salamander. For adding DemoView/DemoMenu/UnFAT
+do the same steps for demoview.spl/demomenu.spl/unfat.spl. See following paragraphs
+for information about how to test all features of sample plugins. Note: if you want
+to rebuild plugin, you need to unload it from Altap Salamander first (plugin's *.spl
+file is locked when plugin is loaded), use menu Plugins / Plugins Manager, find
+plugin ("DemoPlug", "DemoView", "DemoMenu", or "UnFAT"), and click Unload button.
+
+If you want to develop your own plugin, we recommend to properly define CURRENT_SALBIN 
+variable (CURRENT_SALBIN=C:\AS_SDK\bin\) and copy C:\AS_SDK\bin\vc2008\SDK_x64 to
+C:\AS_SDK\bin\vc2008\Debug_x64 (if you have VC2008) or to C:\AS_SDK\bin\vc2015\SDK_x64
+and C:\AS_SDK\bin\vc2015\Debug_x64 (if you have VC2015). Analogously copy also
+C:\AS_SDK\bin\vc2008\SDK_x86 version.
+
+Then you can start Altap Salamander from debug directory and it will load debug
+version of your plugin directly from "plugins" subdirectory (e.g. plugins\demoplug).
+You can also change compile.bat file (e.g. C:\AS_SDK\salamand\plugins\demoplug\help\
+compile.bat) to copy help file (e.g. demoplug.chm) directly to proper subdirectories
+(C:\AS_SDK\bin\vc2008\SDK_x64\help\english, C:\AS_SDK\bin\vc2008\Debug_x64\help\english,
+C:\AS_SDK\bin\vc2008\SDK_x86\help\english, and C:\AS_SDK\bin\vc2008\Debug_x86\help\
+english), so you can test it immediately in any running test version of Salamander.
+
+You can learn VC2008/VC2015 debugger how to properly show data in ALTAP's data arrays
+(TDirectArray and TIndirectArray, see C:\AS_SDK\salamand\plugins\shared\arraylt.h).
+This is described in C:\AS_SDK\salamand\plugins\shared\vcproj\debugger\readme.txt.
+
+
+Testing DemoPlug
+================
+
+Archiver (Packer/Unpacker):
+DemoPlug is associated with *.DOP archives. We have prepared one
+sample DOP archive: C:\AS_SDK\salamand\plugins\demoplug\files\test.dop
+(content of this file is ignored, it's not a real archive file). You can
+focus it and press Enter key to open it and try to work with it as with
+any other archive file.
+
+File Viewer:
+DemoPlug is associated with *.DOP files. Use View command (F3 key) on
+any DOP file (content of this file is ignored), e.g.
+C:\AS_SDK\salamand\plugins\demoplug\files\test.dop.
+
+Menu Extension:
+Go to menu Plugins / DemoPlug. You can notice that some items are disabled,
+this is test of menu item enablers (e.g. "File on Disk" item is enabled only
+if focus in active panel is on some file on disk). See also "Controls provided
+by Altap Salamander" item, there are some special dialog controls that we
+have implemented and you can use them in plugins.
+
+File System:
+You can open DemoPlug file system from Change Drive menu (Alt+F1 or Alt+F2
+key), choose "DemoPlug FS" item. Or simply use Change Directory (Shift+F7
+key) command. The name of DemoPlug file system is "DFS" (name is not
+case-sensitive). You can try e.g. "dfs:c:\" to show path "c:\" in DFS.
+WARNING: some operations in DFS are partially implemented (e.g. Copy),
+so test DFS only on some not important files and directories.
+
+Thumbnail Loader:
+Switch to Thumbnails view mode (Alt+5 key). DemoPlug can make thumbnails only
+for BMP files (you can test it on supplied
+C:\AS_SDK\salamand\plugins\demoplug\files\sample.bmp file). You should
+remove PictView from Plugins Manager because it makes thumbnails for almost
+all picture files (including BMP), so DemoPlug's thumbnail loader can be
+ignored (because BMP thumbnails are made by PictView). To be sure that it is
+really DemoPlug what makes thumbnails you can try to remove it from Plugins
+Manager (then thumbnails should disappear).
+
+
+Testing DemoView
+================
+
+File Viewer:
+DemoView is associated with *.DMV files. Use View command (F3 key) on any DMV
+file (content of this file is ignored), e.g.
+C:\AS_SDK\salamand\plugins\demoview\files\test.dmv.
+
+Menu Extension:
+Go to menu Plugins / DemoView.
+
+Thumbnail Loader:
+Switch to Thumbnails view mode (Alt+5 key). DemoView can make thumbnails only
+for BMV files (just renamed BMP files). You can test it on supplied
+C:\AS_SDK\salamand\plugins\demoview\files\sample.bmv file.
+
+
+Testing DemoMenu
+================
+
+Menu Extension:
+Go to menu Plugins / DemoMenu.
+
+
+Testing UnFAT
+=============
+
+Archiver (Unpacker):
+UnFAT is associated with *.IMA archives. UnFAT archives are images of floppy
+disks, hard drives and USB sticks containing the FAT file system (FAT12,
+FAT16, and FAT32). You can focus IMA archive and press Enter key to open it
+and try to work with it as with any other archive file.

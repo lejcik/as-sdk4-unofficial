@@ -1,0 +1,997 @@
+Vše o pluginech typu archivátor pro Altap Salamander
+====================================================
+Autor: ALTAP, spol. s r.o.
+
+Obsah
+ 1. Vznik a historie archivátorù
+ 2. Budoucnost archivátorù
+ 3. Hlavní a vedlejší funkce archivátorù
+ 4. Krátkı úvod do pluginù
+ 5. Instalace archivátorù do Salamandera
+ 6. Jak vidí archivátory uivatel Salamandera
+ 7. Rozdíly mezi archivátory a pluginy typu file systém
+ 8. Vrstvená architektura archivátoru a jejich engine
+ 9. ivotní cyklus pluginu
+10. Úvod do implementace archivátoru
+11. Drení listingu archivu: kontext
+12. Optimalizované listování archivu
+13. Vrstva Input/Output
+14. Ošetøení vstupù a vıstupù: CSalamanderSafeFileAbstract    
+15. Minimalizace fragmentování disku bìhem zápisu souborù
+16. Èeho se vyvarovat bìhem implementace archivátoru
+17. Testování archivátorù
+
+
+1. Vznik a historie archivátorù
+===============================
+Archivátory, respektive packery a unpackery dnes tvoøí nejvìtší skupinu pluginù
+Salamandera. Salamander ve verzi 1.52 (poslední freeware verze) archivátory
+nepodporoval v ádné formì a uivatelé na nás vyvíjeli silnı tlak. Nejvìtší
+poptávka byla po formátu ZIP, kterı je nejrošíøenìjším typem komprese.
+
+Do verze 1.6 beta 1 (bøezen 1999) jsme implementovali podporu pro práci se ZIP 
+archivy. Vše bylo øešeno v rámci jádra Salamandera s vyuitím knihoven zip32.dll
+a unzip32.dll z freeware balíku InfoZIP. Tyto dvì knihovny se bìhem beta testování
+ukázaly jako závanı zdroj chyb, z èásti pro jejich multiplatformní zamìøení. 
+Zároveò byla pøipojena knihovna tardll.dll, zárodek budoucího pluginu TAR 
+a knihovna pak.dll, která byla pozdìji pøevedena na plugin PAK.
+
+Ve stejnou dobu jsme implementovali podporu pro externí archivátory. Externí
+archivátory jsou postaveny na parsování listingù rùznıch pakovaèù volanıch z 
+pøíkazové øádky. Tento pøístup pøináší mnohá úskalí, protoe externí archivátory
+bìí jako samostatné procesy, narozdíl od pluginu bìícího v rámci procesu
+Salamandera. Jejich ovladatelnost se tím prudce sniuje. Listingy se lišily 
+verze od verze externího pakovaèe, mìnily se jeho návratové hodnoty, není 
+moné zobrazovat progress bìhem pakování a rozpakování atd. 
+
+Postupem èasu jsme nejpouívanìjší externí archivátory pøevedli na pluginy typu
+archivátor. Externí archivátory jsou podporovány Salamanderem dodnes a jejich
+hlavní tìištì spoèívá ve vytváøení archivù. Zatímco kód pro rozbalování a
+procházení archivù je èasto free (a u formou zdrojového kódu nebo nìjaké
+knihovny), pro jejich vytváøení je tøeba vlastnit licenci na archivátor, která
+svou cenou èasto pøesahuje cenu celého Salamandera. Salamander proto dokáe
+vyhledat externí archivátory na disku uivatele a bìhem pakování je zavolat. 
+ádnı externí archivátor však není souèástí distribuce Salamandera.
+
+Salamander ve verzi 1.6 beta 4 (èerven 2000) obsahoval první implementaci pluginù
+ve formì, jak jí známe dnes. Zdrojovı kód jádra se implementací pluginového
+rozhraní  zvìtšil o 1 MB. V tuto dobu jsme vyvinuli první plugin typu archivátor: 
+náš vlastní ZIP. Z InfoZIPu pøebírá pouze algoritmy (jako Inflate a Deflate),
+vše ostatní je naprogramováno znovu. 
+
+Pokud v následujícím textu budeme zmiòovat archivátor, máme na mysli plugin
+typu archivátor, tedy plugin umoòující procházení a vybalování archivù, pøípadnì
+jejich vytváøení. Pojmem externí archivátor se rozumí samostatnı pakovaè 
+(jako je ARJ.EXE), kterı není souèástí distribuce Salamandera, ale Salamander
+ho dokáe spouštìt, tedy zná jeho specifické switche, listingy a návratové kódy.
+
+Pluginy typu archivátor (archivátory) vznikaly postupnì:
+  1.6 beta 4:  ZIP, TAR
+  1.6 beta 6:  PAK, UnACE, UnARJ a UnRAR 
+  (finální verze 1.6 nikdy nevznikla, byla pøejmenvána na verzi 2.0)
+  2.0:         UnCAB 
+  2.5 beta 1:  UnLHA a UnMIME
+  2.5 beta 3:  Encrypt a UnISO
+  2.5 beta 4:  UnFAT
+
+Jak postupoval vıvoj Salamandera, rozšiøovalo se jeho rozhraní pro pluginy a
+zároveò se mìnil obraz ideální implementace archivátoru. Tyto zmìny umonily
+pøesunutí nìkterıch opakujících se èástí kódu z pluginù do jádra Salamandera
+a odstranìní zbyteènıch redundancí. Zároveò se zvıšila volnost v drení a 
+pøedávání dat mezi Salamanderem a archivátorem.
+
+Ke zmìnám v rozhraní Salamandera nedocházelo samovolnì. Nìkteré zmìny si vyádala
+implementace novıch funkcí na stranì Salamandera. Jiné zmìny byly provedeny pøi
+vzniku novıch archivátorù pro specifické potøeby jejich autorù. Staré pluginy
+vìtšinou nereflektovaly tyto zmìny a nyní pouívají pøekonané nebo neefektivní
+techniky.
+
+Bìhem testování novıch archivátorù naráíme na opakující se skupiny problémù
+a chyb. Jak roste poèet archivátorù, pøestává pro nás bıt únosné peèlivì 
+otestovat všechny nástrahy a kadému z autorù je vysvìtlovat jednotlivì. 
+Proto mimo jiné vzniká tento dokument, kterı má potenciální problémy zdokumentovat
+a navrhnout jejich øešení. Autoøi archivátorù tak budou schopni své projekty
+lépe ošetøit a protestovat.
+
+
+2. Budoucnost archivátorù
+=========================
+Rozhraní pro archivátory zatím nedozrálo do finálního stavu a èeká nás
+ještì nìkolik jeho obrození. K nejádanìjším a plánovanım funkcím patøí:
+ -práce s archivy na pozadí (jako u základních operací Salamandera copy/move/del...)
+ -podpora pro zanoøené archivy (nested archives)
+ -hledání v archivech (také ve vnoøenıch archivech), hledání v obsahu
+ -monost vstupu do SFX/neasociovaného archivu pomocí Ctrl+PgDn
+ -pøejmenování souboru a adresáøe pøímo v archivu
+ -monost oznaèit v panelu vìtší mnoství archivù a vybalit je jedním pøíkazem
+ -implementace metod Inflate a Deflate na úrovni jádra Salamandera a vyvezení
+  jejich rozhraní, abychom pøedešli redundanci kódu v pluginech
+ -zobrazování compress ratio ve zvláštním sloupci v panelu
+ -komprimace souborù a adresáøù nalezenıch Find dialogem
+ -podpoøení dalších formatù, jako je CHM (kompilát HTML souborù slouící jako
+  helpy ve Windows), DBX (Outlook Express archiv), DEB (distribuèní balíky Debian)
+  a jiste pøijdou další kandidáti
+ -porovnání archivu a adresáøe na disku také podle obsahu souborù
+
+Nìkteré funkce budeme snad schopni implementovat bez zásahu do rozhraní (jako
+nedávno pøidanou podporu pro drag&drop), ale nìkteré budou znamenat úpravy na
+stranì archivátorù. Nezbytná budoucí údrba archivátorù je dalším dùvodem k napsání
+tohoto dokumentu. Pokud máme provádìt zmìny nad dvaceti archivátory, pak a jsou
+si jejich zdrojové kódy a jejich chování pokud mono co nejpodobnìjší.
+
+
+3. Hlavní a vedlejší funkce archivátorù
+=======================================
+Plugin typu archivátor primárnì slouí k vytváøení, procházení a rozbalování
+archivù. Archiv je soubor (nebo mnoina souborù), kterı obsahuje kompilaci 
+souborù a adresáøù, vìtšinou ve stromové hierarchii. Archivy mají rùzné
+úèely, nejèastìji se jedná o komprimaci a archivaci souborù. Za archiv
+lze povaovat i image CD nebo diskety, stejne jako email s pøílohou ve
+formatu EML.
+
+Archivátory dìlíme podle nabízenıch funkcí na packery a unpackery. Unpackery
+umìjí pouze procházet a vybalovat obsah archivu (pouíváme pro to pojmy expand,
+unpack, extract, explode, rozbalení, extrakce atd.) a jejich název má prefix 
+Un (UnARJ, UnCAB, ...). Pluginy ZIP, PAK, Encrypt a 7-Zip umìjí navíc archivy
+vytváøet a omezenì modifikovat (packery). Omezenou modifikací archivu myslíme
+pøidávání souborù a adresáøu do existujícího archivu a mazání souborù a
+adresáøù z archivu. Pøi instalaci plugin Salamanderu sdìlí, které skupiny
+funkcí podporuje.
+
+Jeden plugin typu archivátor je èasto asociován s vìtším mnostvím formátù. 
+Dobrım pøíkladem je právì TAR, kterı dokáe rozbalit formáty TAR, TGZ, GZ,
+TBZ, BZ, BZ2, RPM, CPIO, TAZ a Z. Snaíme se sdruovat tématicky podobné
+formáty pod jeden plugin z dùvodu spoleèného enginu pro pøístup k datùm,
+pøípadnì pro logickou pøíbuznost formátù.
+
+Archivátory mají monost pøidat nové sloupce do panelu a zobrazit tak napøíklad
+Packed Size nebo Method (viz plugin 7-Zip).
+
+Nìkteré archivátory jsou zároveò registrované jako viewery a dokáí zobrazit
+informace o archivu, které nám obyèejnı listing v panelu nedovolí prezentovat.
+Napøíklad UnISO plugin dokáe zobrazit poèet sessions a trackù obsaenıch
+v obrazu CD.
+
+Pokud je archiv otevøen v panelu, umoòuje Salamander porovnat jeho obsah
+s adresáøem na disku (Compare Directories). Zatím není podporováno porovnání
+podle obsahu, které bude muset jednotlivé soubory vybalovat. 
+
+Archivátory mohou pøidat své pøíkazy do menu Plugins a zpøístupnit tak nìkteré
+speciální funkce. ZIP plugin nabízí monost zobrazit a zmìnit komentáø
+ZIPu, pøípadnì otestovat jeho integritu. 
+
+
+4. Krátkı úvod do pluginù
+=========================
+Pluginy slouí k rozšiøování funkcionality Salamandera. K jejich implementaci
+jsme pøistoupili po nìkolikatıdenní diskuzi. Jejich pùvodní návrh zamıšlel
+pluginy minimálnì o øád mocnìjší a obecnìjší, ne je jejich souèasná implementace.
+K tomu naštìstí nedošlo, byl by to s urèitostí konec Salamandera. I podpora
+pro souèasnou zjednodušenou formu pluginù na stranì Salamandera nas stála pøes
+rok práce a programování pluginù typu file system rozhodnì není procházkou
+rùovım sadem.
+
+Pøes všechna úskalí a problémy povaujeme zvolenou pluginovou architekturu
+za krok správnım smìrem. Dùvody shrnu v krátkıch bodech.
+
+Vıhody modulární architektury proti monolitické aplikaci:
+-S rostoucím mnostvím implementovanıch funkcí se aplikace stávají ménì
+ pøehledné a pøijatelné pro nové uivatele. Modulární architektura umoòuje
+ nainstalovat pouze pluginy, potamu pøíkazy, které uivatel potøebuje.
+ Lze pøipravit nìkolik verzí instalace (Lite/Standard/Full).
+-Pluginy lze zavádìt do pamìti a v okamiku potøeby. Tím se zkracuje
+ startovací èas aplikace a zmenšují se její pamìové nároky.
+-Díky pluginùm jsme schopni uøídit jejich autory pøi implementaci novıch
+ funkcí Salamandera. V dnešní dobì leí vìtšina zdrojového kódu právì
+ v pluginech. Jádro se od verze 1.0 stále vyvíjí a rozšiøuje, nikdy
+ nebylo pøepsáno. Zanesení zmìn do nìj se stáva èernou magií, kdy si
+ na urèitou triviální zmìnu udìláme tøikrát víc èasu, vìtšinou neprohloupíme.
+-Díky SDK mají další subjekty monost implementovat vlastní pluginy, tøeba i pro
+ vnitøní potøebu (ádané jsou zejména archivátory pro proprietární datové formáty)
+-Pluginy lze snadno upgradovat formou malého instalaèního balíèku.
+-Do komerèní close-source aplikace lze pøi vhodnì zvolené licenci (LGPL)
+ zaèlenit open-source moduly.
+-Je tu slušná šance na vznik programátorské komunity, která naimplementuje
+ pluginy, které nebudou v našich silách. Samozøejmì je pak otázkou jejich
+ kvalita. Tento model se silnì projevil u Total Commandera a FARa.
+
+Nevıhody modulární architektury:
+-Do jádra Salamandera bylo tøeba implementovat rozhraní pro pluginy.
+-Vznikají redundance v kódu pluginù, napøíklad Inflate/Deflate algoritmus
+ je dnes minimálnì na pìti místech.
+-Pokud rozhraní Salamandera nepublikuje urèitou funkci, plugin ji nemá dostupnou.
+-Monolitické aplikace jsou lépe pøijímány uivatelem: pokud si mùe na
+ disketu nakopírovat jedno EXE a jeden INI soubor, je uivatel štastnı.
+ Ze sloité stromové struktury se mu obrací aludek.
+
+Plugin Salamandera je DLL knihovna, která exportuje dva entry pointy:
+SalamanderPluginEntry a SalamanderPluginGetReqVer. SalamanderPluginEntry slouí
+k navázání komunikace mezi jádrem Salamandera a pluginem. Druhı export slouí 
+k ovìøení vzájemné kompatibility urèité verze pluginu a Salamandera.
+
+Pluginy jsou standardnì umístìny v adresáøi plugins pod domovskım adresáøem
+Salamandera. Kadı plugin má svùj podadresáø. V nìm je umístìn vlastní plugin
+s pøíponou SPL (Salamander PLugin). Pluginy mùou bıt i v jakémkoliv jiném
+adresáøi, co se hodí napø. pøi jejich vıvoji.
+
+Konfigurace pluginu je uloena v Registry jako podstrom konfigurace Salamandera
+a plugin k ní pøistupuje prostøednictvím vyhrazeného rozhraní. Z uivatelského
+hlediska je konfigurace pluginù oddìlena od konfiguraèního okna Salamandera
+(Options / Configuration). Konfiguraèní okna pluginù lze otevøít z menu
+Options / Plugin Configuration, pøípadnì z okna Plugins Manager. Samozøejmì
+nás lákala myšlenka integrovat konfiguraci pluginù jako jednu ze stránek 
+konfigurace Salamandera, ale po zralé úvaze jsme tuto variantu opustili.
+Pøineslo by to obrovské mnoství komplikací.
+
+Rozlišujeme nìkolik základních skupin pluginù podle funkcí, které nabízejí.
+Skupiny se dle potøeby v pluginech rùznì prolínají. Jsou to:
+-viewery
+-archivátory (packery a unpackery)
+-file systémy (WinSCP, FTP, Registry Editor, Windows Mobile)
+-rozšíøení menu (File Comparator, Check for new version, Split & Combine, ...)
+-naèítaèe thumbnailù (PictView, Eroiica)
+
+Viewery, archivátory a file systémy mají své chování v rámci Salamandera 
+pevnì dáno. Viewery se aktivují pøíkazem View (F3), archivátory pøíkazem
+Pack (Alt+F5), Unpack (Alt+F9) nebo pøi otevøení archivu v panelu (Enter
+na archivu). File systémy se aktivují z Change Drive menu (Alt+F1/2).
+Pluginy rozšiøující menu mají své pøíkazy v menu Plugins, kde mají svá
+submenu. Pluginy naèítaèù thumbnailù se registrují pro skupinu masek
+souborù a Salamander je pak pro tyto soubory postupnì volá (panel v reimu
+Thumbnails).
+
+
+5. Instalace archivátorù do Salamandera
+=======================================
+Archivátory se z hlediska instalace nièím neliší od ostatních pluginù.
+
+Existují tøi cesty, jak se Salamander dozví o existenci pluginu. První
+cestou je nová instalace Salamandera, kdy Salamander prochazí adresáø plugins
+ve svém domovského adresáøi a snaí se všechny soubory s pøíponou .SPL pøidat
+mezi pluginy.
+
+Druhá cesta je variantou té první a pouíváme jí pøi samostatné distribuci
+novıch nebo aktualizovanıch pluginù. Uivatel si z www stránek stáhne instalaèní
+balíèek (.EXE), kterı ho pøed instalací vyzve k ukonèení Salamandera. Následnì
+umístí plugin do adresáøe plugins a modifikuje textovı soubor plugins\plugins.ver
+tak, aby po novém spuštìní Salamandera došlo k automatickému pøidání pluginu.
+
+Tøetí cesta vede pøes ruèní správu pluginù. V menu Plugins je pøíkaz Plugins
+Manager, kterı otevøe okno urèené k prohlíení, pøidávání, odebírání a konfiguraci
+pluginù. 
+
+Konfigurace Salamandera je uloena v Registry. Kadá verze Salamandera
+(vèetnì beta verzí) má svùj vlastní nezávislı klíè. Napøíklad
+REG:\HKEY_CURRENT_USER\Software\Altap\Altap Salamander 2.5
+Bìhem instalace nové verze Salamandera má uivatel monost importovant nìkterou
+ze starších verzí konfigurace. Dùvodem je komfort uivatele, kterı nemusí
+s instalací kadé nové verze znovu procházet všechny volby konfigurace.
+
+Schopnost naèíst všechny staré verze konfigurace a konvertovat je na konfiguraci
+novou tak padá také na pluginy. Otázkám konfiguraèních záznamù pluginù a jejich
+konverzi se budeme vìnovat ve zvláštní kapitole.
+
+
+6. Jak vidí archivátory uivatel Salamandera
+============================================
+Z pohledu uivatele existují dva rozdílné pøístupy k rozbalování archivu (pøípadnì
+pakování do nìj).
+
+Jeden pøístup je interaktivní. Uivatel vyhledá archiv a klávesou Enter do nìj
+vstoupí. Obsah archivu se zobrazí v panelu. Uivatel mùe pøíkazem View prohlíet
+obsah souborù, klávesou Space seèíst velikost souborù a na závìr napøíklad
+nìkteré soubory oznaèit a pøekopírovat je pøíkazem Copy do protìjšího panelu.
+Archivátor mùe v tomto interaktivním reimu nabízet pouze read-only pøístup,
+tedy procházení (listování) archivu nebo mùe podporovat také zmìnu archivu (editaci).
+V tomto pøípadì lze do archivu nakopírovat soubory a adresáøe, pøípadnì existující
+oznaèit a smazat. Bìhem interaktivní práce s archivem lze pouít i drag&drop pro
+operace se soubory a adresáøi. Další moností je pøíkaz Edit, kterı umonuje
+editovat zvolenı soubor asociovanım editorem a následnì zmìnìnı soubor zabalit
+zpìt do archivu. Interaktivní pøístup má za cíl uivatele maximálnì odstínit
+od faktu, e pracuje s archivem. Salamander se chová, jako by se jednalo o virtuální
+adresáø obsahující soubory a adresáøe.
+
+Druhı pøístup je neinteraktivní. Uivatel nemusí pøed vybalováním chtít prohlíet
+obsah archivu, nebo èastìji chce oznaèené soubory na disku zabalit do nového archivu.
+Pro tento neinteraktivní pøístup slouí pøíkazy Pack (Alt+F5) a Unpack (Alt+F9).
+Uivatel oznaèí soubory na disku a zavolá pøíkaz Pack. Následuje dialog, kde
+si zvolí název cílového archivu (combobox automaticky nabízí alternativní umístìní)
+a vybere jeden z nabízenıch packerù. Navíc lze zabalené soubory nechat smazat z disku.
+Rozbalování probíhá obdobnım zpùsobem. Uivatel vyhledá archiv a pøíkazem Unpack otevøe
+dialog. V nìm má monost nastavit cílovou cestu pro vybalované soubory, zvolit unpacker
+(podle pøípony se jeden nabídne automaticky). Navíc lze rozbalování omezit pouze na
+soubory zadané maskou.
+
+Obecné chování archivátorù má uivatel monost ovlivnit v konfiguraci Salamandera
+(Options / Configuration / Archivers)
+
+Stránka Archivers obsahuje ètyøi volby. Use simple icons in archives se vztahuje
+k interaktivnímu pøístupu, kdy je obsah archivu zobrazen v panelu. Ostatní tøi volby
+se tıkají pøíkazù Pack a Unpack.
+
+Stránka Archives Associations in Panels slouí k asociaci archivátoru pro
+interaktivní reim, tedy otevøení archivu v panelu. Seznam obsahuje na
+kadém øádku jednu nebo více extended masek. Extended masky mají zvláštní
+syntaxi a znak # v nich odpovídá libovolné èíslici. Ke kadému øádku je
+pøiøazen archivátor (plugin nebo externí) pro read-only operace jako je
+listování a rozpakování a zvláš pro edit operace, jako je zapakování a
+mazání z archivu. Pokud uivatel smae asociaci napøíklad pro RAR, bude
+se na Enter na .RAR archivu spouštìt pøíslušná aplikace asociovaná ve
+Windows. Zároveò mùe zùstat zachována monost vytváøet a rozbalovat RAR
+archivy pomocí neinteraktivního pøístupu, tedy pøíkazù Pack a Unpack.
+Soubory s pøíponou odpovídající nìkteré z masek na této stránce budou
+v panelu zobrazeny se speciální ikonkou archivu.
+
+Stránka External Archivers Locations slouí k nastavení cest k jednotlivım
+externím archivátorùm.
+
+Stránky Packers in Pack dialog box a Unpackers in Unpack Dialog box slouí
+ke konfiguraci archivátorù v neinteraktivním reimu.
+
+Chování jednotlivıch archivátorù lze èasto ovlivnit v jejich pluginové konfiguraci
+(Options / Plugins Configuration / název_pluginu).
+
+Dalším místem, kde uivatel pøijde do styku s archivátory je Plugins / Plugin Manager.
+Po vybrání konkrétního archivátoru budou zobrazeny podporované pøípony a funkce.
+
+
+7. Rozdíly mezi archivátory a pluginy typu file systém
+======================================================
+Pluginem typu file systém (FS) rozumíme pluginy jako jsou FTP klient, WinSCP/SFTP,
+Registry Editor, Windows Mobile. Jejich úloha spoèíva v prezentovaní poloek
+a adresáøù v panelu Salamandera. Poloky mohou odpovídat souborùm (FTP) nebo
+se mùe jednat o hodnoty v Registry. ádanı je napøíklad FS plugin, kterı by
+v panelu zobrazil seznam procesù ve stylu Správce úloh pod Windows.
+
+FS pluginy nemají neinteraktivní pøístup jako archivátory pøes pøíkazy Pack a Unpack.
+
+Vıznamnı rozdíl mezi archivátory a FS leí pod povrchem a z pohledu uivatele není
+zøejmı. Salamander po archivátorech bìhem otevírání archivu v panelu vyaduje
+enumeraci celého listingu archivu, vèetnì všech podadresáøù. Takto získanı listing
+si drí Salamander ve vlastních datovıch strukturách. Jak uivatel prohlíí obsah
+archivu a prochází jeho adresáøi, Salamander u nevolá archivátor a vše prezentuje
+z vlastních dat. Stejná data vyuije v pøípadì, e uivatel porovnává archiv s
+diskem pøíkazem Compare Directories (Ctrl+F10) nebo v pøípadì vıpoètu velikosti
+souborù pøes podadresáøe (Calculate Directories Sizes).
+
+FS pluginy naopak poskytují jen listingy aktuálních cest a to prùbìnì, jak
+uivatel mìní cestu v panelu nebo se provádí Refresh obsahu panelu. FS pluginy
+by sami mìly získávat listingy prùbìnì, protoe vìtšinou je nutné poèítat
+s tím, e je zároveò mohou mìnit tøetí osoby (napø. obsah FTP serveru mìní
+zároveò i jiní uivatelé). Pøípadnì z dùvodu rychlostních optimalizací mùe
+plugin listingy cest ukládat do vlastní cache a vracet je pøímo z této cache,
+pak pøirozenì hrozí neaktuálnost cachovaného listingu.
+
+FS pluginy jsou implementaènì øádovì komplikovanìjší ne pluginy typu
+archivátor. Je to dáno volností, kterou FS plugin má. Díky této volnosti
+se však Salamander stává pouze jakımsi terminálem pluginu, jeho displejem
+a klávesnicí. Veškeré sluby a logika musí bıt implementována na úrovni
+pluginu. Tomu odpovídá komplikované rozhraní pro FS pluginy proti rozhraní
+pro archivátory, které má jen asi deset metod.
+
+Díky jednoduchému rozhraní pro archivátory a jasnì vymezenım pravidlùm,
+jak mùe vypadat struktura archivu, bylo moné v pøípadì pluginù typu archivátor
+pøesunout mnoho funkcí do jádra Salamandera. Jedná se o tyto funkce:
+-pøíkaz View
+ Jádro si nechá vybalit zvolenı soubor do doèasného adresáøe a následnì
+ zavolá klasickı pøíkaz View. Doèasnı adresáø slouí jako cache a opakovanı
+ pøíkaz View pro stejnı soubor u nevyvolá rozpakování z archivu.
+-pøíkaz Edit
+ Jádro opìt vybalí soubor do doèasného adresáøe, a spustí asociovanı editor.
+ Ve chvíli, kdy se uivatel pokusí opustit archiv, Salamander vybídne k
+ uloení editovaného souboru a nabídne jeho zabalení zpìt do archivu.
+ Malá odboèka: protoe nejsme schopni rozpoznat, kdy editace skonèila (nemusí
+ jít vdy o ukonèení procesu editoru), museli jsme nabídku zpìtné komprimace
+ pøesunout právì na opouštìní archivu.
+-automatickı Refresh
+ Bìhem prohlíení archivu Salamander hlídá zmìny a pokud dojde k aktualizaci
+ archivu, je automaticky znovu vylistován a obnoven obsah panelu.
+-pøíkazy pro vıpoèet velikostí souborù
+ Space, Calculate Occupied Space, Calculate Directory Sizes
+ Tyto pøíkazy øeší kompletnì jádro a archivátor bìhem nich není volán.
+-pøíkaz Compare Directories
+ Díky tomu, e po otevøení archivu v panelu zná Salamander jeho kompletní
+ strukturu, nebylo problematické implementovat porovnání archivu a adresáøe
+ na disku nebo dokonce dvou archivù mezi sebou.
+-navigace v archivu
+ Nad panelem je zobrazena takzvaná Directory Line, která zobrazuje aktuální
+ cestu v archivu. Uivatel mùe myší pøeskoèit do libovolného nadøazeného
+ adresáøe tím, e na nìj ukáe a klikne. Tato funkce byla velice dobøe pøijata
+ uivateli. Opìt stojí na faktu, e Salamander zná obsah prohlíeného archivu.
+ V pøípadì FS pluginu je její implementace sloitìjší, protoe plugin musí
+ jádru øíct, co jsou jednotlivé sloky cesty. Cesta je tam Salamanderem chápána
+ jako øetìzec, nikoliv jako stromová struktura a je na FS pluginu, aby identifikoval
+ co jsou jednotlivé adresáøe.
+
+
+8. Vrstvená architektura archivátoru a jejich engine
+====================================================
+Kadı archivátor má minimálnì dvì vrstvy. Jedna vrstva zodpovídá za komunikaci
+s jádrem Salamandera a implementuje pluginovou èást rozhraní. Tato vrstva je témìø
+shodná pro všechny archivátory. Liší se sadou metod, kterou implementuje (podle
+toho, zda je archivátor unpacker nebo i packer).
+
+Druhá vrstva je to, co dìlá archivátor unikátním. Jedná se o vlastní engine,
+kterı dokáe otevøít archiv (na úrovni souboru), naèíst jeho strukturu a nakrmit
+jádro Salamandera daty. V pøípadì packerù je tento engine zodpovìdnı také
+za modifikaci archivù, tedy zápis do nich.
+
+Engine mùe pouívat dùmyslné pakovací algoritmy nebo se mùe jednat o triviální
+zmìnu kódování znaku, jako je tomu v pøípadì pluginu UnMIME.
+
+Existuje nìkolik forem jak pøipojit engine k archivátoru:
+-zdrojovı kód enginu
+-statická knihovna .LIB
+-dynamická knihovna .DLL
+-jiná forma (napøíklad volání OLE)
+
+Záleí na povaze formátu archivu, pro kterou z moností se rozhodneme.
+Mnoho formátù je proprietárních a neexistují od nich specifikace. Klasickım
+zástupcem je RAR nebo Microsoft CAB. V takovém pøípadì se spoléháme na
+knihovnu dodávanou majitelem formátu. V pøípadì RARu je to dynamická
+knihovna unrar.dll a v pøípade MS CABu staticky linkovaná knihovna z
+MS CAB SDK. Licence pro tyto knihovny bıvají èasto zcela neomezené, protoe
+se autoøi formátù snaí ukousnout co nejvìtší podíl trhu. Vìtšinou se
+jedná pouze o rozbalovací èásti algoritmù.
+
+Engine na úrovni zdrojovıch kódù lze nejlépe integrovat do archivátoru.
+Máme plnì v rukách alokace pamìti, zobrazování chybovıch hlášek, pøístup
+ke všem datùm z archivu atd. Pokud však formát archivu není dostateènì
+zakonzervovanı a co pùl rok pøicházejí jeho nové verze, mùe se tento
+pøístup snadno stát noèní mùrou. V takovém pøípadì se snaíme zvolit
+spíš mìnì prunou DLL nebo LIB knihovnu, kde máme jistotu, e autoøi
+vydají nové verze reflektující zmìny ve formátu archivu.
+
+
+9. ivotní cyklus pluginu
+=========================
+
+Postup naèítání (pøipojování) pluginu do Salamandera:
+  - naètení .SPL modulu pluginu
+  - volání funkce SalamanderPluginGetReqVer: ukonèení naèítání pokud plugin není
+    postaven pro verzi Salamandera kompatibilní s právì spuštìnım Salamanderem
+  - volání SalamanderPluginEntry: ukonèení naèítání pokud není v .SPL modulu taková
+    funkce (export) nebo pokud nevolá SetBasicPluginData nebo pokud vrátí NULL
+    (nevrátí rozhraní pluginu, viz CPluginInterface v DemoPlug pluginu)
+  - volání metody LoadConfiguration získaného rozhraní pluginu: pokud plugin podporuje
+    "load/save configuration" (viz FUNCTION_LOADSAVECONFIGURATION) naète konfiguraci
+    z pøidìleného soukromého klíèe z registry nebo pouije defaultní hodnoty (pokud
+    "load/save configuration" nepodporuje)
+  - volání metody Connect získaného rozhraní pluginu
+
+Postup odpojení pluginu:
+  - pokud plugin podporuje "load/save configuration" volá se metoda SaveConfiguration
+    získaného rozhraní pluginu
+  - volání metody Release získaného rozhraní pluginu: vrátí-li FALSE dostane uivatel
+    monost donutit plugin k odpojení (další volání Release s parametrem force=TRUE)
+    (ukonèení odpojování pokud uivatel nechce nutit plugin k odpojení)
+  - uvolnìní (unload) .SPL modulu pluginu
+
+
+10. Úvod do implementace archivátoru
+====================================
+Jako zdroj informací a základ pro novı plugin archivátoru poslouí
+demonstraèní plugin DemoPlug. Pokud byste mìli pocit, e by vám lépe
+poslouily zdrojové kódy jiného pluginu archivátoru, zkuste nás
+kontaktovat.
+
+Salamander se snaí co moná nejdéle pluginy nenaèítat do pamìti. Motivací je
+rychlejší start aplikace a zároveò niší pamìové nároky. Pro ilustraci napø.
+ve verzi Salamander 2.5 STANDARD (verze neobsahující velké pluginy Eroiica a
+WinSCP) je rozdìlení velikostí naèítanıch modulù 1,9MB (jádro) ku 4,2MB
+(pluginy).
+
+Salamander tedy musí o kadém pluginu dret základní informace ve své vlastní
+konfiguraci. Jde hlavnì o jméno pluginu, umístìní modulu pluginu (.SPL),
+podporované funkce (archivátor, FS, viewer, atd.) a poloky pøidávané do menu
+(vèetnì ikon). Dále Salamander drí v konfiguraci kde a jak se pouívají
+pluginové funkce. Napø. v prioritním seznamu masek pro viewery (viz konfiguraèní
+stránka Viewers) je uvedené pro jaké masky se má pouívat viewer pluginu,
+podobnì je uloené pro jaké pøípony se pouívá archivátor pluginu, atd.
+
+Všechna tato data o pluginech se získají pøi prvním naètení pluginu (instalaci)
+do Salamandera a pøi dalších naèteních pluginu je moné tato data upravovat
+(viz metoda CPluginInterfaceAbstract::Connect). Úprava je citlivá záleitost,
+protoe jde o data, která mùe mìnit i uivatel a plugin by tedy nemìl uivatele
+o jeho zmìny pøipravit. Napø. uivatel si promae (nebo doplní) seznam pøípon
+pro viewer z pluginu nebo promae pøípony archivù, které si pøeje zpracovávat
+jinou aplikací (napø. WinRARem).
+
+V SalamanderPluginEntry pøi volání SetBasicPluginData plugin urèí,
+které skupiny funkcí bude podporovat. Nejèastìji to bude kombinace
+FUNCTION_PANELARCHIVERVIEW a FUNCTION_CUSTOMARCHIVERUNPACK pro unpackery.
+V pøípadì packerù doplnìné o FUNCTION_PANELARCHIVEREDIT a
+FUNCTION_CUSTOMARCHIVERPACK. Konstanty FUNCTION_PANELARCHIVER(VIEW a
+EDIT) patøí interaktivnímu pøístupu (tedy otevøení archivu v panelu),
+zatímco konstanty FUNCTION_CUSTOMARCHIVER(PACK a UNPACK) náleí
+neinteraktivnímu pøístupu (tedy zastoupení pluginu v pøíkazech Pack
+a Unpack).
+
+Dalším dùleitım krokem je implementace potomka rozhraní
+CPluginInterfaceForArchiverAbstract. Potomka pojmenujme napøíklad
+CPluginInterfaceForArchiver.
+
+Unpacker implementuje jeho metody ListArchive, UnpackArchive, UnpackOneFile a 
+UnpackWholeArchive. Ostatní metody rozhraní budou pouze vracet návratovou hodnotu.
+Metody ListArchive, UnpackArchive, UnpackOneFile patøí ke konstantì
+FUNCTION_PANELARCHIVERVIEW a jsou nezbytné pro interaktivní reim.
+Metoda UnpackWholeArchive patøí ke konstantì FUNCTION_CUSTOMARCHIVERUNPACK
+a bude slouit pro reim neinteraktivní, tedy bude volána z pøíkazu Unpack.
+
+Packer musí implementovat navíc metody PackToArchive a DeleteFromArchive pro
+interaktivní reim, pøípadnì PackToArchiv pro neinteraktivní reim.
+PackToArchive je sdílená obìma pøístupy.
+
+
+11. Drení listingu archivu: kontext
+====================================
+V oblasti drení listingu došlo bìhem vıvoje Salamandera k nejvìtším zmìnám.
+Staré verze rozhraní CPluginInterfaceForArchiverAbstract neumonovaly pluginu
+elegantnì udrovat kontext bìhem volání interaktivních (panelovıch) metod
+ListArchive, UnpackArchive, UnpackOneFile, PackToArchive a DeleteFromArchive.
+To je historickı dùvod, proè do všech metod vstupuje cesta k archivu.
+
+Pod tlakem autorù archivátorù postupnì dostaly tyto metody parametr
+CPluginDataInterfaceAbstract *pluginData, kterı lze (mimo jiné) pouít
+právì pro drení kontextu.
+
+Starı bezkontextovı pøístup je stále podporovanı a autor archivátoru se
+mùe rozhodnout, zda kontext vyuije.
+
+Kontextem rozumíme nìjakı objekt, kterı drí informace potøebné bìhem
+pøítomnosti archivu v panelu, tedy pøi interaktivním pøístupu. Pozdìji
+si ukáeme, jak lze kontext vyuít v pøípadì neinteraktivního pøíkazu
+Unpack. Kontext mùe napøíklad obsahovat heslo k šifrovanım souborùm
+archivu nebo informace vyètené z hlavièky archivu bìhem jeho otevírání.
+
+Kontext vzniká bìhem volání metody ListArchive, vyuije se v metodách
+UnpackArchive, UnpackOneFile, PackToArchive a DeleteFromArchive. Kontext
+zaniká, kdy uivatel mìní cestu v panelu z archivu ven. Tehdy jádro
+Salamandera zavolá CPluginInterfaceAbstract::ReleasePluginDataInterface.
+Existuje jedna vıjimka, kdy ReleasePluginDataInterface není zavoláno pøi
+opuštìní archivu. Ta nastane pokud uivatel nakopíroval nìkteré soubory
+nebo adresáøe do schránky (Ctrl+C) a Salamander pak odloí uvolnìní dat
+na pøíkaz Paste.
+
+POZOR: nepouívat CPluginInterfaceForArchiverAbstract::CanCloseArchive 
+pro rušení kontextu. I v pøípadì, e z metody CanCloseArchive vrátíme
+TRUE, archiv mùe zùstat otevøenı v panelu, protoe se nemusí podaøit
+vylistovat novou cestu.
+
+Jak pracovat s kontextem:
+1) Pøi otevírání archivu v panelu jádro Salamandera volá metodu pluginu
+   ListArchive. Ta je zodpovìdná za kompletní enumeraci archivu a pøedání
+   takto získaného listingu jádru Salamandera prostøednictvím parametru 
+   CSalamanderDirectoryAbstract *dir. 
+   
+   Vytvoøíme objekt-kontext, v pøípadì pluginu UnFAT pùjde o instanci
+   tøídy CFATImage, která zapouzdøuje práci s FAT 12, 16 a 32 obrazem.
+
+   Ukazatel na kontext uloíme do potomka rozhraní CPluginDataInterfaceAbstract,
+   kterého pojmenujme napøíklad CPluginDataInterface. Zatím se nebudeme
+   zabıvat implementací metod tohoto rozhraní a pouze vrátíme návratovou
+   hodnotu ve smyslu OK.
+   
+   class CPluginDataInterface: public CPluginDataInterfaceAbstract
+   {
+     protected:
+       CFATImage *FATImage; // ukazatel na kontext
+ 
+     public:
+       CPluginDataInterface(CFATImage *fatImage)
+       {
+         FATImage = fatImage;
+       }
+       
+       ~CPluginDataInterface()
+       {
+         if (FATImage != NULL)
+         {
+           delete (FATImage);
+           FATImage = NULL;
+         }
+       }
+
+       .... // prazdna implementace metod CPluginDataInterfaceAbstract
+ 
+       CFATImage *GetFATImage() {return FATImage;}
+   };
+   
+   V metodì ListArchive alokujeme instanci objektu CPluginDataInterface
+   a vrátíme jí pøes parametr CPluginDataInterfaceAbstract *&pluginData
+   jádru Salamandera:
+   
+   CFATImage *img = new CFATImage();           // alokujeme kontext
+   pluginData = new CPluginDataInterface(img); // schovame si ho do pluginData
+   img->Open(fileName);                        // nechame kontext otevrit archiv
+   img->ListImage(dir);                        // pozadame o listing archivu
+   return TRUE;                                // a nezapomene osetrit vsechny chybove stavy ;-)
+    
+2) Pokud jádro Salamandera nyní zavolá kteroukoliv z metod interaktivních (panelovıch)
+   metod UnpackArchive, UnpackOneFile, PackToArchive nebo DeleteFromArchive, pøedá v
+   parametru 'pluginData' ukazatel na náš alokovanı objekt, v kterém máme uloen ukazatel
+   na kontext.
+   
+   Pro vytaení ukazatele je tøeba pøetypování ukazatele z CPluginDataInterfaceAbstract: 
+   CFATImage *img = ((CPluginDataInterface*)pluginData)->GetFATImage();
+
+3) V okamiku kdy uivatel opustí archiv (zmìnou cesty v panelu) zavolá Salamander metodu
+   pluginu, ve které provedeme destrukci kontextu.
+
+   void 
+   CPluginInterface::ReleasePluginDataInterface(CPluginDataInterfaceAbstract *pluginData)
+   {
+     delete ((CPluginDataInterface *)pluginData);
+   }
+
+Kontext lze pouít také v neinteraktivním pøístupu, tedy pøi implementaci metody UnpackWholeArchive:
+
+  CPluginInterfaceForArchiver::UnpackWholeArchive(CSalamanderForOperationsAbstract *salamander, 
+                                                  const char *fileName, const char *mask,
+                                                  const char *targetDir, BOOL delArchiveWhenDone,
+                                                  CDynamicString *archiveVolumes)
+  {
+    // do teto docasne promenne nechame naplnit obsah archivu
+    CSalamanderDirectoryAbstract *dir = SalamanderGeneral->AllocSalamanderDirectory(FALSE);
+
+    // drzak ukazatele na kontext
+    CPluginDataInterfaceAbstract *pluginData = NULL;
+    if (ListArchive(salamander, fileName, dir, pluginData))
+    {
+      // v 'dir' mame vsechny polozky archivu a muzeme provest extrakci...
+    
+      // na zaver po sobe uklidime
+      PluginInterface.ReleasePluginDataInterface(pluginData);
+    }
+    SalamanderGeneral->FreeSalamanderDirectory(dir);
+  }
+
+O promìnné CFileData::PluginData
+Metoda CFATImage::ListImage, která je zodpovìdná za enumeraci poloek archivu,
+pouije svùj parametr CSalamanderDirectoryAbstract *dir k pøedání listing jádru
+Salamandera. Slouí k tomu metody CSalamanderDirectoryAbstract::AddFile
+a ::AddDir. Informace o souborech a adresáøích se do tìchto metod pøedávají
+pomocí struktury CFileData. Zajímavá je její promìnná CFileData::PluginData,
+kterou plugin mùe vyuít pro uloení svıch 'custom dat' k jednotlivım souborùm
+a adresáøùm. Promìnná existuje vıhradnì pro potøeby pluginu a jádro Salamandera
+nijak nerozumí jejímu obsahu.
+
+Promìnná CFileData::PluginData mùe bıt prostı DWORD napø. s prvním sektorem
+souboru ve FAT obrazu nebo se mùe jednat napø. o ukazatel na alokovanı objekt.
+V tomto pøípadì byl takovı objekt alokován v metodì ListArchive a je tøeba
+jej pøi opouštìní archivu dealokovat. Protoe Salamander nezná vıznam
+CFileData::PluginData, zeptá se pluginu prostøednictvím metod
+CPluginDataInterfaceAbstract::CallReleaseForFiles a ::CallReleaseForDirs
+zda má pro kadı soubor a adresáø zavolat metodu ::ReleasePluginData.
+Tím umoní pluginu dealokovat CFileData::PluginData.
+
+Popsané pøístupy se z pohledu archivátorù moná jeví ponìkud neohrabanì, co
+je dáno jejich souèasnım vyuitím v pluginech typu file system.
+
+
+12. Optimalizované listování archivu
+====================================
+Jádro Salamandera obdrí od pluginu listing archivu prostøednictvím metod
+CSalamanderDirectoryAbstract::AddFile a ::AddDir volanıch v metodì
+ListArchive. Plugin pøedává jádru adresáøe a soubory s plnou cestou. Jádro
+Salamandera si je však rozhazuje do stromové struktury, ve které je pak
+drí.
+
+Zaøazení pøíchozího souboru nebo adresáøe do interní stromové struktury znamená
+rozklad plné cesty a prohledávání stromu. Tento overhead se snaíme minimalizovat
+optimalizací, kterou je však tøeba podpoøit na stranì pluginu.
+
+Optimalizace je postavena na cachování poslednì pøidávané plné cesty a jí 
+odpovídajícímu místu v interní stromové struktuøe. Cache je implementována
+na úrovni metod AddFile a AddDir a z hlediska pluginu je transparentní.
+
+Pokud se má cache uplatnit, musí plugin pøidávat soubory a adresáøe z jednoho
+adresáøe v rámci jedné dávky. Adresáøe a soubory mohou bıt v rámci této dávky
+na pøeskáèku, dùleité je jen jejich umístìní na stejné cestì.
+
+Optimální pøístup z hlediska cache je tedy pøidání všech souborù a adresáøù
+v rámci jedné dávky a teprve následnı sestup do podadresáøù. Pro tyto úèely lze
+bìhem pøidávání adresáøù budovat jejich doèasnı seznam, kterı se po rekurzivním
+sestupu dealokuje.
+
+
+13. Vrstva Input/Output
+=======================
+Vstupnì vıstupní operace se soubory by se mìly v maximální moné míøe
+blíit implementaci v jádøe Salamandera. Jedná se pøedevším o ošetøení
+chybovıch stavù. Kadá IO operace má tøi fáze: otevøení souboru,
+ètení/zápis a na závìr jeho zavøení. Bìhem prvních dvou fází mùe dojít
+k celé škále chyb: nedostupná cesta, nedostateèná práva, málo místa
+na disku, chyby vımìnnıch médii a další.
+
+Všechny chybové stavy tedy musí bıt detekovány a zobrazeny.
+
+Nabízí se nám nìkolik rodin funkcí, které problematiku ètení a zápisu øeší:
+-Memory Mapped Files: CreateFileMapping, MapViewOfFile, UnmapViewOfFile
+-Klasické Win32 API: ReadFile, WriteFile
+-C Run-Time Library: fread, fwrite
+-Jiné, napøíklad COM interface IStream
+
+Pokud jako engine archivátoru pouijeme existující zdrojové kódy, pravdìpodobnì
+nebudeme mìnit jejich I/O vrstvu. Pokud však programujeme plugin od základù, je
+rozhodnutí na nás. Následuje nìkolik postøehù k jednotlivım pøístupùm.
+
+Memory Mapped Files (MMF)
+-------------------------
+(+) Umoují mapovat soubor pøímo do adresního prostoru procesu. K souboru se následnì
+pøistupuje pouhım ètením nebo zápisem pamìti.
+
+(+) Jeden soubor mùe bıt souèasnì mapován do pamìti více procesù. To je jedinı
+rozumnı zpùsob, jak mohou dva procesy pod Windows NT sdílet pamì. Tato technika
+se pouívá napøíklad v pøípadì DLL knihoven, kde OS jejich sdílené segmenty zavede
+do fyzické pamìti pouze jednou a procesùm je namapuje do jejich adresního prostoru.
+To je mimochodem dobrı dùvod, proè bìnì nepouívat in-process kompresory typu UPX.
+
+(+) Pokud aplikace pøistupuje k souboru bajt za bajtem, má pøístup do MMF mnohem
+menší overhead ne volání fread nebo ReadFile pro velikost bufferu nìkoli bajtù.
+
+(-) Kadı MMF si ukousne èást systémovıch prostøedkù. Tento argument však nelze
+pouít proti MMF, protoe pod Windows NT jsou klasické API ReadFile/WriteFile
+øešeny kernelem právì pøes MMF.
+
+(-) Starı argument, e MMF se skvìle hodí pro random pøístup do velkıch souborù
+je dnes lichı, protoe soubory nad 4GB jsou zcela bìné a nám nezbıvá ne k nim
+pøistupovat mapováním po èástech, stejnì jako pøi klasickém ètení/zápisu.
+
+(-) POZOR, toto je nejvìtší nástraha MMF, kterou se Microsoft neobtìoval v MSDN slušnì
+zdokumentovat. Z podstaty MMF nelze ošetøit chybové stavy (napøíklad vadnı sektor na médiu,
+pøerušní síové vrstvy) v místì jejich vzniku, tedy pøístupu do mapované pamìti.
+Pokud k takové chybì dojde, je generována exception. Pokud ji proces nechytne do
+try/except bloku, aplikace spadne.
+
+Jediná zastrèená poznámka v MSDN na toto téma je v Using File Mapping/Reading and Writing:
+> Note Reading from or writing to a file view can cause an exception. For example,
+> accessing a mapped file that resides on a remote server can generate an exception
+> if the connection to the server is lost. Exceptions can also occur because of a full
+> disk, because the file is shared and a different process has locked a byte range,
+> or because of an underlying device failure or memory allocation failure. To guard
+> against exceptions due to input and output (I/O) errors, all attempts to access memory
+> mapped files should be wrapped in structured exception handlers.
+MSDN zapomíná zmínit, jaké exceptions mohou nastat a co tedy máme chytat.
+
+(*) Asi jste vytušili, e MMF zrovna nemilujeme. Pokud máte nìco na jejich obhajobu,
+dejte nám vìdìt.
+
+Win32 API: ReadFile, WriteFile
+------------------------------
+(+) Jasnì definované a snadno ošetøitelné chybové stavy. Z toho plynoucí monost
+zapouzdøit I/O operace do knihovny, která bude øešit Retry/Skip all/Overwrite all
+stavy, viz interface CSalamanderSafeFileAbstract.
+
+(+) Pod Windows NT virtuálnì shodnı vıkon s MMF, protoe kernel internì pøevádí 
+volání ReadFile a WriteFile právì na MMF.
+
+(-) Pøi ètení/zápisu po malıch segmentech pamìti (do desítek bajtù) vzniká velice
+nepøíjemnı overhead ve srovnání s RTL fread/fwrite, kde existuje na úrovni RTL
+defaultní 16 KB I/O cache. Tento nedostatek lze øešit ètením po vìtších blocích,
+zkrátka cache posunout do aplikace. V ALTAPu se nám tento problém projevil pøi
+ètení a zápisu souboru na síovém disku, kde prohloubil overhedem síové vrstvy.
+Zavedení malé I/O cache problém odstranilo a rychlost ètení a zápisu se øádovì
+zrychlila.
+
+Run-Time Library: fread, fwrite
+-------------------------------
+(+) Jasnì definované a snadno ošetøitelné chybové stavy.
+
+(+) Zabudovaná cache má dobrı dopad pøi ètení a zápisu po malıch èástech pamìti.
+
+(-) Nekompatibilita s Win32 API. RTL funkce sice internì volají API, ale na venek
+mají ANSI C interface. Mají tedy jiné návratové hodnoty, jiné konvence pro
+zpracování chybovıch stavù. Navíc nezpøístupòují aplikaci všechny parametry
+API funkcí. Nìkteré API nemají v této rodinì funkcí ekvivalenty a jejich zavolání
+se stává problémem, protoe nemáme potøebnı handle souboru.
+
+Závìr
+-----
+Pokud si mùete vybrat, zvolte API funkce ReadFile a WriteFile. Pokud potøebujete
+èíst nebo zapisovat po nìkolika bajtech, zaveïte si I/O cache a obejdìte tak
+zbyteènı overhead, kterı se mùe drasticky projevit na síovıch discích 
+(mùete si to snadno ovìøit experimentem na vaší lokální síti).
+
+
+14. Ošetøení vstupù a vıstupù: CSalamanderSafeFileAbstract    
+==========================================================
+Pluginy Salamandera by se komfortem nabízenıch funkcí a robustností jejich zpracování
+mìly co nejvíce blíit provedení jádra Salamandera a jeho základních operací, jako
+jsou Copy, Move, Delete, Rename atd. V ideální pøípadì by uivatel nemìl pozorovat
+ztrátu komfortu pøi pouití funkcí z pluginù proti jejich protìjškùm v jádøe
+Salamandera.
+
+V pøípadì archivátorù se jedná pøedevším o ošetøení vstupnì vıstupních operací.
+Pokud bìhem otevírání, ètení nebo zápisu souboru dojde k chybì, existují tøi
+scénáøe, jak problém øešit:
+(1) chybu nezobrazit, ale korektnì zpracovat, tedy vycouvat z operace ven
+(2) zobrazit chybu a nabídnout tlaèítko OK, které pøeruší provádìnou operaci
+(3) zobrazit chybu a nabídnout tlaèítka jako Retry, Skip, Skip All, Cancel
+    (rùzné jejich kombinace viz konstanty BUTTONS_xxx)
+
+Scénáø (1) je vlastnì tichou variantou scénáøe (2) a vyuíváme ho pouze pro
+speciální pøípady. Napøíklad archivátor kombinovanı s viewerem, kde je pro
+vieweru potøeba implementovat metodu CPluginInterfaceForViewerAbstract::CanViewFile.
+Tato metoda se pokusí otevøít, pøípadnì zkusmo vylistovat archiv a pokud nastane
+nìjakı problém, tiše vrátí FALSE. 
+
+Scénáø (2) nasazujeme na místech, kde by scénáø (3) nemìl smysl. Pokud napøíklad
+uivatel stiskne Enter v panelu, aby vstoupil do archivu (pøípadnì dá pøíkaz Unpack),
+je nesmysl zobrazit pod chybové hlášení "Error Opening File"/"(5) Access is denied"
+tlaèítka Retry/Cancel. Sem patøí pouze tlaèítko OK, protoe uivatel akci snadno
+po odstranìní problému zopakuje. Pod tento scénáø zároveò patøí prohlíení a spouštìní
+souborù z archivu. Salamander v tomto pøípadì volá metodu pluginu
+CPluginInterfaceForArchiverAbstract::UnpackOneFile.
+
+Scénáø (3) se uplatní všude tam, kde pøerušení operace komplikuje uivatelùm ivot.
+Jde napøíklad o pøípad, kdy uivatel vybaluje archiv obsahující stovky souborù
+a nìkde uprostøed dojde místo na cílovém disku. Pokud bychom pod chybové hlášení
+"Error Writing File"/"(112) There is not enough space on the disk." zobrazili pouze
+tlaèítko OK, nedáme uivateli monost problém odstranit a operaci dokonèit. Taková
+chyba by mìla mít tlaèítka Retry/Skip/Skip all/Cancel. Stejná situace nastane,
+pokud bìhem pakování velkého mnoství souborù nemùeme nìkterı soubor pøeèíst.
+Pokud v chybové hlášce nenabídneme tlaèítko Skip/Skip all, bude celá operace
+znehodnocena.
+
+Ve vìtšinì pøípadù tedy uplatníme scénáø (3) s maximálním komfortem pro uivatele.
+Pokud (3) nemá smysl, pouijeme zjednodušenı scénáø (2). Ve speciálních pøípadech
+pouijeme tichı scénáø (1).
+
+Kvalitní ošetøení chybovıch stavù I/O operací není úplnì triviální a znaènì
+znepøehledòuje zbytek kódu (vnoøené cykly, pøípadnì tvrdé skoky pro Retry).
+Z tohoto dùvodu jsme zavedli sadu funkcí øešící nejèastìjší problémy a sdruili
+je pod rozhraní CSalamanderSafeFileAbstract. Funkce to nejsou nijak pìkné
+(ani uvnitø, ani díky mnoství parametrù), ale problém øeší. Podrobnosti
+k jejich pouití najdete v komentáøích v souboru spl_file.h. 
+Do rozhraní jsme pøestìhovali i starou a ošklivou metodu SafeCreateFile.
+
+Pokud budete I/O operace øešit vlastní silou, rádi dodáme zdrojové kódy, kde je
+vidìt øešení rùznıch nástrah, na které jsme pøišli bìhem provozu Salamandera.
+Napøíklad metody SafeFileRead a SafeFileWrite v pøípadì chyby a stisku tlaèítka
+Retry zavírají handle souboru a pokoušejí se ho znovu otevøít. Dùvodem jsou
+chyby na síti, kdy i po obnovení pøetreného spojení není starı handle funkèní
+a jeho zavøení a nové otevøení je jediná monost, jak na operaci navázat.
+Samozøejmì to znamená spravné nastavení ukazovátka v souboru atd.
+
+Nìkolik pravidel k zobrazovanım chybám. (Pokud pouijete pro práci se soubory
+rozhraní CSalamanderSafeFileAbstract, dostanete ošetøení vìtšiny chyb zdarma.)
+
+-Pokud vznikne chyba, snaíme se jí správnì pojmenovat. Napøíklad nepíšeme 
+ suché "Error", ale "Error Reading File".
+ 
+-Pokud je k dispozici hodnota z API GetLastError, zobrazujeme ji pøed chybovou
+ hláškou (Error: (5) Access is denied.). Pokud nám napøíklad italskı uivatel
+ pošle screenshot nebo pøepis chybového hlášení v italštinì, dokáeme z èíselné
+ reprezentace zjistit, o jakou chybu se jedná.
+ 
+-Chyby se snaíme zobrazovat ve stejné formì, v jaké je zobrazuje Salamander
+ bìhem jeho vestavìnıch operací (pokud Salamander takové precedenty má).
+ Vìtšinou tedy nepouijeme obyèejnı MessageBox, ale mocnìjší DialogError, 
+ DialogOverwrite nebo DialogQuestion. Tyto dialogy mimo jiné øeší zkrácení
+ pøíliš dlouhého názvu souboru, kterı by MessageBox natáhnul.
+ 
+-Snaíme se zobrazit název souboru, ve kterém k chybì došlo. Mnoho operací
+ pracuje minimálnì nad dvìma soubory (zdroj a cíl), take pojmenování souboru
+ v chybovém hlášení usnadní uivatelùm navigaci.
+
+-Pokud chyba vznikla v dùsledku nekompatibilního formátu (napøíklad jsme v
+ archivu nenašli centrální adresáø nebo je danı soubor zabalen neznámou kompresní
+ metodou nebo data prostì nejsou tam kde by bıt mìla), opìt se snaíme problém 
+ pøesnì pojmenovat místo suché hlášky "Error". Ušetøí nám to hromadu vrásek 
+ v budoucnosti, a nám uivatelé chyby zaènou posílat zpìt.
+
+Pokud si bìhem implementace nebudete jistí, jak by se plugin v dané situaci mìl
+chovat, zkuste navodit obdobnou situaci bìhem nìkteré z vestavìnıch operací 
+Salamandera. Pøípadnì nás kontaktujte a rozhodneme se jak situaci øešit.
+
+
+15. Minimalizace fragmentování disku bìhem zápisu souborù
+=========================================================
+Soubory nejsou na disku vìtšinou uloeny vcelku, ale po èástech. Tento jev
+se oznaèuje jako fragmentace souborù a má nepøíznivı dopad na rychlost diskovıch
+operací. K fragmentaci dochází z podstaty souborového systému: na disku vzniknou
+postupnì soubory A, B1, C; potom soubor B1 smaeme a zùstane po nìm díra, která 
+je vyuitá novì vznikajícím souborem B2. Ten je však vìtší a co se nevejde do díry
+po B1, bude pøipojeno do volného prostoru za souborem C. 
+
+Pokud má bıt fragmentovanı soubor B2 následnì naèten do pamìti, musí disk
+po naètení první èásti vystavit hlavièky do èásti druhé. Tím se sniuje
+rychlost ètení. Operaèní systémy se snaí problém fragmentace rešit softy,
+jako je Disk Defragmentator pod W2K. Tyto utility pøeskupí soubory tak, 
+aby byly uloeny na disku vcelku. Disk Defragmentator dokáe na tlaèítko
+Analyze posoudit míru fragmentace souborù, volného místa a zobrazit seznam
+nejfragmentovanìjších souborù (vèetnì poètu fragmentù). 
+
+Poèet fragmentù souborù lze zobrazit také pomocí naší utilitky fragment.exe,
+která je k dispozici na vıvojáøské stránce. Rozumnı poèet fragmentù vytváøeného
+souboru je jeden nebo dva. Zkuste pøípadnì pøíkaz Copy v Salamanderu 2.5 nebo
+novìjším. Mìli byste se na daném disku dostat na stejnı poèet fragmentù.
+
+Klasickı zpùsob ukládání dat do souboru vypadá takto:
+  CreateFile    // vytvorime/prepiseme soubor
+    WriteFile   // zapiseme buffer
+    WriteFile   // zapiseme buffer
+    ...
+    WriteFile   // zapiseme posledni cast dat
+  CloseFile
+
+Operaèní systém pøedem nezná finální velikost vznikajícího souborù, take
+se øídí velikostí zapisovaného bufferu pøedávaného do funkce WriteFile. Postupnì
+se tak vyplòují díry mezi soubory. Pøi bìném provozu disku je volné místo
+èasto fragmentované a novì vznikající soubor tedy bude také fragmentovanı. 
+Salamander do verze 2.5 bìhem nakopírovaní 700MB souboru na disk bìnì
+vytvoøil soubor sloenı z tisíce fragmentù. Problém se projevoval také bìhem
+zápisu velkıch souborù na disketu nebo jiné pomalé médium. Pokud soubor zapisujeme
+napøíklad po 60KB blocích, musí OS po zapsání kadého bloku pøemístit hlavièku do
+FAT a zanést informaci o novì alokovanıch clusterech. Pokud pomineme devastaci
+mechaniky, je tato metoda velmi pomalá a hluèná.
+
+Pokud pøedem známe vıslednou velikost souboru, mùeme pouít
+LEPŠÍ ZPÙSOB zápisu souboru:
+
+  CreateFile              // vytvorime/prepiseme soubor
+    SetFilePointer(END)   // ukazovatko nastavime na konec souboru
+    SetEndOfFile          // nechame OS nafouknout soubor
+    SetFilePointer(BEGIN) // ukazovatko vratime na zacatek souboru
+    WriteFile             // zapiseme buffer
+    WriteFile             // zapiseme buffer
+    ...
+    WriteFile             // zapiseme posledni cast dat
+  CloseFile
+
+OS nám pomoci funkce SetFilePointer umoòuji vystavit ukazovátko i do míst
+"za koncem souboru". Funkce SetEndOfFile pak slouí jako commit, kterım poádáme
+systém, aby pro soubor zabral volné clustery a provedl zápis do FAT nebo
+jejího ekvivalentu. Protoe je známa vısledná velikost, mùe OS provést
+alokaci volného místa efektivnìji a vıslednı soubor bude minimálnì
+fragmentovanı (za pøedpokladu, e existuje dostatek nefragmentovaného volného
+místa, co vetšinou platí).
+
+Popsaná technika má nìkolik nástrah proti bìnému zpùsobu zápisu:
+(1) Soubor se po celou dobu zápisu jeví jako kompletní, co mùe zmást uivatele.
+(2) Pokud bìhem zápisu dojde k chybì nebo pøerušení operace uivatelem, je potøeba 
+    zapisovanı soubor zkrátit na úroveò zapsanıch dat nebo na nulovou velikost, 
+    protoe jinak OS uloí data od aktualního ukazovátka do konce souboru. Dobøe
+    viditelné to je na disketách, kde po zavolání CloseHandle systém ještì patnáct
+    vteøin ukládal "náhodná" data, aby vyplnil pøedalokovanı soubor. V pøípadì
+    predèasného ukonèení tedy voláme:
+      SetEndOfFile(hFile);                        // zkratime soubor na zapsanou velikost
+      CloseHandle(hFile)                          // nyni uz ho muzeme zavrit
+(3) SetEndOfFile techniku nemá smysl pouít v pøípadì, e vısledná velikost souboru
+    je menší nebo rovna velikosti bufferu pro zápis.
+(4) Máme zdokumentovanı pøípad, kdy na síovém disku neprojde operace
+    SetFilePointer(BEGIN) a následnì zapsaná data ze pøipojí na konec souboru.
+    Tento problém proto explicitnì testujeme na prvním souboru dávky a pokud ho detekujeme,
+    zakáeme SetEndOfFile optimalizaci pro všechny soubory v této várce (napøíklad
+    rozbalované soubory smìøující do jedné destinace).
+(5) Pokud na cílovém disku není dostatek místa, metoda sele a stejnì jako ve (4)
+    zapisujeme klasickou postupnou metodou.
+    
+Technika pøedalokace místa ve vytváøeném souboru je podpoøena rozhraním
+CSalamanderSafeFileAbstract, viz funkce SafeFileCreate a její parametr 'allocateWholeFile'. 
+Pouití je vidìt v pluginu UnFAT. Pokud se rozhodnete pro vlastní implementaci, poádejte
+si o zdrojové kódy od CSalamanderSafeFileAbstract.
+
+
+16. Èeho se vyvarovat bìhem implementace archivátoru
+====================================================
+Pozor na globální promìnné, které by èasem mohly bıt pøekákou pøi rozšiøování
+architektury pluginù. Jedná se napøíklad o souèasné spouštìní metod pluginù, které
+by zpùsobovalo pøepisování takovıch globálních promìnnıch. 
+
+Kontext archivu dríme navázanı na CPluginDataInterfaceAbstract, take tady nebezpeèí
+nehrozí. Pokud bychom kontext dreli v globální promìnné, narazíme ji v souèasné
+verzi Salamandera, protoe jeden archivátor mùe bıt souèasnì zastoupen v levém i
+pravém panelu a docházelo by ke kolizi. 
+
+Funkce plnící a vracející øetìzec nenecháme vracet ukazatel na statickı buffer,
+ale øetìzec do nich pøedáme jako parametr, spoleènì s jeho maximálním poètem
+znakù.
+
+
+17. Testování archivátorù
+=========================
+Jak rostl poèet implementací pluginu typu archivátor, naráeli jsme bìhem jejich
+testování stále na stejnou skupinu problémù. Tyto nejèastìjší problémy jsme popsali
+v souboru checklist.txt, aby je mohl snadno odstranit pøímo autor pluginu.

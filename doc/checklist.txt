@@ -1,0 +1,333 @@
+*******************************************************************************
+** Tento soubor obsahuje seznam nesamozrejmych uloh, ktere je treba dodrzet  **
+** pri implementaci pluginu.                                                 **
+*******************************************************************************
+-Bitmapy: MSDN (potvrzeno na 2.5 beta 6) uvadi, ze CreateBitmap je vhodne
+ pouzivat pouze pro vytvareni B&W bitmap. Jinak vzdy CreateCompatibleBitmap.
+ I kdyz jsme vytvareli naprosto stejnou bitmapu pres CreateBitmap, jako
+ puvodne vratila CreateCompatibleBitmap (stejne rozmery, plany, barevna hloubka),
+ stejne byl interni viewer nechutne pomaly. Pravdepodobne brzdi BitBlt, kde se
+ provadeji nejake zbytecne konverze. CreateCompatibleBitmap problem resi.
+ Mrknete se do zdrojaku, jestli nekde nepouzivate CreateBitmap mimo B&W bitmap.
+-Pokud ma plugin vstupni editline/comboboxy pro zadavani cesty, je sikovne
+ pro ne zavolat InstallWordBreakProc, ktera zajisti skakani po slovech pri
+ Ctrl+Left/Right a mazani po slovech pri Ctrl+Backspace.
+-Pokud mapujeme soubory do pameti a soubor nebude citelny, hodi OS exception.
+ Je treba ji chytat a osetrit tak chybu cteni, jinak pujde cely soft k zemi.
+-Zobrazit si Task Manager (Ctrl+Shift+Escape), nechat si v zalozce Processes
+ zobrazit sloupce Handles a GDI Objects. Potom zkusit plugin stresovat ulohama,
+ ktere podporuje a sledovat, zda procesu Salamandera nerostou zminene dve hodnoty. 
+-Overit, ze plugin nema v jazykovych resourcech retezce, ktere se nesmeji
+ prekladat. Napriklad se jedna o parametry metody SetBasicPluginData()
+ (nazev klice konfigurace v registry, pripony FS, atp.).
+-Pokud plugin zobrazuje datum/cas, pouzijeme formatovani dle nastaveni oken:
+        SYSTEMTIME st;
+        FILETIME ft;
+        if (FileTimeToLocalFileTime(&f->LastWrite, &ft) &&
+            FileTimeToSystemTime(&ft, &st))
+        {
+          if (GetDateFormat(LOCALE_USER_DEFAULT, DATE_SHORTDATE, &st, NULL, text, 50) == 0)
+            sprintf(text, "%d.%d.%d", st.wDay, st.wMonth, st.wYear);
+          ----
+          if (GetTimeFormat(LOCALE_USER_DEFAULT, 0, &st, NULL, text, 50) == 0)
+            sprintf(text, "%d:%02d:%02d", st.wHour, st.wMinute, st.wSecond);
+        }
+-Pokud volame GetOpenFileName pro volbu souboru k otevreni, pravdepodobne nechceme
+ zobrazit "Read only" checkbox a Flags tedy musi obsahovat OFN_HIDEREADONLY.
+-Pokud prezentujeme seznam polozek (listview nebo listbox) snazime se podporit
+ kontextova menu pro jednotlive polozky. Menu musi jit otevrit na prave tlaciko
+ mysi (v miste kurzoru) a na Shift+F10 nebo spec. klavesu na novych klavesnicich
+ (pod vybranou polozkou).
+-Prikazy v menu a v tlacitkach: pokud se prikaz pred provedenim bude uzivatele
+ ptat dialogem na nejake parametry, musi mit v nazvu tri tecky tesne za textem.
+ Napriklad "Save As...", "Copy..."
+-Pokud plugin zobrazuje realna cisla, je treba nahradit znak '.' destinnym
+ oddelovacem: SalamanaderGeneral->PointToLocalDecimalSeparator(buf, ARRAY_SIZE(buf));
+-Zkontrolovat, ze se vola DestroyIcon pro ikonky ziskane pres LoadImage bez
+ flagu LR_SHARED
+-Pro zobrazovani poctu souboru/adresaru pouzivame ExpandPluralString, abychom
+ nezobrazovali "1 files" atd.
+-Otestovat plugin pod vsema OS (W2K, XP, Vista, Windows 7, Windows 8) v release verzi.
+-Pokud plugin pracuje se soubory a ukazuje progress, otestovat ze se progress
+ meni na souborech s nulovou delkou a na adresarich.
+-Vsechny delsi operace musi jit prerusit tlacitkem Cancel.
+-SalamanderGeneral::SetUserWorkedOnPanelPath je treba volat pri nejake cinnosti
+ nad adresarem, aby si mohl Salamande "uspinit" adresar a pozdeji jej zaradit
+ do historie "List of Working Directories"
+-Plugin by mel hlidat zmenu konfigurace a hlidat promenne SALCFG_SAVEHISTORY,
+ SALCFG_ENABLECMDLINEHISTORY, SALCFG_SAVECMDLINEHISTORY a pripadne prorezat
+ svoje historie. Plugin by mel reagovat na CPluginInterfaceAbstract::ClearHistory
+ (prikaz pro vymaz vsech historii).
+-Plugin by mel mit vetsinu modulu optimalizovanou na velikost. Pouze podstatne
+ moduly optimalizovat na rychlost.      
+-Release verze pluginu by mela mit nastaveno /align:4096 /ignore:4108
+ Zaroven by mela mit nastaveno Linker/Optimization/References: Eliminate Unreferenced
+ Data (/opt:ref) pro eliminaci dead kodu na urovni linkeru. Pokud se generuji debug
+ informace (PDB), je tato optimalizace defaultne vypnuta. Podrobnosti viz
+ "Release mode debugging with VC++" (http://www.cygnus-software.com/papers/release_debugging.html)
+-Vsechny projekty maji nastavene promenne WINVER=0x0500, _WIN32_IE=0x0501 a
+ _WIN32_WINNT=0x0500, ktere ridi kompatibilitu vytvoreneho EXE/DLL se starsima OS (takhle
+ je to W2K+). Promenna WINVER ma dopad na velikosti struktur (napriklad MENUITEMINFO
+ je ve verzi 0x0500 vetsi nez ve verzi 0x0400). Promenna _WIN32_IE ovlivnuje dostupne
+ message/struktury pro komunikaci s common controls. Pokud budeme potrebovat nejake
+ struktury nebo konstanty z novych headru, je treba je vyzobnout k nam do zdrojaku.
+ Sazmorejme je pouzivame pouze na OS, ktere je podporuji.
+-Plugin by nemel volat ::MessageBox (ale CSalamanderGeneralAbstract::SalMessageBox),
+ ktery neni centrovany a nepojede korektne v prostredi vice monitoru.
+-Plugin by mel pri zpracovani chybovych stavu zobrazovat hodnotu a vyznam z GetLastError.
+-Konfiguracni dialog pluginu XXXX by mel mit title: "XXXX Configuration", aby
+ pri vyvolani ze Salamandera byla jasna prislusnost.
+-Pokud je mozne konfiguracni dialog pluginu otevrit z vice mist (Plugins Manager/
+ Configure + Options/PluginConfiguration/plugin-name, dalsi vstupni mista muze
+ obsahovat samotny plugin), je treba zamezit vicenasobnemu otevreni konfigurace
+ (je-li nemodalni nebo se to muze zavolat z dvou ruznych threadu).
+ Viz DemoPlug/OnConfiguration.
+-Jde-li o Viewer, mel by podporovat prijimani souboru pres Drag and Drop. Mel
+ by umet existovat ve stavu, ze nema otevreny zadny soubor (chyba cteni).
+-Pokud plugin otevira nemodalni okna k hlavnimu oknu Salamandera, musi pri kazdem
+ otevreni takoveho okna vytahnout aktualni stav SALCFG_ALWAYSONTOP a podle nej
+ nastavit oteviranemu oknu WS_EX_TOPMOST.
+-Pokud plugin konstruuje fonty, mel by u nich pouzivat charset ziskany pres
+ SalamanderGeneral->GetUserDefaultCharset().
+-Pokud plugin meni svou konfiguraci/pripony/atd v registry, mel by umet
+ konverze ze vsech uverejnenych verzi (i verzi uverejnenych jen pro testovani
+ v nasi komunite).
+-Pokud to neni nutne (neni linkovana STDLIB), nepouzivat wsprintf, protoze
+ je limitovano bufferem 1024 bajtu. Grepovat zdrojaky na pritomnost teto
+ funkce.
+-Pokud vybalujeme kontextova menu na zaklade zmacknuteho tlacitka, je treba
+ osetrit, aby nedoslo k presahu menu pres tlacitko (zakryti tlacitka plochou
+ menu). Funkce TrackPopupMenuEx ma parametr 'lptpm', ktery umoznuje takovou
+ oblast definovat.
+ Pouziti:
+ 
+  // vytahneme souradnice tlacitka
+  RECT btnRect;
+  GetWindowRect(GetDlgItem(hDlg, id_of_button), &btnRect);
+  
+  // definujeme oblast, kterou menu nesmi prekryt
+  TPMPARAMS tpmPar; // oblast tlacitka ve screen souradnicich
+  tpmPar.cbSize = sizeof(tpmPar);
+  tpmPar.rcExclude = btnRect;
+  
+  // otevreme menu vedle praveho horniho rohu tlacitka
+  TrackPopupMenuEx(menu, TPM_TOPALIGN | TPM_RIGHTBUTTON | TPM_NONOTIFY | TPM_RETURNCMD, 
+                   btnRect.right, btnRect.top, HWindow, &tpmPar))
+ 
+-RegEdit bohuzel neumi import stringu s EOLy ('\r\n') z .reg souboru - je-li
+ potreba takove stringy ukladat/cist, je nutne EOLy prevadet na jiny znak
+ (treba '|'), a pak pri nacitani z regitry zase zpet na EOLy. Nutne z duvodu
+ exportu/importu konfigurace, na ktery Salamander pouziva RegEdit. Zdrojaky
+ pro prevody jsou dostupne u FTP, tam uz to bylo potreba oprogramovat.
+-Pokud plugin vytvari pomocne adresare v systemovem TEMPu, muze vyuzit
+ toho, ze prvni spoustena instance Salamandera nabizi smazani vsech podadresaru
+ pojmenovanych SAL$.TMP, kde $ je hexa-cislo aspon 3 znaky. Jednoduse lze
+ takove jmeno vytvorit pres SalamanderGeneral->SalGetTempFileName(NULL, "SAL", , FALSE).
+-Pokud plugin uklada data na disk, overit rychlost pri ukladani na sitove disky.
+ Pri ukladani malych bloku dochazi k obrovskemu (desetinasobnemu) zpomaleni.
+ Na lokalnich discich to chytnou cache a problem se neprojevi. Tyka se predevsim
+ zapisu pres WriteFile, ceckovske knihovny maji zabudovane cache, takze tam
+ problem nevznika. Resenim je zabudovat cache pro ukladani, staci nejakych 32 KB.
+ Overovat je treba proti jinemu pocitaci, na lokanim sdilenem sitovem disku se
+ problem neprojevuje.
+-Pokud plugin startuje thready mel by pouzivat CThreadQueue nebo
+ CThread (viz DemoPlugin, viz prilozeny soubor threads.txt). Pokud
+ nechcete vyuzit tyto objekty, prectete si v threads.txt, co je
+ potreba udelat. POZOR na pouziti _beginthread: vraceny handle
+ threadu se zavira automaticky, takze nelze cekat na ukonceni
+ threadu prostym cekanim na tomto handlu!
+ POZOR na pouziti _beginthreadex od VC2015: pokud se takto startovany thread
+ terminuje (pres TerminateThread()), zustane plugin loaded i po unloadu pluginu
+ (_beginthreadex zrejme vnitrne vola LoadLibrary pro plugin, pri normalnim
+ ukonceni threadu dojde k FreeLibrary, ovsem pri terminovani uz ne), unload
+ modulu pluginu a s nim volani destruktoru globalnich objektu pluginu se pak
+ provede az pri ukonceni Salamandera a to muze vest k necekanym padum, protoze
+ uz jsou vsechny pluginove rozhrani uvolnene (napr. SalamanderDebug)
+-volani TerminateThread() je potreba doplnit volanim WaitForSingleObject(), jinak
+ se thread ukonci buh vi kdy pozdeji a jsou-li tam napr. okna, nedojde k jejich
+ okamzitemu zavreni, jak by clovek cekal, nejdou pak odregistrovat jejich tridy, atd.
+ priklad:
+  TerminateThread(thread, 666);          // nepovedlo se, zabijeme ho natvrdo
+  WaitForSingleObject(thread, INFINITE); // pockame az thread skutecne skonci, nekdy mu to dost trva
+-zkusit jestli plugin pracuje i s UNC cestami (\\server\share)
+-pokud plugin pouziva funkci snprintf (nebo _snprintf), zkontrolovat,
+ jestli se po volani uklada null-terminator na konec bufferu (snprintf
+ pri delsim retezci null-terminator bohuzel neuklada) - idealne nahradit
+ _snprintf_s s parametrem count=_TRUNCATE (pozor pada pri sizeOfBuffer=0)
+-Win32 API funkce FindFirstFile/FindNextFile dokazou vratit adresar s prazdnym
+ jmenem (pri rekurzivnim prochazeni adresaru to vede na nekonecny cyklus),
+ nutne osetrit (nejlepe v jedne podmince s spolu s preskakovanim "." a "..")
+-Kdykoliv archiver vytvari nebo modifikuje soubor, musi mu nastavit Archive
+ atribut. Nektere backup softy pracuji tak, ze zazalohuji pouze soubory
+ s nastavenym 'A' a nasledne tento bit vynuluji: "Cobian soubory k archivaci 
+ poznava prave pomoci atributu A."
+-pri malem bufferu pro vysledny retezec WideCharToMultiByte a MultiByteToWideChar
+ nezakonci vysledny retezec null-terminatorem -- pokud se tedy nekontroluje
+ uspech techto funkci, je nutne aspon pridat radek, ktery dava nulu do posledniho
+ znaku bufferu
+-pri kritickem shutdownu by se mela zavrit vsechna okna bezici ve svych threadech
+ vcetne svych modalnich dialogu (chybovych hlaseni nebo ruznych dotazu a oznameni),
+ podpora viz SalamanderGeneral->IsCriticalShutdown() a
+ SalamanderGeneral->CloseAllOwnedEnabledDialogs()
+
+*******************************************************************************
+** Resources                                                                 **
+*******************************************************************************
+
+Dialogy: pokud vstupnimu poli (edit line, combobox) predchazi popis
+(static text, checkbox, radiobox), mel by popisny text koncit dvojteckou.
+Priklady: 
+  [x] Show last: [     ] file(s)
+  For cluster size: [     ] bytes
+  (o) Set column width to: [     ] pixels
+
+*******************************************************************************
+** Plugin archivatoru                                                       **
+*******************************************************************************
+
+- Muze archiv obsahovat adresare/soubory se shodnym nazvem? U adresaru je
+  potreba provest jejich preklad (napriklad pridanim podtrzitka a poradoveho
+  cisla) a dosahnout unikatnosti, jinak dojde k nechtenemu spojeni jejich
+  obsahu. Soubory se stejnym jmenem se daji pri vybalovani/mazani odlisit
+  pres CFileData::PluginData (offset v archivu, ID-cko, poradove cislo, atp.).
+- Muze archiv obsahovat nepovolene znaky (" / \ * ? < > | :) pro FAT/NTFS? 
+  Je treba je prevest na podtrzitka nebo jine povolene znaky. Timto prevodem
+  se snadno docili vice adresaru/souboru se stejny nazvem, viz predchozi bod.
+- OEM/ANSI kodovani jmen: zkusit zabalit/rozbalit soubor pojmenovany
+  napr. "èeštiòka v dlouhém provedení.txt" umisteny v adresari napr.
+  "èeštiòka v dlouhém provedení" - zkusit jak DOSovou, tak Win32 verzi
+  pakovace (rozbaleni jen Win32 - v nasem pluginu)
+- Y2K - zabalit/rozbalit soubory s datumy: 1960, 1979, 1980, 1981, 2000, 2038,
+  2079, 2080, 2081, 2107, 2108, 2150, 2666 (testovaci soubory jsou zabalene
+  v C:\AS_SDK\doc\files\y2k.7z)
+- zkusit dvakrat za sebou vybalovani z archivu a pri "overwrite" dotazu
+  zkontrolovat, jestli "skip" pokracuje ve vybalovani a "cancel" vybalovani
+  okamzite ukonci
+- zkusit poskodit archiv (v hexeditu) a zkontrolovat pri vybalovani, jestli
+  se vadne soubory nevybaluji (ostatni by to vybalit melo) + zkusit poskodit
+  soubor s "read-only" atributem (pluginu nemusi jit smazat z disku - nejdrive
+  je nutne odstranit "read-only" atribut) + zkusit jak "skip" (pokracuje
+  vybalovani), tak "cancel" (vybalovani se okamzite ukonci)
+- zkusit zabalit soubory s atributy R, S, H, A a bez atributu (s nenulovou velikosti)
+  zkusit takovy archiv take vybalit, zda nedoslo ke ztrate atributu
+- zkusit prejmenovat SFX archiv z .exe na priponu archivu - umime vybalit?
+  (casem az dopiseme Ctrl+PgDn nad .exe "archivy", musi fungovat...)
+- zkusit jestli pri Pack se zapnutym "Delete files from disk after packing
+  to archive" dochazi jen k mazani skutecne zabalenych souboru (napr. kdyz
+  se pakuje do archivu, ktery jiz pakovany soubor obsahuje + pri dotazu
+  na prepis se odpovi NE - nesmi dojit ke smazani pakovaneho souboru, protoze
+  se tento soubor do archivu nezabalil)
+- pokud se pakuje s "Delete files from disk after packing to archive"
+  adresarovy strom, melo by dojit k smazani nejen souboru, ale i adresaru
+- zkusit jestli se u adresaru v listingu archivu rozpoznava pripona jen v pripade
+  TRUE v SALCFG_SORTBYEXTDIRSASFILES (jinak adresare nemaji priponu, CFileData::Ext
+  je u nich vzdy na konci CFileData::Name)
+- zkusit jestli pracuje i s archivy na UNC cestach (\\server\share) + vybaluje
+  na UNC cesty
+- zkusit rozbalovat na disk, na kterem neni dostatek mista (nedokonceny soubor
+  tam nesmi zustat)
+- zkusit prerusit rozbalovani -- nedokonceny soubor nesmi zustat
+- pokud dojde k nejake chybe behem zapisu (malo mista na disku atp.), soubor
+  musi byt smazan 
+- pokud potrebujete soubor smazat, pozor na READONLY atribut, se kterym soubor 
+  nelze smazat a je napred treba zavolat SalamanaderGeneral->ClearReadOnlyAttr(fileName)
+- zkusit vybalovat soubory/adresare do adresare, kde neni pravo zapisu
+- zkusit pack/unpack/view/edit/execute nad soubory s dlouhym nazvem/na dlouhe ceste
+- Overit, ze se ve zdrojovem kodu u vsech volani ReadFile/WriteFile kontroluji
+  navratove hodnoty.
+- Overit jak archiver pracuje s maskou zadanou v Alt+F6. Pozor, muze se
+  jednat i o skupinu masek.
+- Umi Alt+F5 zabalit take prazdne adresare? (take pro externich archivery)
+- Overit, ze plugin nepouziva chybne CanCloseArchive (pro ruseni kontextu)
+- Overit, ze plugin nedrzi kontext v globalnich promennych (levy i pravy
+  panel Salamandera muze mit otevreny nejaky archiv)
+- Pokud plugin pouziva pro nektere operace TEMP, odejmout do nej pravo
+  pro zapis a otestovat plugin jak se chova. Mel by zobrazovat chybove
+  hlaseni ze nemuze vytvorit soubor v TEMPu, protoze Access is denied.
+- umi archivator pracovat se soubory nad 4GB (na strane archivu i na strane
+  balenych/vybalovanych souboru)? (pokud ji takove soubory format umoznuje)
+- overit, ze se posouva progress bar na souborech s nulovou velikosti a na
+  prazdnych adresarich; archiv muze obsahovat pouze tisic takovych souboru
+  a adresaru a progress by se pri jejich vybalovani mel hybat; funguje v tomto
+  pripade take tlacitko Cancel?
+- vstoupit do archivu, najet na soubor, nakopirovat ho na clipboard (Ctrl+C),
+  vystoupit z archivu a pokusit se ho smazat; pokud bude Salamander kricet
+  (soubor nelze smazat, protoze je vyuzivan jinym procesem), je problem v archivatoru;
+  ten by nemel drzet otevrene handly na soubor mezi funkcemi ListArchive(), 
+  UnpackArchive(), ...
+- vstoupit do archivu a z druhe instance Salamandera archiv zkusit smazat;
+  pokud to nepujde, jde o predchozi chybu
+  (adresare lze take smazat v dobe, kdy do nich uzivatel zira v panelu)
+- Vytvorit archiv obsahujici desitky tisic polozek (soubory, radove mene adresaru);
+  otestovat rychlost listovani v panelu (podrzime Enter na archivu, takze po jeho
+  otevreni z nej Salamanader ihned zase vyskoci a zase do nej zaleze a porad dokola).
+  Porovnat rychlost s nativnim rozbalovacem (WinZIP, WinRAR). Nemame nekde CALLSTACK
+  makra, ktera by zdrzovala? Lze nakompilovat release verzi bez techto maker a porovnat.
+  Mimo listovani otestovat rychlost vybalovani, baleni, mazani...
+
+*******************************************************************************
+** Podpora pro vice monitoru                                                 **
+*******************************************************************************
+
+Desktop je rozsiren o plochy dalsich monitoru, ktere mohou lezet kdekoliv kolem
+plochy monitoru primarniho. Ten neni mozne posunou a vzdy ma pocatek v [0,0].
+Plochy ostatnich monitoru se musi alespon jednim bodem (mozne i po ulopricce)
+dotykat jine plochy. Tim je zajisteno, ze kurzor je vzdy nekde videt. Kazdy
+monitor muze mit jine rozliseni a barevnou hloubku. Na barevnou hloubku kaslem
+a ridime se barevnou hloubkou monitoru primarniho (nejsme DTP aplikace, tak
+proc se nervovat).
+
+Co je treba pohlidat:
+-ShellExecute/ShellExecuteEx museji dostat handle na okno, aby operacni system
+ mohl umistit spoustenou aplikaci na stejny monitor. Tyka se aplikaci, ktere si
+ nepamatuji posledni umisteni okna a pouzivaji default hodnotu CW_USEDEFAULT.
+
+-CreateProcess: pokud otevira okno, osetrit vice monitoru takto:
+  STARTUPINFO si;
+  memset(&si, 0, sizeof(STARTUPINFO));
+  si.cb = sizeof(STARTUPINFO);
+  si.lpTitle = LoadStr(IDS_COMMANDSHELL);
+  si.dwFlags = STARTF_USESHOWWINDOW;
+  POINT p;
+  if (MultiMonGetDefaultWindowPos(MainWindow->HWindow, &p))
+  {
+    // pokud je hlavni okno na jinem monitoru, meli bychom tam take otevrit
+    // okno vznikajici a nejlepe na default pozici (stejne jako na primaru)
+    si.dwFlags |= STARTF_USEPOSITION;
+    si.dwX = p.x;
+    si.dwY = p.y;
+  }
+  si.wShowWindow = SW_SHOWNORMAL;
+ 
+-Spravny rozklad souradnic predavanych v LPARAM pomoci maker GET_X_LPARAM
+ a GET_Y_LPARAM (vraci signed hodnotu) u nekterych zprav: WM_NCLBUTTONDBLCLK,
+ WM_NCRBUTTONUP, WM_NCLBUTTONDOWN, WM_NCLBUTTONUP, WM_NCMBUTTONDBLCLK,
+ WM_NCMBUTTONDOWN, WM_NCMBUTTONUP, WM_NCMOUSEHOVER, WM_NCMOUSEMOVE,
+ WM_NCRBUTTONDBLCLK, WM_NCRBUTTONDOWN, WM_MBUTTONDOWN, WM_MBUTTONUP,
+ WM_RBUTTONUP, WM_MBUTTONDBLCLK, WM_NCXBUTTONDBLCLK, WM_NCXBUTTONDOWN,
+ WM_MOUSEHOVER, WM_RBUTTONDBLCLK, WM_MOUSEMOVE, WM_SYSCOMMAND, WM_CONTEXTMENU,
+ WM_MOUSEWHEEL, WM_XBUTTONDOWN, WM_NCHITTEST, WM_NCXBUTTONUP, WM_LBUTTONDBLCLK,
+ WM_RBUTTONDOWN, WM_LBUTTONUP, WM_LBUTTONDOWN, WM_XBUTTONUP, WM_XBUTTONDBLCLK,
+ a API funkci: GetMessagePos 
+ 
+-Prohlednout casti kodu obsahujici konstanty SPI_GETWORKAREA, SM_CXSCREEN, SM_CYSCREEN,
+ zda bude funkcni na vice monitorech. Zaroven prohledat MoveWindow/SetWindowPos,
+ ktere take mohou lezet v casti kodu urcenemu k centrovani okna.
+
+-Veskere centrovani oken resime pomoci metody CSalamanderGeneralAbstract::MultiMonCenterWindow.
+ Viz DemoPlug. Tato metoda dokaze pracovat na systemech s vice monitory. Interne vyuziva
+ metody MultiMonGetClipRectByWindow a GetTopVisibleParent, ktere jsou take k dispozici pro
+ pripad, ze by bylo treba proavadet slozitejsi osetreni. 
+
+-Vsechny dialogy se snazime centrovat k parentu. Vyjimky lze udelat v pripade,
+ ze toto centrovani je na prekazku uzitelnosti.
+ 
+-Pokud umistujeme nove okno, je treba zajistit, aby alespon cast okna byla viditelna.
+ Uzivatel muze zmenit rozliseni jednotlivych monitoru nebo zmenit jejich topologicke
+ usporadani. API funkce SetWindowPlacement je jedina, ktera tento problem resi a nedovoli
+ okno umistit do neviditelneho prostoru. Ostatni funkce (MoveWindow, SetWindowPos,
+ DeferWindowPos, CreateWindow, CreateWindowEx) okno umisti presne na specifikovane
+ souradnice. Pro tyto pripady napred zavolejte metodu 
+ CSalamanderGeneralAbstract::MultiMonEnsureRectVisible, ktera upravi predane souradnice
+ tak, aby alespon neco z okna padlo na nektery z monitoru. Jedna se predevsim o vytvareni
+ oken na souradnicich ulozenych v konfiguraci. Provedte audit volani zminenych funkci.

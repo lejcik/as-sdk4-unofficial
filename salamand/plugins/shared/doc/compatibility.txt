@@ -1,0 +1,69 @@
+How to make plugin compatible with older versions of Altap Salamander
+=====================================================================
+
+
+It is possible to make plugin compatible with Altap Salamander 3.0
+(or with any later version) and still use also the newest features in
+latest version of Altap Salamander. You can see how to make it if you
+find DEMOPLUG_COMPATIBLE_WITH_300 in DemoPlug sample plugin.
+
+It's not possible to make plugin compatible with older version than
+Altap Salamander 3.0 with this version of SDK because these older
+versions use incompatible version of dynamic RTL (salrtl.dll instead
+of salrtl9.dll). Moreover we have done some cleaning of interface
+(we have removed some obsolete methods), so it is no longer binary
+compatible with previous versions. Please use SDK for Altap Salamander
+2.54 if you need to make plugin for Altap Salamander 2.54 and older
+(NOTE: such plugin cannot be loaded to Altap Salamander 3.0 or later).
+
+We recommend to do the following steps:
+
+-define global int variable SalamanderVersion (declared in spl_com.h) and initialize
+ it in SalamanderPluginEntry:
+  SalamanderVersion = salamander->GetVersion();
+  
+-change the test of running Salamander version in SalamanderPluginEntry to 
+ version of older Salamander (with which you want to make your plugin
+ compatible) and modify version error message appropriately (see the comment for
+ LAST_VERSION_OF_SALAMANDER in spl_vers.h for the list of all versions), e.g.:
+  if (SalamanderVersion < 64)  // plugin works in Altap Salamander 3.0 or later
+  {  // reject older versions
+    MessageBox(salamander->GetParentWindow(),
+               "This plugin requires Altap Salamander 3.0 or later.",
+               PluginName, MB_OK | MB_ICONERROR);
+    return NULL;
+  }
+ 
+-return version of older Salamander (with which you want to make your plugin
+ compatible) from SalamanderPluginGetReqVer: e.g. 64 for Altap Salamander 3.0
+ 
+-add exported function SalamanderPluginGetSDKVer (also to .def file), just return
+ LAST_VERSION_OF_SALAMANDER
+
+-define SALSDK_COMPATIBLE_WITH_VER as version of older Salamander (with
+ which you want to make your plugin compatible), e.g.:
+  #define SALSDK_COMPATIBLE_WITH_VER 64    // 64 = Altap Salamander 3.0
+ Make sure that SALSDK_COMPATIBLE_WITH_VER is defined for all SDK headers, the ideal is
+ to define it for whole plugin project in Project Settings.
+ 
+-try to compile your plugin, you should see some new errors saying you are trying to use
+ private methods - these methods are not defined in older version of Salamander, so if you
+ want to use them (only in newer versions of Salamander), you must add a test of running
+ Salamander version (find the method in SDK headers and the needed version in its comment),
+ when you add the test, add suffix "_P" ("P" as "public") to bypass compiler error message,
+ e.g. (NOTE: this sample is obsolete, it is for version 2.5, GetFileIcon2 was added to
+ version 2.52):
+  if (SalamanderVersion >= 25)
+  {
+    if (!SalamanderGeneral->GetFileIcon2_P(txt, FALSE, &icon, SALICONSIZE_16, TRUE, TRUE))
+      icon = NULL;
+  }
+  else
+  {
+    if (!SalamanderGeneral->GetFileIcon(txt, FALSE, &icon, SALICONSIZE_16))
+      icon = NULL;
+  }
+
+-read changes since the version of older Salamander (with which you want to make your
+ plugin compatible) in SDK: PLUGINS\SHARED\DOC\changes.txt, you may find some other things
+ to do to make your plugin working better in all supported versions of Salamander.

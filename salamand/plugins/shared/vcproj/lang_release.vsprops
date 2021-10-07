@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="windows-1250"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="lang_release"
+	>
+	<Tool
+		Name="VCLinkerTool"
+		AdditionalOptions="/ALIGN:4096 /ignore:4108"
+		LinkIncremental="1"
+		RandomizedBaseAddress="2"
+	/>
+	<Tool
+		Name="VCResourceCompilerTool"
+		PreprocessorDefinitions="NDEBUG"
+	/>
+</VisualStudioPropertySheet>
