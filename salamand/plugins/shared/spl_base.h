@@ -807,12 +807,13 @@ class CSalamanderPluginEntryAbstract
     // 'lifetimeLic' - TRUE pokud jde o dozivotni licenci (davame napr. prekladatelum);
     // 'keyVersion' je verze klice: 20 = 2.0, 25 = 2.5, 30 = 3.0; 'oldRegKeyFound' - TRUE
     // pokud Salamander nasel klic stare verze (nabizi upgrade na novou verzi klice)
-    virtual void WINAPI GetRegistrationKeyInfo(BOOL *registeredVersion, DWORD *productID1,
-                                               DWORD *productID2, DWORD *productID3,
-                                               int *numberOfLicenses, BOOL *neverExpires,
-                                               SYSTEMTIME *expiration, BOOL *educationalLicense,
-                                               BOOL *lifetimeLic, int *keyVersion,
-                                               BOOL *oldRegKeyFound) = 0;
+// WARNING: function has been removed!
+//    virtual void WINAPI GetRegistrationKeyInfo(BOOL *registeredVersion, DWORD *productID1,
+//                                               DWORD *productID2, DWORD *productID3,
+//                                               int *numberOfLicenses, BOOL *neverExpires,
+//                                               SYSTEMTIME *expiration, BOOL *educationalLicense,
+//                                               BOOL *lifetimeLic, int *keyVersion,
+//                                               BOOL *oldRegKeyFound) = 0;
 
     // nahraje modul s jazykove zavislymi resourcy (SLG-cko); vzdy zkusi nahrat modul
     // stejneho jazyku v jakem prave bezi Salamander, pokud takovy modul nenajde (nebo
@@ -840,7 +841,8 @@ class CSalamanderPluginEntryAbstract
     // "SalamanderPluginEntry" funkce) a jde pouze o odkaz, takze se neuvolnuje
     // vraci NULL, pokud knihovna uxtheme.dll neni k dispozici (nebezime pod Windows XP
     // nebo pod Common Controls 6.0 a vyssi)
-    virtual CXpThemeSupportAbstract * WINAPI GetXpThemeSupport() = 0;
+// WARNING: function seems to be removed!
+//    virtual CXpThemeSupportAbstract * WINAPI GetXpThemeSupport() = 0;
 
     // vraci ukazatel na interface pro komfortni praci se soubory,
     // interface je platny po celou dobu existence pluginu (nejen v ramci
@@ -868,7 +870,8 @@ class CSalamanderPluginEntryAbstract
     // chce blokovat pouzivani pluginu, plugin by se nemel naloadit)
     // omezeni: nesmi se volat pred metodou SetBasicPluginData; pokud ma dialog obsahovat URL homepage,
     //          je predem treba zavolat SetPluginHomePageURL
-    virtual BOOL WINAPI ShowNotRegisteredDlg(HICON pluginIcon) = 0;
+// WARNING: function seems to be removed!
+//    virtual BOOL WINAPI ShowNotRegisteredDlg(HICON pluginIcon) = 0;
 };
 
 //
