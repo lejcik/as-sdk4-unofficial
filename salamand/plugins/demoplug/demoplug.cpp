@@ -235,7 +235,7 @@ CPluginInterfaceAbstract * WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAb
 int WINAPI SalamanderPluginGetReqVer()
 {
 #ifdef DEMOPLUG_COMPATIBLE_WITH_300
-  return 64;  // plugin works in Altap Salamander 3.0 or later
+  return 102;  // plugin works in Altap Salamander 4.0 or later
 #else // DEMOPLUG_COMPATIBLE_WITH_300
   return LAST_VERSION_OF_SALAMANDER;
 #endif DEMOPLUG_COMPATIBLE_WITH_300

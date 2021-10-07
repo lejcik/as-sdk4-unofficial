@@ -40,7 +40,7 @@
 #define DEMOPLUG_COMPATIBLE_WITH_300
 
 #ifdef DEMOPLUG_COMPATIBLE_WITH_300
-#define SALSDK_COMPATIBLE_WITH_VER 64    // 64 = Altap Salamander 3.0 (SDK will be defined to be compatible with version 3.0)
+#define SALSDK_COMPATIBLE_WITH_VER 102    // 64 = Altap Salamander 4.0 (SDK will be defined to be compatible with version 3.0)
 #endif // DEMOPLUG_COMPATIBLE_WITH_300
 
 #include "versinfo.rh2"
