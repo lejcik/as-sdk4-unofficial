@@ -29,94 +29,132 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{42D388F6-A8CC-4EA5-BE0F-15220B4BA200}</ProjectGuid>
     <RootNamespace>lang_demoview</RootNamespace>
-<WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props"></Import>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props">
+  </Import>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SDK|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SDK|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props"></Import>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props">
+  </Import>
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='SDK|Win32'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform"></Import>
-    <Import Project="lang_demoview.props"></Import>
-    <Import Project="..\..\shared\vcproj\x86.props"></Import>
-    <Import Project="..\..\shared\vcproj\lang_base.props"></Import>
-    <Import Project="..\..\shared\vcproj\lang_release.props"></Import>
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform">
+    </Import>
+    <Import Project="lang_demoview.props">
+    </Import>
+    <Import Project="..\..\shared\vcproj\x86.props">
+    </Import>
+    <Import Project="..\..\shared\vcproj\lang_base.props">
+    </Import>
+    <Import Project="..\..\shared\vcproj\lang_release.props">
+    </Import>
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform"></Import>
-    <Import Project="lang_demoview.props"></Import>
-    <Import Project="..\..\shared\vcproj\x86.props"></Import>
-    <Import Project="..\..\shared\vcproj\lang_base.props"></Import>
-    <Import Project="..\..\shared\vcproj\lang_release.props"></Import>
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform">
+    </Import>
+    <Import Project="lang_demoview.props">
+    </Import>
+    <Import Project="..\..\shared\vcproj\x86.props">
+    </Import>
+    <Import Project="..\..\shared\vcproj\lang_base.props">
+    </Import>
+    <Import Project="..\..\shared\vcproj\lang_release.props">
+    </Import>
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform"></Import>
-    <Import Project="lang_demoview.props"></Import>
-    <Import Project="..\..\shared\vcproj\x86.props"></Import>
-    <Import Project="..\..\shared\vcproj\lang_base.props"></Import>
-    <Import Project="..\..\shared\vcproj\lang_debug.props"></Import>
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform">
+    </Import>
+    <Import Project="lang_demoview.props">
+    </Import>
+    <Import Project="..\..\shared\vcproj\x86.props">
+    </Import>
+    <Import Project="..\..\shared\vcproj\lang_base.props">
+    </Import>
+    <Import Project="..\..\shared\vcproj\lang_debug.props">
+    </Import>
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='SDK|x64'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform"></Import>
-    <Import Project="lang_demoview.props"></Import>
-    <Import Project="..\..\shared\vcproj\x64.props"></Import>
-    <Import Project="..\..\shared\vcproj\lang_base.props"></Import>
-    <Import Project="..\..\shared\vcproj\lang_release.props"></Import>
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform">
+    </Import>
+    <Import Project="lang_demoview.props">
+    </Import>
+    <Import Project="..\..\shared\vcproj\x64.props">
+    </Import>
+    <Import Project="..\..\shared\vcproj\lang_base.props">
+    </Import>
+    <Import Project="..\..\shared\vcproj\lang_release.props">
+    </Import>
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform"></Import>
-    <Import Project="lang_demoview.props"></Import>
-    <Import Project="..\..\shared\vcproj\x64.props"></Import>
-    <Import Project="..\..\shared\vcproj\lang_base.props"></Import>
-    <Import Project="..\..\shared\vcproj\lang_release.props"></Import>
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform">
+    </Import>
+    <Import Project="lang_demoview.props">
+    </Import>
+    <Import Project="..\..\shared\vcproj\x64.props">
+    </Import>
+    <Import Project="..\..\shared\vcproj\lang_base.props">
+    </Import>
+    <Import Project="..\..\shared\vcproj\lang_release.props">
+    </Import>
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform"></Import>
-    <Import Project="lang_demoview.props"></Import>
-    <Import Project="..\..\shared\vcproj\x64.props"></Import>
-    <Import Project="..\..\shared\vcproj\lang_base.props"></Import>
-    <Import Project="..\..\shared\vcproj\lang_debug.props"></Import>
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform">
+    </Import>
+    <Import Project="lang_demoview.props">
+    </Import>
+    <Import Project="..\..\shared\vcproj\x64.props">
+    </Import>
+    <Import Project="..\..\shared\vcproj\lang_base.props">
+    </Import>
+    <Import Project="..\..\shared\vcproj\lang_debug.props">
+    </Import>
   </ImportGroup>
-  <PropertyGroup Label="UserMacros"></PropertyGroup>
+  <PropertyGroup Label="UserMacros">
+  </PropertyGroup>
   <PropertyGroup>
     <_ProjectFileVersion>14.0.25431.1</_ProjectFileVersion>
   </PropertyGroup>
   <ItemDefinitionGroup>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="..\demoview.rh2"></None>
-    <None Include="..\lang\lang.rc2"></None>
-    <None Include="..\lang\lang.rh"></None>
+    <None Include="..\demoview.rh2">
+    </None>
+    <None Include="..\lang\lang.rc2">
+    </None>
+    <None Include="..\lang\lang.rh">
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\lang\lang.rc"></ResourceCompile>
+    <ResourceCompile Include="..\lang\lang.rc">
+    </ResourceCompile>
   </ItemGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets"></Import>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets">
+  </Import>
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
 </Project>

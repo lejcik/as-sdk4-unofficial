@@ -3,7 +3,7 @@
   <ImportGroup Label="PropertySheets">
   </ImportGroup>
   <PropertyGroup Label="UserMacros">
-    <ShortVSVer>vc2015</ShortVSVer>
+    <ShortVSVer>vc2019</ShortVSVer>
   </PropertyGroup>
   <PropertyGroup>
     <_ProjectFileVersion>14.0.25431.1</_ProjectFileVersion>
