@@ -127,6 +127,8 @@ class CSalamanderDebugAbstract
     // spousti funkci 'threadBody' s parametrem 'param', vraci vysledek funkce 'threadBody'
     virtual unsigned WINAPI CallWithCallStack(unsigned (WINAPI *threadBody)(void *), void *param) = 0;
 
+// TODO: Push()+Pop() shifted 3 positions down
+/*
     // uklada na CALL-STACK zpravu ('format'+'args' viz vsprintf), pri padu aplikace je
     // obsah CALL-STACKU vypsan do okna Bug Report ohlasujiciho pad aplikace
     virtual void WINAPI Push(const char *format, va_list args, CCallStackMsgContext *callStackMsgContext,
@@ -134,7 +136,7 @@ class CSalamanderDebugAbstract
 
     // odstranuje z CALL-STACKU posledni zpravu, volani musi parovat s Push
     virtual void WINAPI Pop(CCallStackMsgContext *callStackMsgContext) = 0;
-
+*/
     // nastavi jmeno aktivniho threadu pro VC debugger
     virtual void WINAPI SetThreadNameInVC(const char *name) = 0;
 
@@ -146,6 +148,12 @@ class CSalamanderDebugAbstract
     // autostart serveru a server nebezi (napr. ho uzivatel ukoncil), zkusi ho pred
     // pripojenim nastartovat.
     virtual void WINAPI TraceConnectToServer() = 0;
+
+// TODO: new position for Push()+Pop()
+
+	virtual void WINAPI Push(const char* format, va_list args, CCallStackMsgContext* callStackMsgContext,
+		BOOL doNotMeasureTimes) = 0;
+	virtual void WINAPI Pop(CCallStackMsgContext* callStackMsgContext) = 0;
 
 #if defined(SALSDK_COMPATIBLE_WITH_VER) && SALSDK_COMPATIBLE_WITH_VER < 79
   private:  // SalamanderVersion >= 79 (Salamander 3.07 or later)
