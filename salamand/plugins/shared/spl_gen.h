@@ -820,11 +820,6 @@ enum CHtmlHelpCommand
 // slouzi jako parametr OpenHtmlHelpForSalamander pri command==HHCDisplayContext
 #define HTMLHELP_SALID_PWDMANAGER 1 // zobrazi napovedu pro Password Manager
 
-// values for GetWindowsVersion (Salamander can be started on Windows 2000 (W2K) or later)
-#define WINDOWS_VERSION_XP_AND_LATER        22
-#define WINDOWS_VERSION_VISTA_AND_LATER     23
-#define WINDOWS_VERSION_7_AND_LATER         24
-
 class CPluginFSInterfaceAbstract;
 
 class CSalamanderZLIBAbstract;
@@ -1107,7 +1102,8 @@ class CSalamanderGeneralAbstract
     // duplikace stringu - alokace pameti (na heapu Salamadera - heapu dostupnem pres salrtl9.dll)
     // + kopie stringu; pri 'str'==NULL vraci NULL; 'err' se ignoruje
     // mozne volat z libovolneho threadu
-    virtual char * WINAPI DupStrEx(const char *str, BOOL &err) = 0;
+// WARNING: function has been removed!
+//    virtual char * WINAPI DupStrEx(const char *str, BOOL &err) = 0;
 
     // vraci mapovaci tabulku na mala a velka pismena (pole 256 znaku - male/velke pismeno na
     // indexu zjistovaneho pismene); neni-li 'lowerCase' NULL, vraci se v nem tabulka malych pismen;
@@ -2901,7 +2897,8 @@ class CSalamanderGeneralAbstract
 
     // podpora pro testovani registracnich klicu v pripade, ze neni mozne prilinkovat RSAKEY.LIB
     // (napr. kompilace pluginu v C++ Builder); popis viz shared\rsakey.h
-    virtual BOOL WINAPI RSAKeyValid(const char *keyContent, DWORD *keyContentSize) = 0;
+// WARNING: function has been removed!
+//    virtual BOOL WINAPI RSAKeyValid(const char *keyContent, DWORD *keyContentSize) = 0;
 
     // prida novy timer pro objekt pluginoveho FS; az dojde k timeoutu timeru, zavola se metoda
     // CPluginFSInterfaceAbstract::Event() objektu pluginoveho FS 'timerOwner' s parametry
@@ -3074,10 +3071,11 @@ class CSalamanderGeneralAbstract
     // ve kterem se vraci plna cesta k souboru klice (cesta do keys*.zip archivu nebo na disk);
     // vraci TRUE pri uspechu
     // lze volat z libovolneho threadu
-    virtual BOOL WINAPI ReadRegistrationKey(HINSTANCE dllInstance, const char *keyName,
-                                            BOOL *keyNotFound, char **keyContent,
-                                            DWORD *keyContentSize, BOOL *keyContentIsUTF8,
-                                            char *fullKeyName) = 0;
+// WARNING: function has been removed!
+//    virtual BOOL WINAPI ReadRegistrationKey(HINSTANCE dllInstance, const char *keyName,
+//                                            BOOL *keyNotFound, char **keyContent,
+//                                            DWORD *keyContentSize, BOOL *keyContentIsUTF8,
+//                                            char *fullKeyName) = 0;
 
     // vraci TRUE, pokud jsou cesty 'path1' a 'path2' ze stejneho svazku; v 'resIsOnlyEstimation'
     // (neni-li NULL) vraci TRUE, pokud neni vysledek jisty (jisty je jen v pripade shody cest nebo
@@ -3226,7 +3224,8 @@ class CSalamanderGeneralAbstract
     // "Nakup novych licenci", jinak "Upgrade nebo dokoupeni licenci" (s predvyplnenym
     // Product ID a Upgrade Code)
     // mozne volat z libovolneho threadu
-    virtual void WINAPI OpenPurchasePage(HWND parent) = 0;
+// WARNING: function has been removed!
+//    virtual void WINAPI OpenPurchasePage(HWND parent) = 0;
 
     // vracit TRUE, pokud je aktualni uzivatel clenem skupiny Administrators, jinak vraci FALSE
     // mozne volat z libovolneho threadu
@@ -3244,7 +3243,8 @@ class CSalamanderGeneralAbstract
 
     // vrati TRUE, pokud Salamander bezi pod 'query', viz WINDOWS_VERSION_xxx
     // mozne volat z libovolneho threadu
-    virtual BOOL WINAPI GetWindowsVersion(DWORD query) = 0;
+// WARNING: function has been removed!
+//    virtual BOOL WINAPI GetWindowsVersion(DWORD query) = 0;
 
     //
     // GetMouseWheelScrollChars
