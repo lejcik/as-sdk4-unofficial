@@ -11,6 +11,7 @@ The following classes should be stable:
 - `CSalamanderGeneralAbstract`
 - `CSalamanderPluginEntryAbstract`
 - `CPluginInterfaceForViewerAbstract`
+- `CGUIToolBarAbstract`
 
 Partially ported classes:
 

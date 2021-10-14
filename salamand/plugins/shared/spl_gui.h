@@ -1527,9 +1527,10 @@ class CGUIToolBarAbstract
     // See Also
     //   SetItemInfo, GetItemInfo
     //
-    virtual BOOL WINAPI InsertItem(DWORD position,
-                                   BOOL byPosition,
-                                   const TLBI_ITEM_INFO *tii) = 0;
+// WARNING: function has been removed!
+//    virtual BOOL WINAPI InsertItem(DWORD position,
+//                                   BOOL byPosition,
+//                                   const TLBI_ITEM_INFO *tii) = 0;
 
     // OBSOLETE: use SetItemInfo2
     //
@@ -1555,9 +1556,10 @@ class CGUIToolBarAbstract
     // See Also
     //   InsertItem, GetItemInfo
     //
-    virtual BOOL WINAPI SetItemInfo(DWORD position,
-                                    BOOL byPosition,
-                                    const TLBI_ITEM_INFO *tii) = 0;
+// WARNING: function has been removed!
+//    virtual BOOL WINAPI SetItemInfo(DWORD position,
+//                                    BOOL byPosition,
+//                                    const TLBI_ITEM_INFO *tii) = 0;
 
     // OBSOLETE: use GetItemInfo2
     //
@@ -1583,9 +1585,10 @@ class CGUIToolBarAbstract
     // See Also
     //   InsertItem, SetItemInfo
     //
-    virtual BOOL WINAPI GetItemInfo(DWORD position,
-                                    BOOL byPosition,
-                                    TLBI_ITEM_INFO *tii) = 0;
+// WARNING: function has been removed!
+//    virtual BOOL WINAPI GetItemInfo(DWORD position,
+//                                    BOOL byPosition,
+//                                    TLBI_ITEM_INFO *tii) = 0;
 
     // CheckItem
     //   Sets the state of the specified button's attribute to either checked or normal.
