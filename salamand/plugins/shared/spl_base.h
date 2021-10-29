@@ -113,6 +113,9 @@ class CSalamanderDebugAbstract
     // vypise 'file'+'line'+'str' TRACE_E na TRACE SERVER - pouze pri DEBUG/SDK/PB verzi Salamandera
     virtual void WINAPI TraceE(const char *file, int line, const char *str) = 0;
 
+    virtual void WINAPI unknown1(void*, void*, void*) = 0;
+    virtual void WINAPI unknown2(void*, void*, void*) = 0;
+
     // zaregistruje novy thread u TRACE (prideli Unique ID), 'thread'+'tid' vraci
     // _beginthreadex i CreateThread, nepovine (UID je pak -1)
     virtual void WINAPI TraceAttachThread(HANDLE thread, unsigned tid) = 0;
@@ -121,14 +124,14 @@ class CSalamanderDebugAbstract
     // POZOR: vyzaduje registraci threadu u TRACE (viz TraceAttachThread), jinak nic nedela
     virtual void WINAPI TraceSetThreadName(const char *name) = 0;
 
+    virtual void WINAPI unknown3(void*) = 0;
+
     // zavede do threadu veci potrebne pro CALL-STACK metody (viz Push a Pop nize),
     // ve vsech volanych metodach pluginu je mozne CALL_STACK metody pouzit primo,
     // tato metoda se pouziva pouze pro nove thready pluginu,
     // spousti funkci 'threadBody' s parametrem 'param', vraci vysledek funkce 'threadBody'
     virtual unsigned WINAPI CallWithCallStack(unsigned (WINAPI *threadBody)(void *), void *param) = 0;
 
-// TODO: Push()+Pop() shifted 3 positions down
-/*
     // uklada na CALL-STACK zpravu ('format'+'args' viz vsprintf), pri padu aplikace je
     // obsah CALL-STACKU vypsan do okna Bug Report ohlasujiciho pad aplikace
     virtual void WINAPI Push(const char *format, va_list args, CCallStackMsgContext *callStackMsgContext,
@@ -136,7 +139,7 @@ class CSalamanderDebugAbstract
 
     // odstranuje z CALL-STACKU posledni zpravu, volani musi parovat s Push
     virtual void WINAPI Pop(CCallStackMsgContext *callStackMsgContext) = 0;
-*/
+
     // nastavi jmeno aktivniho threadu pro VC debugger
     virtual void WINAPI SetThreadNameInVC(const char *name) = 0;
 
@@ -148,12 +151,6 @@ class CSalamanderDebugAbstract
     // autostart serveru a server nebezi (napr. ho uzivatel ukoncil), zkusi ho pred
     // pripojenim nastartovat.
     virtual void WINAPI TraceConnectToServer() = 0;
-
-// TODO: new position for Push()+Pop()
-
-	virtual void WINAPI Push(const char* format, va_list args, CCallStackMsgContext* callStackMsgContext,
-		BOOL doNotMeasureTimes) = 0;
-	virtual void WINAPI Pop(CCallStackMsgContext* callStackMsgContext) = 0;
 
 #if defined(SALSDK_COMPATIBLE_WITH_VER) && SALSDK_COMPATIBLE_WITH_VER < 79
   private:  // SalamanderVersion >= 79 (Salamander 3.07 or later)
