@@ -4,20 +4,9 @@ The SDK for Altap Salamander 4.0 was not yet published. Here is an unofficial po
 
 ## Project status
 
-The port is not yet complete, there may be many incompatibilities that were taken from the older SDK.
+The port is now complete. The public APIs were tested with the enclosed demo plugins, and the ported SDK now seems to be stable. If you find any issue, please let me know and I'll try to fix it.
 
-The following classes should be stable:
-
-- `CSalamanderGeneralAbstract`
-- `CSalamanderPluginEntryAbstract`
-- `CPluginInterfaceForViewerAbstract`
-- `CGUIToolBarAbstract`
-
-Partially ported classes:
-
-- `CSalamanderDebugAbstract` class has fixed offsets only for `Push()` and `Pop()` methods, calling any other method may be dangerous! It's quite tricky to identify methods of this class in the binary code.
-
-The rest of the classes may be unstable. There's a plugin `demoplug` which tests most of the SDK features, so it's a good candidate for testing stability the ported SDK. If you find any issue, please let me know and I'll try to fix it.
+**NOTE:** `CSalamanderDebugAbstract` class has been refactored in SDK 4.0, I couldn't reconstruct it exactly. However, most of its methods are dummy in the non-SDK build, so I fixed the offsets and put some placeholders there (the `unknown*()` methods) to fix the binary compatibility. If you need debugging functionality, use the older SDK 3.08.
 
 ## Installation and setup
 
