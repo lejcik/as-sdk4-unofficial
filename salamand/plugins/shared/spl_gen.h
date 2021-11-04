@@ -49,7 +49,6 @@ class CPluginDataInterfaceAbstract;
 #define MSGBOXEX_RETRYCANCEL          0x00000005  // MB_RETRYCANCEL
 #define MSGBOXEX_CANCELTRYCONTINUE    0x00000006  // MB_CANCELTRYCONTINUE
 #define MSGBOXEX_CONTINUEABORT        0x00000007  // MB_CONTINUEABORT
-// VERZE: Salamander 3.08 nebo novejsi (SalamanderVersion >= 81)
 #define MSGBOXEX_YESNOOKCANCEL        0x00000008
 
 #define MSGBOXEX_ICONHAND             0x00000010  // MB_ICONHAND / MB_ICONSTOP / MB_ICONERROR
@@ -762,7 +761,7 @@ class CSalamanderPNGAbstract
     // mozne volat z libovolneho threadu
     virtual HBITMAP WINAPI LoadRawPNGBitmap(const void *rawPNG, DWORD rawPNGSize, DWORD flags, COLORREF unused) = 0;
 
-  // poznamka 1: nacitane PNG je vhodne komprimovat pomoci PNGSlim, viz http://forum.altap.cz/viewtopic.php?f=15&t=3278
+  // poznamka 1: nacitane PNG je vhodne komprimovat pomoci PNGSlim, viz https://forum.altap.cz/viewtopic.php?f=15&t=3278
   // poznamka 2: ukazka primeho pristupu k datum DIB viz Demoplugin, funkce AlphaBlend
   // poznamka 3: podporeny jsou non-interlaced PNG typu Greyscale, Greyscale with alpha, Truecolour, Truecolour with alpha, Indexed-colour
   //             podminkou je 8 bitu na jeden kanal
@@ -1097,13 +1096,6 @@ class CSalamanderGeneralAbstract
     // + kopie stringu; pri 'str'==NULL vraci NULL;
     // mozne volat z libovolneho threadu
     virtual char * WINAPI DupStr(const char *str) = 0;
-
-    // OBSOLETE (plne ji nahrazuje DupStr):
-    // duplikace stringu - alokace pameti (na heapu Salamadera - heapu dostupnem pres salrtl9.dll)
-    // + kopie stringu; pri 'str'==NULL vraci NULL; 'err' se ignoruje
-    // mozne volat z libovolneho threadu
-// WARNING: function has been removed!
-//    virtual char * WINAPI DupStrEx(const char *str, BOOL &err) = 0;
 
     // vraci mapovaci tabulku na mala a velka pismena (pole 256 znaku - male/velke pismeno na
     // indexu zjistovaneho pismene); neni-li 'lowerCase' NULL, vraci se v nem tabulka malych pismen;
@@ -1461,9 +1453,8 @@ class CSalamanderGeneralAbstract
 
     // ziska root cestu z normalni (c:\path) i UNC (\\server\share\path) cesty 'path', v 'root' vraci
     // cestu ve formatu 'c:\' nebo '\\server\share\' (min. velikost 'root' bufferu je MAX_PATH),
-    // vraci pocet znaku root cesty (bez null-terminatoru); od verze Salamander 3.07 nebo novejsi
-    // (SalamanderVersion >= 78): pri UNC root ceste delsi nez MAX_PATH dojde k orezu na MAX_PATH-2
-    // znaku a doplneni backslashe (stejne to na 100% neni root cesta)
+    // vraci pocet znaku root cesty (bez null-terminatoru); pri UNC root ceste delsi nez MAX_PATH
+    // dojde k orezu na MAX_PATH-2 znaku a doplneni backslashe (stejne to na 100% neni root cesta)
     // mozne volat z libovolneho threadu
     virtual int WINAPI GetRootPath(char *root, const char *path) = 0;
 
@@ -2895,11 +2886,6 @@ class CSalamanderGeneralAbstract
     // mozne volat z libovolneho threadu
     virtual void WINAPI FreeSalamanderDirectory(CSalamanderDirectoryAbstract *salDir) = 0;
 
-    // podpora pro testovani registracnich klicu v pripade, ze neni mozne prilinkovat RSAKEY.LIB
-    // (napr. kompilace pluginu v C++ Builder); popis viz shared\rsakey.h
-// WARNING: function has been removed!
-//    virtual BOOL WINAPI RSAKeyValid(const char *keyContent, DWORD *keyContentSize) = 0;
-
     // prida novy timer pro objekt pluginoveho FS; az dojde k timeoutu timeru, zavola se metoda
     // CPluginFSInterfaceAbstract::Event() objektu pluginoveho FS 'timerOwner' s parametry
     // FSE_TIMER a 'timerParam'; 'timeout' je timeout timeru od jeho pridani (v milisekundach,
@@ -3058,25 +3044,6 @@ class CSalamanderGeneralAbstract
     virtual BOOL WINAPI OpenHtmlHelp(HWND parent, CHtmlHelpCommand command, DWORD_PTR dwData,
                                      BOOL quiet) = 0;
 
-    // nacte do alokovane pameti (volajici je odpovedny za dealokaci) obsah registracniho klice
-    // (z archivu keys*.zip nebo ze souboru (vybalene klice verze 2.0)); 'dllInstance' je modul
-    // pluginu nebo je NULL (pak jde primo o Salamandera); 'keyName' je relativni jmeno souboru
-    // klice v archivu keys*.zip (napr. "plugins\\demoplug\\demoplug.key"), pokud jde o klice
-    // verze 2.5 nebo vyssi, nacte se UTF8 varianta klice (napr. "demoplug_u.key") a v 'keyContentIsUTF8'
-    // se vraci TRUE; neni-li 'dllInstance' NULL a neexistuje archiv keys*.zip, hleda se tento soubor
-    // u modulu pluginu (SPL souboru) a to bez cesty v archivu (tedy napr. jen "demoplug.key");
-    // v 'keyNotFound' vraci TRUE pokud pozadovany klic nebyl nalezen; pri uspechu v 'keyContent'
-    // vraci alokovany obsah klice (volajici je odpovedny za dealokaci); v 'keyContentSize' je
-    // velikost obsahu klice ('keyContent'); 'fullKeyName' je buffer (minimalne 2 * MAX_PATH znaku),
-    // ve kterem se vraci plna cesta k souboru klice (cesta do keys*.zip archivu nebo na disk);
-    // vraci TRUE pri uspechu
-    // lze volat z libovolneho threadu
-// WARNING: function has been removed!
-//    virtual BOOL WINAPI ReadRegistrationKey(HINSTANCE dllInstance, const char *keyName,
-//                                            BOOL *keyNotFound, char **keyContent,
-//                                            DWORD *keyContentSize, BOOL *keyContentIsUTF8,
-//                                            char *fullKeyName) = 0;
-
     // vraci TRUE, pokud jsou cesty 'path1' a 'path2' ze stejneho svazku; v 'resIsOnlyEstimation'
     // (neni-li NULL) vraci TRUE, pokud neni vysledek jisty (jisty je jen v pripade shody cest nebo
     // pokud se podari ziskat "volume name" (GUID svazku) u obou cest, coz pripada v uvahu jen pro
@@ -3220,13 +3187,6 @@ class CSalamanderGeneralAbstract
     // omezeni: hlavni thread
     virtual void WINAPI RemoveCurrentPathFromHistory(int panel) = 0;
 
-    // otevre nakupni webovou stranku Salamandera; pokud neni Salamander registrovany, otevre
-    // "Nakup novych licenci", jinak "Upgrade nebo dokoupeni licenci" (s predvyplnenym
-    // Product ID a Upgrade Code)
-    // mozne volat z libovolneho threadu
-// WARNING: function has been removed!
-//    virtual void WINAPI OpenPurchasePage(HWND parent) = 0;
-
     // vracit TRUE, pokud je aktualni uzivatel clenem skupiny Administrators, jinak vraci FALSE
     // mozne volat z libovolneho threadu
     virtual BOOL WINAPI IsUserAdmin() = 0;
@@ -3240,11 +3200,6 @@ class CSalamanderGeneralAbstract
     // ze je spatne zadane heslo nebo jmeno, ze je potreba zmenit heslo, atd.)
     // mozne volat z libovolneho threadu
     virtual DWORD WINAPI SalWNetAddConnection2Interactive(LPNETRESOURCE lpNetResource) = 0;
-
-    // vrati TRUE, pokud Salamander bezi pod 'query', viz WINDOWS_VERSION_xxx
-    // mozne volat z libovolneho threadu
-// WARNING: function has been removed!
-//    virtual BOOL WINAPI GetWindowsVersion(DWORD query) = 0;
 
     //
     // GetMouseWheelScrollChars
@@ -3379,10 +3334,6 @@ class CSalamanderGeneralAbstract
     // mozne volat z libovolneho threadu
     virtual DWORD WINAPI SalGetFileAttributes(const char *fileName) = 0;
 
-#if defined(SALSDK_COMPATIBLE_WITH_VER) && SALSDK_COMPATIBLE_WITH_VER < 78
-  private:  // SalamanderVersion >= 78 (Salamander 3.07 or later)
-#endif
-
     // zatim neexistuje Win32 API pro detekci SSD, takze se jejich detekovani provadi heuristikou
     // na zaklade dotazu na podporu pro TRIM, StorageDeviceSeekPenaltyProperty, atd
     // funkce vraci TRUE, pokud disk na ceste 'path' vypada jako SSD; FALSE jindy
@@ -3392,19 +3343,16 @@ class CSalamanderGeneralAbstract
     // 2000/XP/Vista (Salamander 2.5 pracuje jen s junction-pointy); 'path' je cesta, pro kterou 
     // zjistujeme informace; pokud cesta vede pres sitovou cestu, tise vraci FALSE
     // mozne volat z libovolneho threadu
-    // VERZE: pouzivat jen pokud SalamanderVersion >= 78 (Salamander 3.07 nebo novejsi)
     virtual BOOL WINAPI IsPathOnSSD(const char *path) = 0;
 
     // vraci TRUE, pokud jde o UNC cestu (detekuje oba formaty: \\server\share i \\?\UNC\server\share)
     // mozne volat z libovolneho threadu
-    // VERZE: pouzivat jen pokud SalamanderVersion >= 78 (Salamander 3.07 nebo novejsi)
     virtual BOOL WINAPI IsUNCPath(const char *path) = 0;
 
     // nahradi substy v ceste 'resPath' jejich cilovymi cestami (prevod na cestu bez SUBST drive-letters);
     // 'resPath' musi ukazovat na buffer o minimalne 'MAX_PATH' znacich
     // vraci TRUE pri uspechu, FALSE pri chybe
     // mozne volat z libovolneho threadu
-    // VERZE: pouzivat jen pokud SalamanderVersion >= 78 (Salamander 3.07 nebo novejsi)
     virtual BOOL WINAPI ResolveSubsts(char *resPath) = 0;
 
     // volat jen pro cesty 'path', jejichz root (po odstraneni substu) je DRIVE_FIXED (jinde nema smysl hledat
@@ -3427,7 +3375,6 @@ class CSalamanderGeneralAbstract
     // 2 (JUNCTION POINT), 3 (SYMBOLIC LINK); v 'netPath' (neni-li NULL) vracime sitovou cestu, na kterou
     // vede aktualni (posledni) lokalni symlink v ceste - v teto situaci se root sitove cesty vraci v 'resPath'
     // mozne volat z libovolneho threadu
-    // VERZE: pouzivat jen pokud SalamanderVersion >= 78 (Salamander 3.07 nebo novejsi)
     virtual void WINAPI ResolveLocalPathWithReparsePoints(char *resPath, const char *path,
                                                           BOOL *cutResPathIsPossible,
                                                           BOOL *rootOrCurReparsePointSet,
@@ -3440,14 +3387,12 @@ class CSalamanderGeneralAbstract
     // uspechu, vrati TRUE a nastavi 'mountPoint' a 'guidPath' (pokud jsou ruzne od NULL, musi
     // odkazovat na buffery o velikosti minimalne MAX_PATH; retezce budou zakonceny zpetnym lomitkem).
     // mozne volat z libovolneho threadu
-    // VERZE: pouzivat jen pokud SalamanderVersion >= 78 (Salamander 3.07 nebo novejsi)
     virtual BOOL WINAPI GetResolvedPathMountPointAndGUID(const char *path, char *mountPoint, char *guidPath) = 0;
 
     // nahradi v retezci posledni znak '.' decimalnim separatorem ziskanym ze systemu LOCALE_SDECIMAL
     // delka retezce muze narust, protoze separator muze mit podle MSDN az 4 znaky
     // vraci TRUE, pokud byl buffer dostatecne veliky a operaci se povedlo dokoncit, jinak vraci FALSE
     // mozne volat z libovolneho threadu
-    // VERZE: pouzivat jen pokud SalamanderVersion >= 78 (Salamander 3.07 nebo novejsi)
     virtual BOOL WINAPI PointToLocalDecimalSeparator(char *buffer, int bufferSize) = 0;
 
     // nastavi pro tento plugin pole icon-overlays; po nastaveni muze plugin v listingach vracet
@@ -3464,16 +3409,10 @@ class CSalamanderGeneralAbstract
     // CPluginInterfaceAbstract::Event()
     // POZOR: pred Windows XP (ve W2K) je velikost ikony SALICONSIZE_48 jen 32 bodu!
     // omezeni: hlavni thread
-    // VERZE: pouzivat jen pokud SalamanderVersion >= 78 (Salamander 3.07 nebo novejsi)
     virtual void WINAPI SetPluginIconOverlays(int iconOverlaysCount, HICON *iconOverlays) = 0;
-
-#if defined(SALSDK_COMPATIBLE_WITH_VER) && SALSDK_COMPATIBLE_WITH_VER < 79
-  private:  // SalamanderVersion >= 79 (Salamander 3.07 or later)
-#endif
 
     // popis viz SalGetFileSize(), prvni rozdil je, ze se soubor zadava plnou cestou;
     // druhy je, ze 'err' muze byt NULL, pokud nestojime o kod chyby;
-    // VERZE: pouzivat jen pokud SalamanderVersion >= 79 (Salamander 3.07 nebo novejsi)
     virtual BOOL WINAPI SalGetFileSize2(const char *fileName, CQuadWord &size, DWORD *err) = 0;
 
     // zjisti velikost souboru, na ktery vede symlink 'fileName'; velikost vraci v 'size';
@@ -3486,14 +3425,12 @@ class CSalamanderGeneralAbstract
     // uzivatel stiskl Ignore; pri chybe a stisku Cancel v okne s chybou vraci FALSE a
     // v 'cancel' vraci TRUE;
     // mozne volat z libovolneho threadu
-    // VERZE: pouzivat jen pokud SalamanderVersion >= 79 (Salamander 3.07 nebo novejsi)
     virtual BOOL WINAPI GetLinkTgtFileSize(HWND parent, const char *fileName, CQuadWord *size,
                                            BOOL *cancel, BOOL *ignoreAll) = 0;
 
     // smaze link na adresar (junction point, symbolic link, mount point); pri uspechu
     // vraci TRUE; pri chybe vraci FALSE a neni-li 'err' NULL, vraci kod chyby v 'err'
     // mozne volat z libovolneho threadu
-    // VERZE: pouzivat jen pokud SalamanderVersion >= 79 (Salamander 3.07 nebo novejsi)
     virtual BOOL WINAPI DeleteDirLink(const char *name, DWORD *err) = 0;
 
     // pokud ma soubor/adresar 'name' read-only atribut, pokusime se ho vypnout
@@ -3504,7 +3441,6 @@ class CSalamanderGeneralAbstract
     // k zbytecne velke zmene atributu na zbyvajicich hardlinkach souboru (atributy
     // vsechny hardlinky sdili)
     // mozne volat z libovolneho threadu
-    // VERZE: pouzivat jen pokud SalamanderVersion >= 79 (Salamander 3.07 nebo novejsi)
     virtual BOOL WINAPI ClearReadOnlyAttr(const char *name, DWORD attr = -1) = 0;
 
     // zjisti, jestli prave probiha critical shutdown (nebo log off), pokud ano, vraci TRUE;
@@ -3512,77 +3448,13 @@ class CSalamanderGeneralAbstract
     // vcetne pluginu, takze casove narocnejsi operace musime vynechat, po uplynuti
     // 5s system nas process nasilne ukonci, vice viz WM_ENDSESSION, flag ENDSESSION_CRITICAL,
     // je to Vista+
-    // VERZE: pouzivat jen pokud SalamanderVersion >= 79 (Salamander 3.07 nebo novejsi)
     virtual BOOL WINAPI IsCriticalShutdown() = 0;
 
     // projde v threadu 'tid' (0 = aktualni) vsechna okna (EnumThreadWindows) a vsem enablovanym
     // a viditelnym dialogum (class name "#32770") vlastnenym oknem 'parent' postne WM_CLOSE;
     // pouziva se pri critical shutdown k odblokovani okna/dialogu, nad kterym jsou otevrene
     // modalni dialogy, hrozi-li vice vrstev, je nutne volat opakovane
-    // VERZE: pouzivat jen pokud SalamanderVersion >= 79 (Salamander 3.07 nebo novejsi)
     virtual void WINAPI CloseAllOwnedEnabledDialogs(HWND parent, DWORD tid = 0) = 0;
-
-    //
-    // *********************************************************************************************
-    //
-    // Methods in these "public" sections are designed for safe calling of methods from former
-    // "private" sections. Use these "public" methods only if your plugin needs to work also with
-    // some older version of Salamander and simple using of older SDK is not solution because
-    // your plugin needs to use new methods when loaded to new version of Salamander. See
-    // doc\compatibility.txt for details.
-
-  public:  // SalamanderVersion >= 78 (Salamander 3.07 or later)
-
-    BOOL IsPathOnSSD_P(const char *path) {return IsPathOnSSD(path);}
-    BOOL IsUNCPath_P(const char *path) {return IsUNCPath(path);}
-    BOOL ResolveSubsts_P(char *resPath) {return ResolveSubsts(resPath);}
-
-    void ResolveLocalPathWithReparsePoints_P(char *resPath, const char *path,
-                                             BOOL *cutResPathIsPossible,
-                                             BOOL *rootOrCurReparsePointSet,
-                                             char *rootOrCurReparsePoint,
-                                             char *junctionOrSymlinkTgt, int *linkType,
-                                             char *netPath)
-    {
-      ResolveLocalPathWithReparsePoints(resPath, path, cutResPathIsPossible, rootOrCurReparsePointSet,
-                                        rootOrCurReparsePoint, junctionOrSymlinkTgt, linkType, netPath);
-    }
-
-    BOOL GetResolvedPathMountPointAndGUID_P(const char *path, char *mountPoint, char *guidPath)
-    {
-      return GetResolvedPathMountPointAndGUID(path, mountPoint, guidPath);
-    }
-
-    BOOL PointToLocalDecimalSeparator_P(char *buffer, int bufferSize)
-    {
-      return PointToLocalDecimalSeparator(buffer, bufferSize);
-    }
-
-    void SetPluginIconOverlays_P(int iconOverlaysCount, HICON *iconOverlays)
-    {
-      SetPluginIconOverlays(iconOverlaysCount, iconOverlays);
-    }
-
-  public:  // SalamanderVersion >= 79 (Salamander 3.07 or later)
-
-    BOOL SalGetFileSize2_P(const char *fileName, CQuadWord &size, DWORD *err)
-    {
-      return SalGetFileSize2(fileName, size, err);
-    }
-
-    BOOL GetLinkTgtFileSize_P(HWND parent, const char *fileName, CQuadWord *size,
-                              BOOL *cancel, BOOL *ignoreAll)
-    {
-      return GetLinkTgtFileSize(parent, fileName, size, cancel, ignoreAll);
-    }
-
-    BOOL DeleteDirLink_P(const char *name, DWORD *err) {return DeleteDirLink(name, err);}
-
-    BOOL ClearReadOnlyAttr_P(const char *name, DWORD attr = -1) {return ClearReadOnlyAttr(name, attr);}
-
-    BOOL IsCriticalShutdown_P() {return IsCriticalShutdown();}
-
-    void CloseAllOwnedEnabledDialogs_P(HWND parent, DWORD tid = 0) {CloseAllOwnedEnabledDialogs(parent, tid);}
 };
 
 #ifdef _MSC_VER

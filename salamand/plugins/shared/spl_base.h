@@ -76,7 +76,6 @@ class CPluginInterfaceForMenuExtAbstract;
 class CPluginInterfaceForFSAbstract;
 class CPluginInterfaceForThumbLoaderAbstract;
 class CSalamanderGUIAbstract;
-class CXpThemeSupportAbstract;
 class CSalamanderSafeFileAbstract;
 class CGUIIconListAbstract;
 
@@ -109,12 +108,11 @@ class CSalamanderDebugAbstract
   public:
     // vypise 'file'+'line'+'str' TRACE_I na TRACE SERVER - pouze pri DEBUG/SDK/PB verzi Salamandera
     virtual void WINAPI TraceI(const char *file, int line, const char *str) = 0;
+    virtual void WINAPI TraceIW(const WCHAR *file, int line, const WCHAR *str) = 0;
 
     // vypise 'file'+'line'+'str' TRACE_E na TRACE SERVER - pouze pri DEBUG/SDK/PB verzi Salamandera
     virtual void WINAPI TraceE(const char *file, int line, const char *str) = 0;
-
-    virtual void WINAPI unknown1(void*, void*, void*) = 0;
-    virtual void WINAPI unknown2(void*, void*, void*) = 0;
+    virtual void WINAPI TraceEW(const WCHAR *file, int line, const WCHAR *str) = 0;
 
     // zaregistruje novy thread u TRACE (prideli Unique ID), 'thread'+'tid' vraci
     // _beginthreadex i CreateThread, nepovine (UID je pak -1)
@@ -123,8 +121,7 @@ class CSalamanderDebugAbstract
     // nastavi jmeno aktivniho threadu pro TRACE, nepovine (thread je oznacen jako "unknown")
     // POZOR: vyzaduje registraci threadu u TRACE (viz TraceAttachThread), jinak nic nedela
     virtual void WINAPI TraceSetThreadName(const char *name) = 0;
-
-    virtual void WINAPI unknown3(void*) = 0;
+    virtual void WINAPI TraceSetThreadNameW(const WCHAR *name) = 0;
 
     // zavede do threadu veci potrebne pro CALL-STACK metody (viz Push a Pop nize),
     // ve vsech volanych metodach pluginu je mozne CALL_STACK metody pouzit primo,
@@ -152,30 +149,12 @@ class CSalamanderDebugAbstract
     // pripojenim nastartovat.
     virtual void WINAPI TraceConnectToServer() = 0;
 
-#if defined(SALSDK_COMPATIBLE_WITH_VER) && SALSDK_COMPATIBLE_WITH_VER < 79
-  private:  // SalamanderVersion >= 79 (Salamander 3.07 or later)
-#endif
-
     // vola se pro moduly, ve kterych se muzou hlasit memory leaky, pokud se detekuji memory leaky,
     // dojde k loadu "as image" (bez initu modulu) vsech takto registrovanych modulu (pri kontrole
     // memory leaku uz jsou tyto moduly unloadle), a pak teprve k vypisu memory leaku = jsou videt
     // jmena .cpp modulu misto "#File Error#"
     // mozne volat z libovolneho threadu
-    // VERZE: pouzivat jen pokud SalamanderVersion >= 79 (Salamander 3.07 nebo novejsi)
     virtual void WINAPI AddModuleWithPossibleMemoryLeaks(const char *fileName) = 0;
-
-    //
-    // *********************************************************************************************
-    //
-    // Methods in these "public" sections are designed for safe calling of methods from former
-    // "private" sections. Use these "public" methods only if your plugin needs to work also with
-    // some older version of Salamander and simple using of older SDK is not solution because
-    // your plugin needs to use new methods when loaded to new version of Salamander. See
-    // doc\compatibility.txt for details.
-
-  public:  // SalamanderVersion >= 79 (Salamander 3.07 or later)
-
-    void AddModuleWithPossibleMemoryLeaks_P(const char *fileName) {AddModuleWithPossibleMemoryLeaks(fileName);}
 };
 
 //
@@ -711,30 +690,6 @@ class CPluginInterfaceAbstract
     // existuje metoda CPluginFSInterfaceAbstract::AcceptChangeOnPathNotification()
     virtual void WINAPI AcceptChangeOnPathNotification(const char *path, BOOL includingSubdirs) = 0;
 
-    // vola se pro ziskani informaci pro odinstalaci neregistrovanych (uzivatelem nezakoupenych)
-    // komponent pluginu nebo i celeho pluginu; 'parent' je parent pripadnych messageboxu;
-    // v 'componentsDescr' (buffer 200 znaku) vraci popis odinstalovavanych komponent nebo
-    // pluginu (napr. "Altap Self-Extractor (Part of the ZIP Plugin)" nebo "WinSCP Plugin
-    // (SFTP/SCP Client)") - uzivateli se zobrazi seznam takto ziskanych popisu komponent
-    // (ode vsech pluginu) a uzivatelem vybrane komponenty se pak odinstaluji (viz Plugins
-    // Manager, prikaz Uninstall Unregistered Components); v 'uninstallSPL' vraci TRUE pokud
-    // se ma odinstalovat (smazat) .spl soubor pluginu (smaze i adresar pluginu, pokud bude
-    // prazdny); pokud se odinstalovani (vymaz) .spl souboru povede, odstrani se plugin i ze
-    // Salamandera (ekvivalent tlacitka Remove z Plugins Manageru); v 'uninstallLangDir' vraci
-    // TRUE pokud se maji odinstalovat (smazat) vsechny .slg soubory pluginu v podadresari
-    // "lang" (smaze i podadresar "lang", pokud bude prazdny); 'pluginDir' je plna cesta do
-    // adresare pluginu (cesta k .spl modulu pluginu, vcetne koncoveho backslashe);
-    // do 'deleteFileList' muze plugin umistit plna jmena souboru a adresaru, ktere se maji
-    // odinstalovat (smazat), je mozne pouzit jednoduche masky (napr. "*.sfx"), adresare se
-    // mazou jen pokud jsou pradne (je nutne jejich jmena vlozit az na konec seznamu), jmena
-    // se do seznamu ukladaji vcetne koncovych nul (nutne ke vzajemnemu oddeleni jmen); vraci
-    // TRUE pokud se ma uzivateli nabidnout odinstalace komponenty nebo pluginu (dane
-    // navratovymi hodnotami v parametrech); pokud vrati FALSE, navratove hodnoty
-    // v parametrech se ignoruji
-    virtual BOOL WINAPI UninstallUnregisteredComponents(HWND parent, char *componentsDescr, BOOL *uninstallSPL,
-                                                        BOOL *uninstallLangDir, const char *pluginDir,
-                                                        CDynamicString *deleteFileList) = 0;
-
     // tato metoda se vola jen u pluginu, ktery pouziva Password Manager (viz
     // CSalamanderGeneralAbstract::SetPluginUsesPasswordManager()):
     // informuje plugin o zmenach v Password Manageru; 'parent' je parent pripadnych
@@ -803,23 +758,6 @@ class CSalamanderPluginEntryAbstract
     // podminku: (GetLoadInformation() & LOADINFO_XXX) != 0)
     virtual DWORD WINAPI GetLoadInformation() = 0;
 
-    // vraci informace z registracniho klice Salamandera, pokud je vystupni parametr NULL
-    // hodnota se nevraci, jinak 'registeredVersion' je TRUE pokud je klic v poradku (existuje);
-    // 'productID1'-'productID2'-'productID3' je cislo produktu (testuje se shoda s cislem v
-    // klici pluginu); 'numberOfLicenses' - pocet koupenych licenci Salamandera (-1 = neomezeny
-    // pocet); 'neverExpires' - TRUE pokud je casove neomezena, pokud je FALSE je v 'expiration'
-    // datum platnosti; 'educationalLicense' - TRUE pokud jde o licenci pro vzdelavani;
-    // 'lifetimeLic' - TRUE pokud jde o dozivotni licenci (davame napr. prekladatelum);
-    // 'keyVersion' je verze klice: 20 = 2.0, 25 = 2.5, 30 = 3.0; 'oldRegKeyFound' - TRUE
-    // pokud Salamander nasel klic stare verze (nabizi upgrade na novou verzi klice)
-// WARNING: function has been removed!
-//    virtual void WINAPI GetRegistrationKeyInfo(BOOL *registeredVersion, DWORD *productID1,
-//                                               DWORD *productID2, DWORD *productID3,
-//                                               int *numberOfLicenses, BOOL *neverExpires,
-//                                               SYSTEMTIME *expiration, BOOL *educationalLicense,
-//                                               BOOL *lifetimeLic, int *keyVersion,
-//                                               BOOL *oldRegKeyFound) = 0;
-
     // nahraje modul s jazykove zavislymi resourcy (SLG-cko); vzdy zkusi nahrat modul
     // stejneho jazyku v jakem prave bezi Salamander, pokud takovy modul nenajde (nebo
     // nesouhlasi verze), necha uzivatele vybrat alternativni modul (pokud existuje vic
@@ -841,14 +779,6 @@ class CSalamanderPluginEntryAbstract
     // v ramci "SalamanderPluginEntry" funkce) a jde pouze o odkaz, takze se neuvolnuje
     virtual CSalamanderGUIAbstract * WINAPI GetSalamanderGUI() = 0;
 
-    // vraci ukazatel na interface k Windows XP Visual Styles,
-    // interface je platny po celou dobu existence pluginu (nejen v ramci
-    // "SalamanderPluginEntry" funkce) a jde pouze o odkaz, takze se neuvolnuje
-    // vraci NULL, pokud knihovna uxtheme.dll neni k dispozici (nebezime pod Windows XP
-    // nebo pod Common Controls 6.0 a vyssi)
-// WARNING: function seems to be removed!
-//    virtual CXpThemeSupportAbstract * WINAPI GetXpThemeSupport() = 0;
-
     // vraci ukazatel na interface pro komfortni praci se soubory,
     // interface je platny po celou dobu existence pluginu (nejen v ramci
     // "SalamanderPluginEntry" funkce) a jde pouze o odkaz, takze se neuvolnuje
@@ -869,14 +799,6 @@ class CSalamanderPluginEntryAbstract
     // vraci FALSE pri fatalni chybe - v tomto pripade se 'newFSNameIndex' ignoruje
     // omezeni: nesmi se volat pred metodou SetBasicPluginData
     virtual BOOL WINAPI AddFSName(const char *fsName, int *newFSNameIndex) = 0;
-
-    // zobrazi dialog "plugin is not registered, please purchase a license"; 'pluginIcon' je ikona
-    // 32x32 bodu zobrazena v dialogu; vraci TRUE pokud se ma plugin naloadit (FALSE = uzivatel
-    // chce blokovat pouzivani pluginu, plugin by se nemel naloadit)
-    // omezeni: nesmi se volat pred metodou SetBasicPluginData; pokud ma dialog obsahovat URL homepage,
-    //          je predem treba zavolat SetPluginHomePageURL
-// WARNING: function seems to be removed!
-//    virtual BOOL WINAPI ShowNotRegisteredDlg(HICON pluginIcon) = 0;
 };
 
 //

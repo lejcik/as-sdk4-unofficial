@@ -1160,7 +1160,8 @@ CTransferInfo::EditLine(int ctrlID, int &value, BOOL select)
           s++;
         }
 
-        value = atoi(buff);
+        char *endptr;
+        value = strtoul(buff, &endptr, 10);    // nahrada za atoi / _ttoi, ktere misto 4000000000 vraci 2147483647 (protoze je to SIGNED INT)
         break;
       }
     }

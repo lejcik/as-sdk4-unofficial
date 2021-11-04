@@ -147,76 +147,45 @@ void OnAbout(HWND hParent)
 
 void InitIconOverlays()
 {
-#ifdef DEMOPLUG_COMPATIBLE_WITH_300
-  if (SalamanderVersion >= 78)  // icon-overlays need Altap Salamander 3.07 or later
+  // zrusime aktualni icon-overlays, pro pripad chyby, at mame vycisteno
+  SalamanderGeneral->SetPluginIconOverlays(0, NULL);
+
+  HINSTANCE imageResDLL = HANDLES(LoadLibraryEx("imageres.dll", NULL, LOAD_LIBRARY_AS_DATAFILE));
+  // Salamander bez imageres.dll nebezi, takze tady nacteni nemuze selhat
+
+  // 48x48 az od XP (brzy bude obsolete, pobezime jen na XP+, pak zahodit)
+  // ve skutecnosti jsou velke ikonky podporeny uz davno, lze je nahodit
+  // Desktop/Properties/???/Large Icons; pozor, nebude pak existovat system image list
+  // pro ikonky 32x32; navic bychom meli ze systemu vytahnout realne velikosti ikonek
+  // zatim na to kasleme a 48x48 povolime az od XP, kde jsou bezne dostupne
+  int iconSizes[3] = {16, 32, 48};
+  if (!SalIsWindowsVersionOrGreater(5, 1, 0))  // neni WindowsXPAndLater: neni XP and later
+    iconSizes[2] = 32;
+
+  HINSTANCE iconDLL = imageResDLL;
+  int iconOverlaysCount = 0;
+  HICON iconOverlays[6];
+  int iconIndex = 164;  // shared icon-overlay
+  for (int i = 0; i < 3; i++)
   {
-#endif // DEMOPLUG_COMPATIBLE_WITH_300
-
-    // zrusime aktualni icon-overlays, pro pripad chyby, at mame vycisteno
-#ifdef DEMOPLUG_COMPATIBLE_WITH_300
-    SalamanderGeneral->SetPluginIconOverlays_P(0, NULL);
-#else // DEMOPLUG_COMPATIBLE_WITH_300
-    SalamanderGeneral->SetPluginIconOverlays(0, NULL);
-#endif // DEMOPLUG_COMPATIBLE_WITH_300
-
-    HINSTANCE imageResDLL = NULL;
-    if (SalIsWindowsVersionOrGreater(6, 0, 0))  // WindowsVistaAndLater: Vista and later
-    { // POZOR: pokud by se tohle DLL melo loadit i na starsich verzich woken, je potreba predelat podminky "imageResDLL != NULL"
-      imageResDLL = HANDLES(LoadLibraryEx("imageres.dll", NULL, LOAD_LIBRARY_AS_DATAFILE));
-    }
-    HINSTANCE shell32DLL = NULL;
-    if (imageResDLL == NULL)
-    {
-      shell32DLL = HANDLES(LoadLibraryEx("shell32.dll", NULL, LOAD_LIBRARY_AS_DATAFILE));
-      if (shell32DLL == NULL)  // to se snad vubec nemuze stat (zaklad win 4.0)
-      {
-        TRACE_E("Unable to load library shell32.dll.");
-        return;
-      }
-    }
-
-    // 48x48 az od XP (brzy bude obsolete, pobezime jen na XP+, pak zahodit)
-    // ve skutecnosti jsou velke ikonky podporeny uz davno, lze je nahodit
-    // Desktop/Properties/???/Large Icons; pozor, nebude pak existovat system image list
-    // pro ikonky 32x32; navic bychom meli ze systemu vytahnout realne velikosti ikonek
-    // zatim na to kasleme a 48x48 povolime az od XP, kde jsou bezne dostupne
-    int iconSizes[3] = {16, 32, 48};
-    if (!SalIsWindowsVersionOrGreater(5, 1, 0))  // neni WindowsXPAndLater: neni XP and later
-      iconSizes[2] = 32;
-
-    HINSTANCE iconDLL = imageResDLL != NULL ? imageResDLL : shell32DLL;
-    int iconOverlaysCount = 0;
-    HICON iconOverlays[6];
-    int iconIndex = imageResDLL != NULL ? 164 : 29;  // shared icon-overlay
-    for (int i = 0; i < 3; i++)
-    {
-      iconOverlays[iconOverlaysCount++] = (HICON)LoadImage(iconDLL, MAKEINTRESOURCE(iconIndex),
-                                                           IMAGE_ICON, iconSizes[i], iconSizes[i],
-                                                           SalamanderGeneral->GetIconLRFlags());
-    }
-
-    iconIndex = imageResDLL != NULL ? 97 : 31;  // slow file icon-overlay
-    for (int i = 0; i < 3; i++)
-    {
-      iconOverlays[iconOverlaysCount++] = (HICON)LoadImage(iconDLL, MAKEINTRESOURCE(iconIndex),
-                                                           IMAGE_ICON, iconSizes[i], iconSizes[i],
-                                                           SalamanderGeneral->GetIconLRFlags());
-    }
-
-    // nastavime dva overlayes: shared + slow file
-    // POZN.: pri chybe loadu ikon SetPluginIconOverlays() selze, ale platne ikony z iconOverlays[] uvolni
-#ifdef DEMOPLUG_COMPATIBLE_WITH_300
-    SalamanderGeneral->SetPluginIconOverlays_P(iconOverlaysCount / 3, iconOverlays);
-#else // DEMOPLUG_COMPATIBLE_WITH_300
-    SalamanderGeneral->SetPluginIconOverlays(iconOverlaysCount / 3, iconOverlays);
-#endif // DEMOPLUG_COMPATIBLE_WITH_300
-
-    if (shell32DLL != NULL) HANDLES(FreeLibrary(shell32DLL));
-    if (imageResDLL != NULL) HANDLES(FreeLibrary(imageResDLL));
-
-#ifdef DEMOPLUG_COMPATIBLE_WITH_300
+    iconOverlays[iconOverlaysCount++] = (HICON)LoadImage(iconDLL, MAKEINTRESOURCE(iconIndex),
+                                                         IMAGE_ICON, iconSizes[i], iconSizes[i],
+                                                         SalamanderGeneral->GetIconLRFlags());
   }
-#endif // DEMOPLUG_COMPATIBLE_WITH_300
+
+  iconIndex = 97;  // slow file icon-overlay
+  for (int i = 0; i < 3; i++)
+  {
+    iconOverlays[iconOverlaysCount++] = (HICON)LoadImage(iconDLL, MAKEINTRESOURCE(iconIndex),
+                                                         IMAGE_ICON, iconSizes[i], iconSizes[i],
+                                                         SalamanderGeneral->GetIconLRFlags());
+  }
+
+  // nastavime dva overlayes: shared + slow file
+  // POZN.: pri chybe loadu ikon SetPluginIconOverlays() selze, ale platne ikony z iconOverlays[] uvolni
+  SalamanderGeneral->SetPluginIconOverlays(iconOverlaysCount / 3, iconOverlays);
+
+  if (imageResDLL != NULL) HANDLES(FreeLibrary(imageResDLL));
 }
 
 //
@@ -234,11 +203,11 @@ CPluginInterfaceAbstract * WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAb
 
 int WINAPI SalamanderPluginGetReqVer()
 {
-#ifdef DEMOPLUG_COMPATIBLE_WITH_300
-  return 102;  // plugin works in Altap Salamander 4.0 or later
-#else // DEMOPLUG_COMPATIBLE_WITH_300
+#ifdef DEMOPLUG_COMPATIBLE_WITH_400
+  return 100;  // plugin works in Altap Salamander 4.0 or later
+#else // DEMOPLUG_COMPATIBLE_WITH_400
   return LAST_VERSION_OF_SALAMANDER;
-#endif DEMOPLUG_COMPATIBLE_WITH_300
+#endif DEMOPLUG_COMPATIBLE_WITH_400
 }
 
 int WINAPI SalamanderPluginGetSDKVer()
@@ -409,18 +378,18 @@ CPluginInterfaceAbstract * WINAPI SalamanderPluginEntry(CSalamanderPluginEntryAb
 //  GetVerInfo(path, path, MAX_PATH);
 
   // tento plugin je delany pro aktualni verzi Salamandera a vyssi - provedeme kontrolu
-#ifdef DEMOPLUG_COMPATIBLE_WITH_300
-  if (SalamanderVersion < 64)  // plugin works in Altap Salamander 3.0 or later
-#else // DEMOPLUG_COMPATIBLE_WITH_300
+#ifdef DEMOPLUG_COMPATIBLE_WITH_400
+  if (SalamanderVersion < 100)  // plugin works in Altap Salamander 4.0 or later
+#else // DEMOPLUG_COMPATIBLE_WITH_400
   if (SalamanderVersion < LAST_VERSION_OF_SALAMANDER)
-#endif // DEMOPLUG_COMPATIBLE_WITH_300
+#endif // DEMOPLUG_COMPATIBLE_WITH_400
   {  // starsi verze odmitneme
     MessageBox(salamander->GetParentWindow(),
-#ifdef DEMOPLUG_COMPATIBLE_WITH_300
-               "This plugin requires Altap Salamander 3.0 or later.",
-#else // DEMOPLUG_COMPATIBLE_WITH_300
+#ifdef DEMOPLUG_COMPATIBLE_WITH_400
+               "This plugin requires Altap Salamander 4.0 or later.",
+#else // DEMOPLUG_COMPATIBLE_WITH_400
                REQUIRE_LAST_VERSION_OF_SALAMANDER,
-#endif // DEMOPLUG_COMPATIBLE_WITH_300
+#endif // DEMOPLUG_COMPATIBLE_WITH_400
                PluginNameEN, MB_OK | MB_ICONERROR);
     return NULL;
   }

@@ -454,12 +454,8 @@ CPluginFSInterface::ListCurrentPath(CSalamanderDirectoryAbstract *dir,
                     VALID_DATA_ATTRIBUTES |
                     VALID_DATA_HIDDEN |
                     VALID_DATA_ISLINK |
-                    VALID_DATA_ISOFFLINE
-#ifdef DEMOPLUG_COMPATIBLE_WITH_300
-                    | (SalamanderVersion >= 78 ? VALID_DATA_ICONOVERLAY : 0));
-#else // DEMOPLUG_COMPATIBLE_WITH_300
-                    | VALID_DATA_ICONOVERLAY);
-#endif // DEMOPLUG_COMPATIBLE_WITH_300
+                    VALID_DATA_ISOFFLINE |
+                    VALID_DATA_ICONOVERLAY);
 
   int sortByExtDirsAsFiles;
   SalamanderGeneral->GetConfigParameter(SALCFG_SORTBYEXTDIRSASFILES, &sortByExtDirsAsFiles,
@@ -605,17 +601,8 @@ CPluginFSInterface::TryCloseOrDetach(BOOL forceClose, BOOL canDetach, BOOL &deta
   {
 #ifndef DEMOPLUG_QUIET
 
-#ifdef DEMOPLUG_COMPATIBLE_WITH_300
-    if (SalamanderVersion >= 79)
-    {
-      if (SalamanderGeneral->IsCriticalShutdown_P())
-        return TRUE;  // pri critical shutdown se na nic neptame
-    }
-    // else ; // stara verze: nezjistime, jestli jde o critical shutdown = neresime to
-#else // DEMOPLUG_COMPATIBLE_WITH_300
     if (SalamanderGeneral->IsCriticalShutdown())
       return TRUE;  // pri critical shutdown se na nic neptame
-#endif // DEMOPLUG_COMPATIBLE_WITH_300
 
     SalamanderGeneral->ShowMessageBox("TryCloseOrDetach: FS is forced to close.",
                                       "DFS", MSGBOX_INFO);
@@ -2189,14 +2176,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char *fsName, HW
                 if (err != 0)   // chyba pri ukladani do disk-cache, odstranime soubor v TEMP adresari
                 {
                   // aby slo smazat i nakopirovany soubor s read-only atributem
-#ifdef DEMOPLUG_COMPATIBLE_WITH_300
-                  if (SalamanderVersion >= 79)
-                    SalamanderGeneral->ClearReadOnlyAttr_P(tmpName2);
-                  else
-                    SetFileAttributes(tmpName2, FILE_ATTRIBUTE_ARCHIVE);  // stara verze: primitivni reseni staci
-#else // DEMOPLUG_COMPATIBLE_WITH_300
                   SalamanderGeneral->ClearReadOnlyAttr(tmpName2);
-#endif // DEMOPLUG_COMPATIBLE_WITH_300
                   DeleteFile(tmpName2);
                 }
               }
@@ -2259,19 +2239,7 @@ CPluginFSInterface::CopyOrMoveFromFS(BOOL copy, int mode, const char *fsName, HW
             while (1)
             {
               // aby sel smazat i read-only
-#ifdef DEMOPLUG_COMPATIBLE_WITH_300
-              if (SalamanderVersion >= 79)
-                SalamanderGeneral->ClearReadOnlyAttr_P(sourceName, f->Attr);
-              else
-              {
-                if (f->Attr & FILE_ATTRIBUTE_READONLY)
-                {  
-                  SetFileAttributes(sourceName, f->Attr & ~FILE_ATTRIBUTE_READONLY);  // stara verze: musime to udelat sami
-                }
-              }
-#else // DEMOPLUG_COMPATIBLE_WITH_300
               SalamanderGeneral->ClearReadOnlyAttr(sourceName, f->Attr);
-#endif // DEMOPLUG_COMPATIBLE_WITH_300
               if (!DeleteFile(sourceName))
               {
                 if (!skipAllErrors)
@@ -2691,19 +2659,7 @@ CPluginFSInterface::CopyOrMoveFromDiskToFS(BOOL copy, int mode, const char *fsNa
           while (1)
           {
             // aby sel smazat i read-only
-#ifdef DEMOPLUG_COMPATIBLE_WITH_300
-            if (SalamanderVersion >= 79)
-              SalamanderGeneral->ClearReadOnlyAttr_P(sourceName, attr);
-            else
-            {
-              if (attr & FILE_ATTRIBUTE_READONLY)
-              {  
-                SetFileAttributes(sourceName, attr & ~FILE_ATTRIBUTE_READONLY);  // stara verze: musime to udelat sami
-              }
-            }
-#else // DEMOPLUG_COMPATIBLE_WITH_300
             SalamanderGeneral->ClearReadOnlyAttr(sourceName, attr);
-#endif // DEMOPLUG_COMPATIBLE_WITH_300
 
             if (!DeleteFile(sourceName))
             {

@@ -432,16 +432,6 @@ CCtrlExampleDialog::CreateChilds()
   return TRUE;
 }
 
-#ifdef DEMOPLUG_COMPATIBLE_WITH_300
-
-int CaclProg(const CQuadWord &progressCurrent, const CQuadWord &progressTotal)
-{
-  return progressCurrent >= progressTotal ? (progressTotal.Value == 0 ? 0 : 1000) :
-         (int)((progressCurrent * CQuadWord(1000, 0)) / progressTotal).Value;
-}
-
-#endif // DEMOPLUG_COMPATIBLE_WITH_300
-
 INT_PTR
 CCtrlExampleDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -461,14 +451,7 @@ CCtrlExampleDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
       CQuadWord current(123456, 0);
       CQuadWord total(543267, 0);
-#ifdef DEMOPLUG_COMPATIBLE_WITH_300
-      if (SalamanderVersion >= 79)
-        Progress2->SetProgress2_P(current, total, NULL);
-      else
-        Progress2->SetProgress(CaclProg(current, total), NULL);  // stara verze: musime to spocitat zde
-#else // DEMOPLUG_COMPATIBLE_WITH_300
       Progress2->SetProgress2(current, total, NULL);
-#endif // DEMOPLUG_COMPATIBLE_WITH_300
 
       //Progress2->SetSelfMoveTime(0); // progress se posune pri kazdem WM_TIMER
       Progress2->SetSelfMoveTime(1000); // samovolne posouvani po jednu vterinu

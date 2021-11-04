@@ -25,7 +25,7 @@ Preview Build (PB)
 Public preview build for testers. It contains TRACE messages and some other
 support for debugging, so it is intended also for external plugin developers.
 
-Link: http://forum.altap.cz/  Early Access Program (EAP)
+Link: https://forum.altap.cz/  Early Access Program (EAP)
 
 
 Beta Version

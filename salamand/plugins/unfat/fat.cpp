@@ -1,7 +1,7 @@
 //****************************************************************************
 //
-// Copyright (c) 2004-2016 ALTAP, spol. s r.o. All rights reserved.
-// Copyright (c) 2010-2016 Milan Kase <manison@manison.cz>
+// Copyright (c) 2004-2019 ALTAP, spol. s r.o. All rights reserved.
+// Copyright (c) 2010-2019 Milan Kase <manison@manison.cz>
 //
 // This is a part of the Altap Salamander SDK library.
 //

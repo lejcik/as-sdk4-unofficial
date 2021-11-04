@@ -120,6 +120,7 @@ struct CFileData   // nesmi sem prijit destruktor !
   unsigned Hidden:      1; // je hidden? (je-li 1, ikonka je pruhlednejsi o 50% - ghosted)
   unsigned IsLink:      1; // je link? (je-li 1, ikonka ma overlay linku) - standardni plneni viz CSalamanderGeneralAbstract::IsFileLink(CFileData::Ext), pri zobrazeni ma prednost pred IsOffline, ale IconOverlayIndex ma prednost
   unsigned IsOffline:   1; // je offline? (je-li 1, ikonka ma overlay offline - cerne hodiny), pri zobrazeni ma IsLink i IconOverlayIndex prednost
+  unsigned IconOverlayIndex: 4; // index icon-overlaye (pokud ikona nema zadny overlay, je zde hodnota ICONOVERLAYINDEX_NOTUSED), pri zobrazeni ma prednost pred IsLink a IsOffline
 
   // flagy pro interni pouziti v Salamanderovi: nuluji se pri pridani do CSalamanderDirectoryAbstract
   unsigned Association: 1; // vyznam jen pro zobrazeni 'simple icons' - ikona asociovaneho souboru, jinak 0
@@ -130,10 +131,6 @@ struct CFileData   // nesmi sem prijit destruktor !
   unsigned Dirty:       1; // je potreba tuto polozku prekreslit? (pouze docasna platnost; mezi nastavenim bitu a prekreslenim panelu nesmi byt pumpovana message queue, jinak muze dojit k prekresleni ikonky (icon reader) a tim resetu bitu! v dusledku se neprekresli polozka)
   unsigned CutToClip:   1; // je CUT-nutej na clipboardu? (je-li 1, ikonka je pruhlednejsi o 50% - ghosted)
   unsigned IconOverlayDone: 1;  // jen pro potreby icon-reader-threadu: ziskavame nebo uz jsme ziskavali icon-overlay? (0 - ne, 1 - ano)
-
-  // VERZE: od verze Salamander 3.07 (SalamanderVersion >= 78) se pouziva i z pluginu: (casem uklidime:
-  // presuneme nahoru k IsOffline) (predtim jen pro interni pouziti v Salamanderovi)
-  unsigned IconOverlayIndex: 4; // index icon-overlaye (pokud ikona nema zadny overlay, je zde hodnota ICONOVERLAYINDEX_NOTUSED), pri zobrazeni ma prednost pred IsLink a IsOffline
 };
 
 // konstanty urcujici platnost dat, ktera jsou primo ulozena v CFileData (velikost, pripona, atd.)
@@ -153,7 +150,6 @@ struct CFileData   // nesmi sem prijit destruktor !
 #define VALID_DATA_PL_SIZE     0x0400  // ma smysl jen bez pouziti VALID_DATA_SIZE: plugin ma aspon pro nektere soubory/adresare ulozenou velikost v bytech (nekde v PluginData), pro ziskani teto velikosti Salamander vola CPluginDataInterfaceAbstract::GetByteSize()
 #define VALID_DATA_PL_DATE     0x0800  // ma smysl jen bez pouziti VALID_DATA_DATE: plugin ma aspon pro nektere soubory/adresare ulozeny datum modifikace (nekde v PluginData), pro ziskani teto velikosti Salamander vola CPluginDataInterfaceAbstract::GetLastWriteDate()
 #define VALID_DATA_PL_TIME     0x1000  // ma smysl jen bez pouziti VALID_DATA_TIME: plugin ma aspon pro nektere soubory/adresare ulozeny cas modifikace (nekde v PluginData), pro ziskani teto velikosti Salamander vola CPluginDataInterfaceAbstract::GetLastWriteTime()
-// VERZE: Salamander 3.07 nebo novejsi (SalamanderVersion >= 78)
 #define VALID_DATA_ICONOVERLAY 0x2000  // IconOverlayIndex je index icon-overlaye (zadny overlay = hodnota ICONOVERLAYINDEX_NOTUSED) (bez: vsechny IconOverlayIndex = ICONOVERLAYINDEX_NOTUSED), zadani ikon viz CSalamanderGeneralAbstract::SetPluginIconOverlays
 
 #define VALID_DATA_NONE        0  // pomocna konstanta - platne je jen Name a NameLen
@@ -187,18 +183,15 @@ class CSalamanderDirectoryAbstract
   public:
     // vycisti cely objekt, pripravi ho pro dalsi pouziti; pokud 'pluginData' neni NULL, pouzije
     // se pro soubory a adresare k uvolneni dat specifickych pluginu (CFileData::PluginData);
-    // nastavuje standardni hodnotu masky platnych dat (do verze Salamander 3.06
-    // (SalamanderVersion <= 76): suma vsech VALID_DATA_XXX; od verze Salamander 3.07 nebo novejsi
-    // (SalamanderVersion >= 78): krome VALID_DATA_ICONOVERLAY suma vsech VALID_DATA_XXX)
-    // a priznaku objektu (viz metoda SetFlags)
+    // nastavuje standardni hodnotu masky platnych dat (suma vsech VALID_DATA_XXX krome
+    // VALID_DATA_ICONOVERLAY) a priznaku objektu (viz metoda SetFlags)
     virtual void WINAPI Clear(CPluginDataInterfaceAbstract *pluginData) = 0;
 
     // zadani masky platnych dat, podle ktere se urcuje, ktera data z CFileData jsou platna
     // a ktera se maji pouze "nulovat" (viz komentar k VALID_DATA_XXX); maska 'validData'
-    // obsahuje ORovane hodnoty VALID_DATA_XXX; standardni hodnota masky je do verze Salamander 3.06
-    // (SalamanderVersion <= 76): suma vsech VALID_DATA_XXX a od verze Salamander 3.07 nebo novejsi
-    // (SalamanderVersion >= 78): krome VALID_DATA_ICONOVERLAY suma vsech VALID_DATA_XXX; masku
-    // platnych dat je potreba nastavit pred volanim AddFile/AddDir
+    // obsahuje ORovane hodnoty VALID_DATA_XXX; standardni hodnota masky je suma vsech
+    // VALID_DATA_XXX krome VALID_DATA_ICONOVERLAY; masku platnych dat je potreba nastavit
+    // pred volanim AddFile/AddDir
     virtual void WINAPI SetValidData(DWORD validData) = 0;
 
     // nastaveni priznaku pro tento objekt; 'flags' je kombinace ORovanych priznaku SALDIRFLAG_XXX,
@@ -266,7 +259,6 @@ class CSalamanderDirectoryAbstract
 //
 
 // konstanty vracene z SalEnumSelection a SalEnumSelection2 v parametru 'errorOccured'
-// VERZE: Salamander 3.0 nebo novejsi (SalamanderVersion >= 60)
 #define SALENUM_SUCCESS  0   // chyba nenastala
 #define SALENUM_ERROR    1   // nastala chyba a uzivatel si preje pokracovat v operaci (vynechaly se jen chybne soubory/adresare)
 #define SALENUM_CANCEL   2   // nastala chyba a uzivatel si preje zrusit operaci
@@ -291,8 +283,6 @@ class CSalamanderDirectoryAbstract
 // SALENUM_CANCEL pokud se pri chybe uzivatel rozhodl pro zruseni operace (cancel), zaroven
 // enumerator vraci NULL (konci); v 'errorOccured' (neni-li NULL) se vraci SALENUM_SUCCESS pokud
 // zadna chyba nenastala
-// VERZE: parametry 'parent' a 'errorOccured' jsou k dispozici az od Salamander 3.0 nebo novejsi
-//        (SalamanderVersion >= 60)
 typedef const char *(WINAPI *SalEnumSelection)(HWND parent, int enumFiles, BOOL *isDir, CQuadWord *size,
                                                const CFileData **fileData, void *param, int *errorOccured);
 
@@ -303,7 +293,6 @@ typedef const char *(WINAPI *SalEnumSelection)(HWND parent, int enumFiles, BOOL 
 // 'enumFiles' == 0 -> enumerace souboru a podadresaru jen z korene
 // 'enumFiles' == 1 -> enumerace vsech souboru a podadresaru
 // 'enumFiles' == 2 -> enumerace vsech podadresaru, soubory jen z korene;
-// od verze Salamander 3.07 nebo novejsi (SalamanderVersion >= 79) pridan 'enumFiles' == 3:
 // 'enumFiles' == 3 -> enumerace vsech souboru a podadresaru + symbolicke linky na soubory maji
 //                     velikost ciloveho souboru (pri 'enumFiles' == 1 maji velikost linku, coz je snad
 //                     vzdy nula); POZOR: 'enumFiles' musi zustat 3 pro vsechna volani enumeratoru;
@@ -320,8 +309,6 @@ typedef const char *(WINAPI *SalEnumSelection)(HWND parent, int enumFiles, BOOL 
 // vraceneho jmena, to je OK; v 'errorOccured' (neni-li NULL) se vraci SALENUM_CANCEL pokud se
 // pri chybe uzivatel rozhodl pro zruseni operace (cancel), zaroven enumerator vraci NULL (konci);
 // v 'errorOccured' (neni-li NULL) se vraci SALENUM_SUCCESS pokud zadna chyba nenastala
-// VERZE: parametr 'errorOccured' se zmenil z (BOOL *) na (int *) ve verzi Salamander 3.0 nebo
-//        novejsi (SalamanderVersion >= 60)
 typedef const char *(WINAPI *SalEnumSelection2)(HWND parent, int enumFiles, const char **dosName,
                                                 BOOL *isDir, CQuadWord *size, DWORD *attr,
                                                 FILETIME *lastWrite, void *param, int *errorOccured);
@@ -695,15 +682,14 @@ class CPluginDataInterfaceAbstract
     // ziska obsah Information Line pro soubor/adresar ('isDir' TRUE/FALSE) 'file'
     // nebo oznacene soubory a adresare ('file' je NULL a pocty oznacenych souboru/adresaru
     // jsou v 'selectedFiles'/'selectedDirs') v panelu ('panel' je jeden z PANEL_XXX);
-    // od verze Salamander 3.07 (SalamanderVersion >= 78) se vola i pri prazdnem listingu (tyka se
-    // jen FS, u archivu nemuze nastat, 'file' je NULL, 'selectedFiles' a 'selectedDirs' jsou 0);
-    // je-li 'displaySize' TRUE, je znama velikost vsech oznacenych adresaru (viz
-    // CFileData::SizeValid; pokud neni nic oznaceneho, je zde TRUE); v 'selectedSize' je
-    // soucet cisel CFileData::Size oznacenych souboru a adresaru (pokud neni nic oznaceneho,
-    // je zde nula); 'buffer' je buffer pro vraceny text (velikost 1000 bytu); 'hotTexts'
-    // je pole (velikost 100 DWORDu), ve kterem se vraci informace o poloze hot-textu, vzdy
-    // spodni WORD obsahuje pozici hot-textu v 'buffer', horni WORD obsahuje delku hot-textu;
-    // v 'hotTextsCount' je velikost pole 'hotTexts' (100) a vraci se v nem pocet
+    // vola se i pri prazdnem listingu (tyka se jen FS, u archivu nemuze nastat, 'file' je NULL,
+    // 'selectedFiles' a 'selectedDirs' jsou 0); je-li 'displaySize' TRUE, je znama velikost
+    // vsech oznacenych adresaru (viz CFileData::SizeValid; pokud neni nic oznaceneho, je zde
+    // TRUE); v 'selectedSize' je soucet cisel CFileData::Size oznacenych souboru a adresaru
+    // (pokud neni nic oznaceneho, je zde nula); 'buffer' je buffer pro vraceny text (velikost
+    // 1000 bytu); 'hotTexts' je pole (velikost 100 DWORDu), ve kterem se vraci informace o poloze
+    // hot-textu, vzdy spodni WORD obsahuje pozici hot-textu v 'buffer', horni WORD obsahuje
+    // delku hot-textu; v 'hotTextsCount' je velikost pole 'hotTexts' (100) a vraci se v nem pocet
     // zapsanych hot-textu v poli 'hotTexts'; vraci TRUE pokud je 'buffer' + 'hotTexts' +
     // 'hotTextsCount' nastaveno, vraci FALSE pokud se ma Information Line plnit standardnim
     // zpusobem (jako na disku)

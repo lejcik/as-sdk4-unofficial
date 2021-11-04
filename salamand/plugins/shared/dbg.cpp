@@ -103,6 +103,12 @@ LPWSTR _sal_lstrcatW(LPWSTR lpString1, LPCWSTR lpString2)
 
 #pragma warning(pop)
 
+#if (defined(_DEBUG) || defined(CALLSTK_MEASURETIMES)) && !defined(CALLSTK_DISABLEMEASURETIMES) && !defined(INSIDE_SALAMANDER) && !defined(__BORLANDC__)
+
+BOOL __CallStk_T = TRUE;
+
+#endif // (defined(_DEBUG) || defined(CALLSTK_MEASURETIMES)) && !defined(CALLSTK_DISABLEMEASURETIMES) && !defined(INSIDE_SALAMANDER) && !defined(__BORLANDC__)
+
 #if defined(TRACE_ENABLE) && !defined(INSIDE_SALAMANDER)
 
 #include <ostream>
@@ -120,16 +126,40 @@ LPWSTR _sal_lstrcatW(LPWSTR lpString1, LPCWSTR lpString2)
 
 C__Trace __Trace;
 
-// basic unicode support
-std::ostream
-&operator <<(std::ostream &out, const wchar_t *str)
+// ****************************************************************************
+//
+// CWStr
+//
+
+CWStr::CWStr(const char *s)
 {
-  char buff[5000];
-  // Convert the UNICODE string to ANSI
-  WideCharToMultiByte(CP_ACP, 0, str, -1, buff, 5000, NULL, NULL);
-  buff[5000 - 1] = 0;
-  out << buff;
-  return out;
+  IsOK = TRUE;
+  Str = NULL;
+  if (s == NULL) AllocBuf = NULL;
+  else
+  {
+    IsOK = FALSE;
+    int len = MultiByteToWideChar(CP_ACP, 0, s, -1, NULL, 0);
+    if (len == 0) AllocBuf = NULL;  // MultiByteToWideChar failed
+    else
+    {
+      AllocBuf = (WCHAR *)malloc(len * sizeof(WCHAR));
+      if (AllocBuf != NULL)
+      {
+        int res = MultiByteToWideChar(CP_ACP, 0, s, -1, AllocBuf, len);
+        if (res > 0 && res <= len)
+        {
+          AllocBuf[res - 1] = 0;  // success, ensure zero terminated string
+          IsOK = TRUE;
+        }
+        else // MultiByteToWideChar failed
+        {
+          free(AllocBuf);
+          AllocBuf = NULL;
+        }
+      }
+    }
+  }
 }
 
 //*****************************************************************************
@@ -137,7 +167,7 @@ std::ostream
 // C__Trace
 //
 
-C__Trace::C__Trace() : TraceStrStream(&TraceStringBuf)
+C__Trace::C__Trace() : TraceStrStream(&TraceStringBuf), TraceStrStreamW(&TraceStringBufW)
 {
   InitializeCriticalSection(&CriticalSection);
 }
@@ -151,6 +181,16 @@ C__Trace &
 C__Trace::SetInfo(const char *file, int line)
 {
   File = file;
+  FileW = NULL;
+  Line = line;
+  return *this;
+}
+
+C__Trace &
+C__Trace::SetInfoW(const WCHAR *file, int line)
+{
+  File = NULL;
+  FileW = file;
   Line = line;
   return *this;
 }
@@ -180,19 +220,53 @@ DWORD WINAPI __TraceMsgBoxThread(void *param)
                          "If you want to copy this message to clipboard, use Ctrl+C key.";
   lstrcpyn(msg + (int)strlen(msg), data->Msg, _countof(msg) - (int)strlen(msg) - (int)strlen(appendix));
   lstrcpyn(msg + (int)strlen(msg), appendix, _countof(msg) - (int)strlen(msg));
-  MessageBox(NULL, msg, "ALTAP Debug Message",
-             MB_OK | MB_ICONERROR | MB_SETFOREGROUND);
+  MessageBox(NULL, msg, "ALTAP Debug Message", MB_OK | MB_ICONERROR | MB_SETFOREGROUND);
+  return 0;
+}
+
+struct C__TraceMsgBoxThreadDataW
+{
+  WCHAR *Msg;          // alokovany text hlasky
+  const WCHAR *File;   // jen odkaz na staticky string
+  int Line;
+};
+
+DWORD WINAPI __TraceMsgBoxThreadW(void *param)
+{
+  C__TraceMsgBoxThreadDataW *data = (C__TraceMsgBoxThreadDataW *)param;
+  WCHAR msg[1000];
+  wsprintfW(msg, L"TRACE_C message received!\n\n"
+                 L"File: %s\n"
+                 L"Line: %d\n\n"
+                 L"Message: ", data->File, data->Line);
+  const WCHAR *appendix = L"\n\nTRACE_C message means that fatal error has occured. "
+                          L"Application will be crashed by \"access violation\" exception after "
+                          L"clicking OK. Please send us bug report to help us fix this problem. "
+                          L"If you want to copy this message to clipboard, use Ctrl+C key.";
+  lstrcpynW(msg + (int)wcslen(msg), data->Msg, _countof(msg) - (int)wcslen(msg) - (int)wcslen(appendix));
+  lstrcpynW(msg + (int)wcslen(msg), appendix, _countof(msg) - (int)wcslen(msg));
+  MessageBoxW(NULL, msg, L"ALTAP Debug Message", MB_OK | MB_ICONERROR | MB_SETFOREGROUND);
   return 0;
 }
 
 void
-C__Trace::SendMessageToServer(BOOL information, BOOL crash)
+C__Trace::SendMessageToServer(BOOL information, BOOL unicode, BOOL crash)
 {
-  TraceStrStream.flush();             // flushnuti do bufferu
+  // flushnuti do bufferu
+  if (unicode) TraceStrStreamW.flush();
+  else TraceStrStream.flush();
   if (SalamanderDebug != NULL)
   {
-    if (information) SalamanderDebug->TraceI(File, Line, TraceStringBuf.c_str());
-    else SalamanderDebug->TraceE(File, Line, TraceStringBuf.c_str());
+    if (unicode)
+    {
+      if (information) SalamanderDebug->TraceIW(FileW, Line, TraceStringBufW.c_str());
+      else SalamanderDebug->TraceEW(FileW, Line, TraceStringBufW.c_str());
+    }
+    else
+    {
+      if (information) SalamanderDebug->TraceI(File, Line, TraceStringBuf.c_str());
+      else SalamanderDebug->TraceE(File, Line, TraceStringBuf.c_str());
+    }
   }
   // jen je-li crash==TRUE:
   // vyrobime kopii dat, start threadu pro msgbox totiz muze vyvolat dalsi TRACE
@@ -206,44 +280,64 @@ C__Trace::SendMessageToServer(BOOL information, BOOL crash)
   //     cekat v nekonecnem cyklu, viz nize
   // navic zavadime obranu proti mnozeni msgboxu pri vice TRACE_C zaroven, pusobilo
   // by to jen zmatky, ted se otevre msgbox jen pro prvni a ten po uzavreni vyvola
-  // padacku, ostatni TRACE_C zustanou chyceny v nekonecne cekaji smycce, viz nize
+  // padacku, ostatni TRACE_C zustanou chyceny v nekonecne cekaci smycce, viz nize
   static BOOL msgBoxOpened = FALSE;
   C__TraceMsgBoxThreadData threadData;
-  memset(&threadData, 0, sizeof(threadData));
+  C__TraceMsgBoxThreadDataW threadDataW;
+  if (unicode) memset(&threadDataW, 0, sizeof(threadDataW));
+  else memset(&threadData, 0, sizeof(threadData));
   if (crash)  // break/padacka po vypisu TRACE error hlasky (TRACE_C a TRACE_MC)
   {
     if (!msgBoxOpened)
     {
-      threadData.Msg = (char *)GlobalAlloc(GMEM_FIXED, TraceStringBuf.length() + 1);
-      if (threadData.Msg != NULL)
+      if (unicode)
       {
-        lstrcpyn(threadData.Msg, TraceStringBuf.c_str(), (int)TraceStringBuf.length() + 1);
-        threadData.File = File;
-        threadData.Line = Line;
-        msgBoxOpened = TRUE;
+        threadDataW.Msg = (WCHAR *)GlobalAlloc(GMEM_FIXED, sizeof(WCHAR) * (TraceStringBufW.length() + 1));
+        if (threadDataW.Msg != NULL)
+        {
+          lstrcpynW(threadDataW.Msg, TraceStringBufW.c_str(), (int)(TraceStringBufW.length() + 1));
+          threadDataW.File = FileW;
+          threadDataW.Line = Line;
+          msgBoxOpened = TRUE;
+        }
+      }
+      else
+      {
+        threadData.Msg = (char *)GlobalAlloc(GMEM_FIXED, TraceStringBuf.length() + 1);
+        if (threadData.Msg != NULL)
+        {
+          lstrcpyn(threadData.Msg, TraceStringBuf.c_str(), (int)TraceStringBuf.length() + 1);
+          threadData.File = File;
+          threadData.Line = Line;
+          msgBoxOpened = TRUE;
+        }
       }
     }
     else
     {
-      threadData.Msg = NULL;
+      if (unicode) threadDataW.Msg = NULL;
+      else threadData.Msg = NULL;
     }
   }
-  TraceStringBuf.erase();  // priprava pro dalsi trace
+  if (unicode) TraceStringBufW.erase();  // priprava pro dalsi trace
+  else TraceStringBuf.erase();
   LeaveCriticalSection(&CriticalSection);
   if (crash)
   {
-    if (threadData.Msg != NULL)  // break/padacka po vypisu TRACE error hlasky (TRACE_C a TRACE_MC)
+    if (unicode && threadDataW.Msg != NULL ||  // break/padacka po vypisu TRACE error hlasky (TRACE_C a TRACE_MC)
+        !unicode && threadData.Msg != NULL)
     {
       // vypiseme hlasku v jinem threadu, aby nepumpovala zpravy aktualniho threadu
       DWORD id;
-      HANDLE msgBoxThread = CreateThread(NULL, 0, __TraceMsgBoxThread, &threadData, 0, &id);
+      HANDLE msgBoxThread = CreateThread(NULL, 0, unicode ? __TraceMsgBoxThreadW : __TraceMsgBoxThread,
+                                         unicode ? (void *)&threadDataW : (void *)&threadData, 0, &id);
       if (msgBoxThread != NULL)
       {
         WaitForSingleObject(msgBoxThread, INFINITE);  // pokud se da TRACE_C do DllMain do DLL_THREAD_ATTACH, dojde k deadlocku - silne nepravdepodobne, neresime
         CloseHandle(msgBoxThread);
       }
       msgBoxOpened = FALSE;
-      GlobalFree((HGLOBAL)threadData.Msg);
+      GlobalFree(unicode ? (HGLOBAL)threadDataW.Msg : (HGLOBAL)threadData.Msg);
       // pad softu vyvolame primo v kodu, kde je umisteny TRACE_C/TRACE_MC, aby
       // bylo v bug reportu videt presne kde makra lezi; padacka tedy nasleduje
       // po dokonceni teto metody
@@ -273,3 +367,17 @@ void *_sal_safe_memcpy(void *dest, const void *src, size_t count)
 #endif // _DEBUG
 
 #endif // defined(TRACE_ENABLE) && !defined(INSIDE_SALAMANDER)
+
+// pasticka na vlastni definici techto "zakazanych" operatoru (aby fungovala kontrola
+// zakazanych kombinaci stringu WCHAR / char v TRACE makrech, nesmi byt nasledujici
+// operatory definovany v jinych modulech - jinak by linker neohlasil chybu - idea:
+// v DEBUG verzi chytame chyby linkeru, v RELEASE verzi chytame chyby vlastni definice
+// operatoru)
+#if !defined(_DEBUG) && !defined(INSIDE_SALAMANDER) && !defined(__BORLANDC__)
+
+#include <ostream>
+
+std::ostream &operator <<(std::ostream &out, const wchar_t *str) {return out << (void *)str;}
+std::wostream &operator <<(std::wostream &out, const char *str) {return out << (void *)str;}
+
+#endif // _DEBUG

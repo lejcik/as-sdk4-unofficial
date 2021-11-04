@@ -45,7 +45,6 @@
 
 // toolbar messages
 #define WM_USER_TBDROPDOWN      WM_APP + 220     // [HWND hToolBar, int buttonIndex]
-#define WM_USER_TBENUMBUTTON    WM_APP + 221     // [HWND hToolBar, TLBI_ITEM_INFO *tii] -- OBSOLETE: use WM_USER_TBENUMBUTTON2
 #define WM_USER_TBRESET         WM_APP + 222     // [HWND hToolBar, TOOLBAR_TOOLTIP *tt]
 #define WM_USER_TBBEGINADJUST   WM_APP + 223     // [HWND hToolBar, 0]
 #define WM_USER_TBENDADJUST     WM_APP + 224     // [HWND hToolBar, 0]
@@ -106,10 +105,6 @@ class CGUIProgressBarAbstract
     // pokud se obdelnicek prave pohybuje (diky SetSelfMoveTime), bude zastaven
     virtual void WINAPI Stop() = 0;
 
-#if defined(SALSDK_COMPATIBLE_WITH_VER) && SALSDK_COMPATIBLE_WITH_VER < 79
-  private:  // SalamanderVersion >= 79 (Salamander 3.07 or later)
-#endif
-
     // nastavuje progres, pripadne text uprostred
     //
     // proti SetProgress() ma vyhodu v tom, ze pokud je 'progressCurrent' >= 'progressTotal',
@@ -130,26 +125,8 @@ class CGUIProgressBarAbstract
     //
     // mozne volat z libovolneho threadu, thread s controlem musi bezet, jinak dojde k zablokovani
     // (pro doruceni hodnoty 'progress' controlu se pouziva SendMessage);
-    // VERZE: pouzivat jen pokud SalamanderVersion >= 79 (Salamander 3.07 nebo novejsi)
     virtual void WINAPI SetProgress2(const CQuadWord &progressCurrent, const CQuadWord &progressTotal,
                                      const char *text) = 0;
-
-    //
-    // *********************************************************************************************
-    //
-    // Methods in these "public" sections are designed for safe calling of methods from former
-    // "private" sections. Use these "public" methods only if your plugin needs to work also with
-    // some older version of Salamander and simple using of older SDK is not solution because
-    // your plugin needs to use new methods when loaded to new version of Salamander. See
-    // doc\compatibility.txt for details.
-
-  public:  // SalamanderVersion >= 79 (Salamander 3.07 or later)
-
-    void SetProgress2_P(const CQuadWord &progressCurrent, const CQuadWord &progressTotal,
-                        const char *text)
-    {
-      SetProgress2(progressCurrent, progressTotal, text);
-    }
 
   // priklady pouziti:
   //
@@ -1275,26 +1252,6 @@ class CGUIMenuBarAbstract
 #define TLBI_STATE_PRESSED          0x00000004 // The button is being clicked.
 #define TLBI_STATE_DROPDOWNPRESSED  0x00000008 // The drop down is being clicked.
 
-// OBSOLETE version, use TLBI_ITEM_INFO2
-struct TLBI_ITEM_INFO
-{
-  DWORD       Mask;
-  DWORD       Style;
-  DWORD       State;
-  DWORD       ID;
-  char        *Text;
-  int         TextLen;
-  int         Width;
-  int         ImageIndex;
-  HICON       HIcon;
-  DWORD       CustomData; // FIXME_X64 - male pro ukazatel, neni nekdy potreba?
-  DWORD       *Enabler;
-
-  DWORD       Index;
-  char        *Name;
-  int         NameLen;
-};
-
 struct TLBI_ITEM_INFO2
 {
   DWORD       Mask;
@@ -1314,49 +1271,6 @@ struct TLBI_ITEM_INFO2
   char        *Name;
   int         NameLen;
 };
-
-#ifdef INSIDE_SALAMANDER
-
-inline void CopyTLBI_ITEM_INFO(TLBI_ITEM_INFO2 *tii2, const TLBI_ITEM_INFO *tii)
-{
-  tii2->Mask = tii->Mask;
-  tii2->Style = tii->Style;
-  tii2->State = tii->State;
-  tii2->ID = tii->ID;
-  tii2->Text = tii->Text;
-  tii2->TextLen = tii->TextLen;
-  tii2->Width = tii->Width;
-  tii2->ImageIndex = tii->ImageIndex;
-  tii2->HIcon = tii->HIcon;
-  tii2->HOverlay = NULL;
-  tii2->CustomData = tii->CustomData;
-  tii2->Enabler = tii->Enabler;
-  tii2->Index = tii->Index;
-  tii2->Name = tii->Name;
-  tii2->NameLen = tii->NameLen;
-}
-
-inline void CopyTLBI_ITEM_INFO(TLBI_ITEM_INFO *tii, const TLBI_ITEM_INFO2 *tii2)
-{
-  tii->Mask = tii2->Mask;
-  tii->Style = tii2->Style;
-  tii->State = tii2->State;
-  tii->ID = tii2->ID;
-  tii->Text = tii2->Text;
-  tii->TextLen = tii2->TextLen;
-  tii->Width = tii2->Width;
-  tii->ImageIndex = tii2->ImageIndex;
-  tii->HIcon = tii2->HIcon;
-  if ((tii2->Mask & MENU_MASK_OVERLAY) && tii2->HOverlay != NULL)
-    TRACE_E("CopyTLBI_ITEM_INFO(): unable to copy value in HOverlay!");  // this should never happen (old plugins do not have TLBI_MASK_OVERLAY)
-  tii->CustomData = tii2->CustomData;
-  tii->Enabler = tii2->Enabler;
-  tii->Index = tii2->Index;
-  tii->Name = tii2->Name;
-  tii->NameLen = tii2->NameLen;
-}
-
-#endif // INSIDE_SALAMANDER
 
 /*
 Mask
@@ -1502,93 +1416,6 @@ class CGUIToolBarAbstract
     //   Returns TRUE if successful, or FALSE otherwise.
     //
     virtual BOOL WINAPI GetItemRect(int index, RECT &r) = 0;
-
-    // OBSOLETE: use InsertItem2
-    //
-    // InsertItem
-    //   Inserts a new button at the specified position in a toolbar.
-    //
-    // Parameters
-    //   'position'
-    //      [in] Identifier or position of the button before which to insert the new button.
-    //      The meaning of this parameter depends on the value of 'byPosition'.
-    //
-    //   'byPosition'
-    //      [in] Value specifying the meaning of 'position'. If this parameter is FALSE, 'position'
-    //      is a button identifier. Otherwise, it is a zero-based button position.
-    //
-    //   'tii'
-    //      [in] Pointer to a TLBI_ITEM_INFO structure that contains information about the
-    //      new button.
-    //
-    // Return Values
-    //   Returns TRUE if successful, or FALSE otherwise.
-    //
-    // See Also
-    //   SetItemInfo, GetItemInfo
-    //
-// WARNING: function has been removed!
-//    virtual BOOL WINAPI InsertItem(DWORD position,
-//                                   BOOL byPosition,
-//                                   const TLBI_ITEM_INFO *tii) = 0;
-
-    // OBSOLETE: use SetItemInfo2
-    //
-    // SetItemInfo
-    //   Changes information about a button.
-    //
-    // Parameters
-    //   'position'
-    //      [in] Identifier or position of the button to change.
-    //      The meaning of this parameter depends on the value of 'byPosition'.
-    //
-    //   'byPosition'
-    //      [in] Value specifying the meaning of 'position'. If this parameter is FALSE, 'position'
-    //      is a button identifier. Otherwise, it is a zero-based button position.
-    //
-    //   'mii'
-    //      [in] Pointer to a TLBI_ITEM_INFO structure that contains information about the button
-    //      and specifies which button attributes to change.
-    //
-    // Return Values
-    //   Returns TRUE if successful, or FALSE otherwise.
-    //
-    // See Also
-    //   InsertItem, GetItemInfo
-    //
-// WARNING: function has been removed!
-//    virtual BOOL WINAPI SetItemInfo(DWORD position,
-//                                    BOOL byPosition,
-//                                    const TLBI_ITEM_INFO *tii) = 0;
-
-    // OBSOLETE: use GetItemInfo2
-    //
-    // GetItemInfo
-    //   Retrieves information about a button.
-    //
-    // Parameters
-    //   'position'
-    //      [in] Identifier or position of the button to get information about.
-    //      The meaning of this parameter depends on the value of 'byPosition'.
-    //
-    //   'byPosition'
-    //      [in] Value specifying the meaning of 'position'. If this parameter is FALSE, 'position'
-    //      is a button identifier. Otherwise, it is a zero-based button position.
-    //
-    //   'mii'
-    //      [in/out] Pointer to a TLBI_ITEM_INFO structure that contains information to retrieve
-    //      and receives information about the button.
-    //
-    // Return Values
-    //   Returns TRUE if successful, or FALSE otherwise.
-    //
-    // See Also
-    //   InsertItem, SetItemInfo
-    //
-// WARNING: function has been removed!
-//    virtual BOOL WINAPI GetItemInfo(DWORD position,
-//                                    BOOL byPosition,
-//                                    TLBI_ITEM_INFO *tii) = 0;
 
     // CheckItem
     //   Sets the state of the specified button's attribute to either checked or normal.
@@ -2051,7 +1878,7 @@ class CGUIIconListAbstract
     // vytvori se na zaklade dodaneho PNG resource; 'hInstance' a 'lpBitmapName' specifikuji resource,
     // 'imageWidth' udava sirku jedne ikony v bodech; v pripade uspechu vraci TRUE, jinak FALSE
     // poznamka: PNG musi byt pruh ikon jeden radek vysoky
-    // poznamka: PNG je vhodne komprimovat pomoci PNGSlim, viz http://forum.altap.cz/viewtopic.php?f=15&t=3278
+    // poznamka: PNG je vhodne komprimovat pomoci PNGSlim, viz https://forum.altap.cz/viewtopic.php?f=15&t=3278
     virtual BOOL WINAPI CreateFromPNG(HINSTANCE hInstance, LPCTSTR lpBitmapName, int imageWidth) = 0;
 
     // nahradi ikonu na danem indexu ikonou 'hIcon'; v pripade uspechu vraci TRUE, jinak FALSE
@@ -2065,7 +1892,7 @@ class CGUIIconListAbstract
     // (napriklad nactene ze souboru) a 'rawPNGSize' urcuje velikost pameti obsazene PNG v bajtech,
     // 'imageWidth' udava sirku jedne ikony v bodech; v pripade uspechu vraci TRUE, jinak FALSE
     // poznamka: PNG musi byt pruh ikon jeden radek vysoky
-    // poznamka: PNG je vhodne komprimovat pomoci PNGSlim, viz http://forum.altap.cz/viewtopic.php?f=15&t=3278
+    // poznamka: PNG je vhodne komprimovat pomoci PNGSlim, viz https://forum.altap.cz/viewtopic.php?f=15&t=3278
     virtual BOOL WINAPI CreateFromRawPNG(const void *rawPNG, DWORD rawPNGSize, int imageWidth) = 0;
 
     // vytvori se jako kopie jineho (vytvoreneho) icon listu; pokud je 'grayscale' TRUE, 
@@ -2103,6 +1930,8 @@ class CGUIIconListAbstract
 #define TLBHDR_SORT       4
 #define TLBHDR_UP         5 
 #define TLBHDR_DOWN       6 
+// Pocet polozek
+#define TLBHDR_COUNT      6
 
 class CGUIToolbarHeaderAbstract
 {
@@ -2376,6 +2205,14 @@ class CSalamanderGUIAbstract
     // aktualniho pisma v dialogu. Eliminuje zbytecne mezery vznikle kvuli ruznym
     // DPI obrazovky.
     virtual void WINAPI ArrangeHorizontalLines(HWND hWindow) = 0;
+
+    ///////////////////////////////////////////////////////////////////////////
+    //
+    // GetWindowFontHeight
+    //
+    // pro 'hWindow' ziska aktualni font pomoci WM_GETFONT a vrati jeho vysku
+    // pomoci GetObject()
+    virtual int WINAPI GetWindowFontHeight(HWND hWindow) = 0;
 };
 
 #ifdef _MSC_VER

@@ -221,7 +221,7 @@ CViewerThread::Body()
     }
   }
 
-  CALL_STACK_MESSAGE1_1("ViewerThreadBody::SetEvent");
+  CALL_STACK_MESSAGE1("ViewerThreadBody::SetEvent");
   BOOL openFile = *Success;
   SetEvent(Continue);    // pustime dale hl. thread, od tohoto bodu nejsou platne nasl. promenne:
   Continue = NULL;       // vymaz je zbytecny, jen pro prehlednost
@@ -235,7 +235,7 @@ CViewerThread::Body()
     CALL_STACK_MESSAGE1("ViewerThreadBody::OpenFile");
     window->OpenFile(Name, FALSE);
 
-    CALL_STACK_MESSAGE1_1("ViewerThreadBody::message-loop");
+    CALL_STACK_MESSAGE1("ViewerThreadBody::message-loop");
     // message loopa
     MSG msg;
     while (GetMessage(&msg, NULL, 0, 0))

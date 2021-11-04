@@ -33,15 +33,15 @@
 #define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
 #endif
 
-// If DEMOPLUG_COMPATIBLE_WITH_300 is defined, plugin is compiled as compatible with Salamander 3.0
+// If DEMOPLUG_COMPATIBLE_WITH_400 is defined, plugin is compiled as compatible with Salamander 4.0
 // (otherwise it is compiled for current version of Salamander and later).
-// NOTE: the ideal is to define DEMOPLUG_COMPATIBLE_WITH_300 for whole plugin project
+// NOTE: the ideal is to define DEMOPLUG_COMPATIBLE_WITH_400 for whole plugin project
 //       in Project Settings. DemoPlug defines it here just to make adding/removing easier.
-#define DEMOPLUG_COMPATIBLE_WITH_300
+#define DEMOPLUG_COMPATIBLE_WITH_400
 
-#ifdef DEMOPLUG_COMPATIBLE_WITH_300
-#define SALSDK_COMPATIBLE_WITH_VER 102    // 64 = Altap Salamander 4.0 (SDK will be defined to be compatible with version 3.0)
-#endif // DEMOPLUG_COMPATIBLE_WITH_300
+#ifdef DEMOPLUG_COMPATIBLE_WITH_400
+#define SALSDK_COMPATIBLE_WITH_VER 100    // 100 = Altap Salamander 4.0 (SDK will be defined to be compatible with version 4.0)
+#endif // DEMOPLUG_COMPATIBLE_WITH_400
 
 #include "versinfo.rh2"
 

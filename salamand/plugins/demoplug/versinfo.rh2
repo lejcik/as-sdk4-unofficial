@@ -26,7 +26,7 @@
 
 #include "spl_vers.h" // vytahneme cisla verzi + buildu
 
-#define VERSINFO_COPYRIGHT   "Copyright © 1999-2016 ALTAP"
+#define VERSINFO_COPYRIGHT   "Copyright © 1999-2019 ALTAP"
 #define VERSINFO_COMPANY     "ALTAP"
 
 #define VERSINFO_DESCRIPTION "Sample plugin for Altap Salamander"

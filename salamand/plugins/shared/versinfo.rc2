@@ -70,7 +70,7 @@ BEGIN
             VALUE "SLGCRCofImpSLT", "none\0"
 #ifdef _LANG_SALAMANDER
             VALUE "SLGHelpDir", "ENGLISH\0"
-            VALUE "SLGIncomplete", "\0" // pri nekompletnim prekladu davat: "http://forum.altap.cz/viewforum.php?f=23\0"
+            VALUE "SLGIncomplete", "\0" // pri nekompletnim prekladu davat: "https://forum.altap.cz/viewforum.php?f=23\0"
 #endif
 #endif
         END

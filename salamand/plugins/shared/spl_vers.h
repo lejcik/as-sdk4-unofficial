@@ -88,18 +88,19 @@
 // 150 - 3.05
 // 156 - 3.06
 // 165 - 3.07
-// 166 - 3.07 (SDK)
-// 167 - 3.07 (CB167)
-// 168 - 4.0 beta 1 (DB168)
-// 169 - 4.0 beta 1 (CB169)
-// 170 - 4.0 beta 1 (IB170)
 // 174 - 3.08
 // 175 - 3.08 (SDK)
 // 176 - 3.08 (CB176)
+// 177 - 4.0 beta 1 (DB177)
+// 178 - 4.0 beta 1 (CB178)
+// 179 - 4.0 beta 1 (IB179)
+// 180 - 4.0
+// 181 - 4.0 (SDK)
+// 182 - 4.0 (CB182)
 
 // ! DULEZITE: nova cisla buildu je nutne zapsat do vetve "default", a pak
-//             teprve sem (kompletni seznam je jen v "default" vetvi)
-#define VERSINFO_BUILDNUMBER     176
+//             teprve do vedlejsi vetve (kompletni seznam je jen v "default" vetvi)
+#define VERSINFO_BUILDNUMBER     182
 
 
 // VERSINFO_BETAVERSION_TXT:
@@ -113,12 +114,12 @@
 // priklady ("x86" je pro 32-bit verzi, "x64" pro 64-bit verzi, v nasledujicich prikladech jsou
 // x86/x64 zamenne): " (x86)" (pro release verze), " beta 2 (x64)", " beta 2 (SDK x86)",
 // " RC1 (x64)", " beta 2 (IB21 x86)", " beta 2 (DB21 x64)", " beta 2 (PB21 x86)"
-#define VERSINFO_BETAVERSION_TXT             " (CB176 " SAL_VER_PLATFORM ")"
-#define VERSINFO_BETAVERSION_TXT_NO_PLATFORM " (CB176)" // kopie radku vyse + smazat SAL_VER_PLATFORM + je-li zavorka prazdna, smazat ji + smazat nadbytecne mezery
+#define VERSINFO_BETAVERSION_TXT             " (CB182 " SAL_VER_PLATFORM ")"
+#define VERSINFO_BETAVERSION_TXT_NO_PLATFORM "(CB182)" // kopie radku vyse + smazat SAL_VER_PLATFORM + je-li zavorka prazdna, smazat ji + smazat nadbytecne mezery
 
 // priklady (x86/x64 viz predchozi odstavec): "x86" (pro release verze), "B2x64", "B2SDKx86",
 // "RC1x64", "B2IB21x86", "B2DB21x64", "B2PB21x86"
-#define VERSINFO_BETAVERSIONSHORT_TXT "CB176" SAL_VER_PLATFORM
+#define VERSINFO_BETAVERSIONSHORT_TXT "CB182" SAL_VER_PLATFORM
 
 // LAST_VERSION_OF_SALAMANDER:
 //
@@ -185,13 +186,12 @@
 //   74 - 3.05
 //   76 - 3.06
 //   79 - 3.07
-//   80 - 4.0 beta 1 (DB168)
 //   81 - 3.08
-// ! DULEZITE: vsechny verze z VC2008 musi byt < 100, vsechny verze z VC2013 musi byt >= 100,
+// ! DULEZITE: vsechny verze z VC2008 musi byt < 100, vsechny verze z VC2019 musi byt >= 100,
 //             nova cisla verzi je nutne zapsat do vetve "default", a pak
-//             teprve sem (kompletni seznam je jen v "default" vetvi)
-//   (100 - 4.0 beta 1 - build z VC2013)
-//   102 - 4.0 - build z VC2019
+//             teprve do vedlejsi vetve (kompletni seznam je jen v "default" vetvi)
+//   101 - 4.0 beta 1 (DB177)
+//   102 - 4.0
 
 #define LAST_VERSION_OF_SALAMANDER         102
 #define REQUIRE_LAST_VERSION_OF_SALAMANDER "This plugin requires Altap Salamander 4.0 (" SAL_VER_PLATFORM ") or later."

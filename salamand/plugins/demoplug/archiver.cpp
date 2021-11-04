@@ -107,12 +107,8 @@ CPluginInterfaceForArchiver::ListArchive(CSalamanderForOperationsAbstract *salam
                     VALID_DATA_ATTRIBUTES |
                     VALID_DATA_HIDDEN |
                     VALID_DATA_ISLINK |
-                    VALID_DATA_ISOFFLINE
-#ifdef DEMOPLUG_COMPATIBLE_WITH_300
-                    | (SalamanderVersion >= 78 ? VALID_DATA_ICONOVERLAY : 0));
-#else // DEMOPLUG_COMPATIBLE_WITH_300
-                    | VALID_DATA_ICONOVERLAY);
-#endif // DEMOPLUG_COMPATIBLE_WITH_300
+                    VALID_DATA_ISOFFLINE |
+                    VALID_DATA_ICONOVERLAY);
 
   pluginData = &ArcPluginDataInterface;
 
@@ -636,17 +632,8 @@ CPluginInterfaceForArchiver::CanCloseArchive(CSalamanderForOperationsAbstract *s
   return TRUE;
 #else // DEMOPLUG_QUIET
 
-#ifdef DEMOPLUG_COMPATIBLE_WITH_300
-  if (SalamanderVersion >= 79)
-  {
-    if (SalamanderGeneral->IsCriticalShutdown_P())
-      return TRUE;  // pri critical shutdown se na nic neptame
-  }
-  // else ; // stara verze: nezjistime, jestli jde o critical shutdown = neresime to
-#else // DEMOPLUG_COMPATIBLE_WITH_300
   if (SalamanderGeneral->IsCriticalShutdown())
     return TRUE;  // pri critical shutdown se na nic neptame
-#endif // DEMOPLUG_COMPATIBLE_WITH_300
 
   return force && SalamanderGeneral->ShowMessageBox("CPluginInterfaceForArchiver::CanCloseArchive (can close).\n"
                                                     "Return is forced to TRUE.", LoadStr(IDS_PLUGINNAME),
@@ -793,17 +780,8 @@ CPluginInterfaceForArchiver::DeleteTmpCopy(const char *fileName, BOOL firstFile)
   // je-li critical shutdown, neni vhodna doba na pomale mazani souboru (brzo nas proces zabiji),
   // pri prvnim dalsim startu pluginu v prvnim spustenem Salamanderovi se to smaze "v klidu",
   // nic lepsiho asi nevymyslime
-#ifdef DEMOPLUG_COMPATIBLE_WITH_300
-  if (SalamanderVersion >= 79)
-  {
-    if (SalamanderGeneral->IsCriticalShutdown_P())
-      return;
-  }
-  // else ; // stara verze: nezjistime, jestli jde o critical shutdown = neresime to
-#else // DEMOPLUG_COMPATIBLE_WITH_300
   if (SalamanderGeneral->IsCriticalShutdown())
     return;
-#endif // DEMOPLUG_COMPATIBLE_WITH_300
 
   // ukazka pouziti wait-okenka
   static DWORD ti = 0;  // cas zacatku mazani prvniho souboru z rady (pri vice najednou mazanych souborech)
@@ -822,14 +800,7 @@ CPluginInterfaceForArchiver::DeleteTmpCopy(const char *fileName, BOOL firstFile)
   Sleep(2000);
 
   // obycejne mazani souboru
-#ifdef DEMOPLUG_COMPATIBLE_WITH_300
-  if (SalamanderVersion >= 79)
-    SalamanderGeneral->ClearReadOnlyAttr_P(fileName);
-  else
-    SetFileAttributes(fileName, FILE_ATTRIBUTE_ARCHIVE);  // stara verze: primitivni reseni staci
-#else // DEMOPLUG_COMPATIBLE_WITH_300
   SalamanderGeneral->ClearReadOnlyAttr(fileName);
-#endif // DEMOPLUG_COMPATIBLE_WITH_300
 
   if (DeleteFile(fileName))
     TRACE_I("Temporary copy from disk-cache (" << fileName << ") was deleted.");
@@ -848,17 +819,8 @@ CPluginInterfaceForArchiver::PrematureDeleteTmpCopy(HWND parent, int copiesCount
   // je-li critical shutdown, neni vhodna doba na pomale mazani souboru (brzo nas proces zabiji),
   // pri prvnim dalsim startu pluginu v prvnim spustenem Salamanderovi se to smaze "v klidu",
   // nic lepsiho asi nevymyslime
-#ifdef DEMOPLUG_COMPATIBLE_WITH_300
-  if (SalamanderVersion >= 79)
-  {
-    if (SalamanderGeneral->IsCriticalShutdown_P())
-      return FALSE;  // pri critical shutdown se na nic neptame
-  }
-  // else ; // stara verze: nezjistime, jestli jde o critical shutdown = neresime to
-#else // DEMOPLUG_COMPATIBLE_WITH_300
   if (SalamanderGeneral->IsCriticalShutdown())
     return FALSE;  // pri critical shutdown se na nic neptame
-#endif // DEMOPLUG_COMPATIBLE_WITH_300
 
   char buf[500];
   sprintf(buf, "%d temporary file(s) extracted from archive are still in use.\n"
