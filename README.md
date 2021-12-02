@@ -1,5 +1,7 @@
 # Altap Salamander SDK 4.0 Unofficial
 
+![CodeQL](https://github.com/lejcik/as-sdk4-unofficial/workflows/CodeQL/badge.svg)
+
 The SDK for Altap Salamander 4.0 was not yet published. Here is an unofficial port, however it contains the official sources that I've got from Altap staff.
 
 ## Installation and setup
