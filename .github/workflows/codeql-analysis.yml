@@ -54,5 +54,14 @@ jobs:
     - name: Build demo plugin
       run: msbuild salamand\plugins\demoplug\vcproj2019\demoplug.sln
 
+    - name: Build demo menu plugin
+      run: msbuild salamand\plugins\demomenu\vcproj2019\demomenu.sln
+
+    - name: Build demo viewer plugin
+      run: msbuild salamand\plugins\demoview\vcproj2019\demoview.sln
+
+    - name: Build UnFAT plugin
+      run: msbuild salamand\plugins\unfat\vcproj2019\unfat.sln
+
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
