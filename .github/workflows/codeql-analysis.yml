@@ -1,10 +1,12 @@
 name: "CodeQL"
 
-# Triggers the workflow on push or pull request events
 on:
   push:
   pull_request:
     branches: [ master ]
+
+env:
+  OPENSAL_BUILD_DIR: C:\\OpenSalamander
 
 jobs:
   analyze:
@@ -27,23 +29,25 @@ jobs:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.3
 
-    # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
       with:
         languages: ${{ matrix.language }}
 
+    - name: Create project dir
+      run: mkdir ${{ env.OPENSAL_BUILD_DIR }}
+
     - name: Build demo plugin
-      run: msbuild salamand\plugins\demoplug\vcproj2019\demoplug.sln
+      run: msbuild salamand\plugins\demoplug\vcxproj\demoplug.sln
 
     - name: Build demo menu plugin
-      run: msbuild salamand\plugins\demomenu\vcproj2019\demomenu.sln
+      run: msbuild salamand\plugins\demomenu\vcxproj\demomenu.sln
 
     - name: Build demo viewer plugin
-      run: msbuild salamand\plugins\demoview\vcproj2019\demoview.sln
+      run: msbuild salamand\plugins\demoview\vcxproj\demoview.sln
 
     - name: Build UnFAT plugin
-      run: msbuild salamand\plugins\unfat\vcproj2019\unfat.sln
+      run: msbuild salamand\plugins\unfat\vcxproj\unfat.sln
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
