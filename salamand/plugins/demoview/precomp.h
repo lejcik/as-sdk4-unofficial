@@ -1,13 +1,11 @@
+﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 //****************************************************************************
 //
-// Copyright (c) ALTAP, spol. s r.o. All rights reserved.
+// Copyright (c) 2023 Open Salamander Authors
 //
-// This is a part of the Altap Salamander SDK library.
-//
-// The SDK is provided "AS IS" and without warranty of any kind and 
-// ALTAP EXPRESSLY DISCLAIMS ALL WARRANTIES, EXPRESS AND IMPLIED, INCLUDING,
-// BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS
-// FOR A PARTICULAR PURPOSE and NON-INFRINGEMENT.
+// This is a part of the Open Salamander SDK library.
 //
 //****************************************************************************
 
@@ -29,8 +27,8 @@
 #include <stdio.h>
 #include <time.h>
 
-#if defined(_DEBUG) && defined(_MSC_VER)  // without passing file+line to 'new' operator, list of memory leaks shows only 'crtdbg.h(552)'
-#define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
+#if defined(_DEBUG) && defined(_MSC_VER) // without passing file+line to 'new' operator, list of memory leaks shows only 'crtdbg.h(552)'
+#define new new (_NORMAL_BLOCK, __FILE__, __LINE__)
 #endif
 
 #include "versinfo.rh2"

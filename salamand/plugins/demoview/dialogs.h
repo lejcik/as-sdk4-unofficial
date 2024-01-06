@@ -1,18 +1,15 @@
+﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 //****************************************************************************
 //
-// Copyright (c) ALTAP, spol. s r.o. All rights reserved.
+// Copyright (c) 2023 Open Salamander Authors
 //
-// This is a part of the Altap Salamander SDK library.
-//
-// The SDK is provided "AS IS" and without warranty of any kind and 
-// ALTAP EXPRESSLY DISCLAIMS ALL WARRANTIES, EXPRESS AND IMPLIED, INCLUDING,
-// BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS
-// FOR A PARTICULAR PURPOSE and NON-INFRINGEMENT.
+// This is a part of the Open Salamander SDK library.
 //
 //****************************************************************************
 
-#ifndef __DIALOGS_H
-#define __DIALOGS_H
+#pragma once
 
 //****************************************************************************
 //
@@ -21,13 +18,13 @@
 // Dialog centrovany k parentu
 //
 
-class CCommonDialog: public CDialog
+class CCommonDialog : public CDialog
 {
-  public:
+public:
     CCommonDialog(HINSTANCE hInstance, int resID, HWND hParent, CObjectOrigin origin = ooStandard);
     CCommonDialog(HINSTANCE hInstance, int resID, int helpID, HWND hParent, CObjectOrigin origin = ooStandard);
 
-  protected:
+protected:
     INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     virtual void NotifDlgJustCreated();
@@ -38,19 +35,19 @@ class CCommonDialog: public CDialog
 // CCommonPropSheetPage
 //
 
-class CCommonPropSheetPage: public CPropSheetPage
+class CCommonPropSheetPage : public CPropSheetPage
 {
-  public:
-    CCommonPropSheetPage(TCHAR *title, HINSTANCE modul, int resID,
+public:
+    CCommonPropSheetPage(TCHAR* title, HINSTANCE modul, int resID,
                          DWORD flags /* = PSP_USETITLE*/, HICON icon,
                          CObjectOrigin origin = ooStatic)
-                         : CPropSheetPage(title, modul, resID, flags, icon, origin) {}
-    CCommonPropSheetPage(TCHAR *title, HINSTANCE modul, int resID, UINT helpID,
+        : CPropSheetPage(title, modul, resID, flags, icon, origin) {}
+    CCommonPropSheetPage(TCHAR* title, HINSTANCE modul, int resID, UINT helpID,
                          DWORD flags /* = PSP_USETITLE*/, HICON icon,
                          CObjectOrigin origin = ooStatic)
-                         : CPropSheetPage(title, modul, resID, helpID, flags, icon, origin) {}
-  protected:
+        : CPropSheetPage(title, modul, resID, helpID, flags, icon, origin) {}
 
+protected:
     virtual void NotifDlgJustCreated();
 };
 
@@ -59,12 +56,12 @@ class CCommonPropSheetPage: public CPropSheetPage
 // CConfigPageViewer
 //
 
-class CConfigPageViewer: public CCommonPropSheetPage
+class CConfigPageViewer : public CCommonPropSheetPage
 {
-  public:
+public:
     CConfigPageViewer();
 
-    virtual void Transfer(CTransferInfo &ti);
+    virtual void Transfer(CTransferInfo& ti);
 };
 
 //
@@ -72,13 +69,11 @@ class CConfigPageViewer: public CCommonPropSheetPage
 // CConfigDialog
 //
 
-class CConfigDialog: public CPropertyDialog
+class CConfigDialog : public CPropertyDialog
 {
-  protected:
+protected:
     CConfigPageViewer PageViewer;
 
-  public:
+public:
     CConfigDialog(HWND parent);
 };
-
-#endif //__DIALOGS_H

@@ -1,18 +1,15 @@
+﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 //****************************************************************************
 //
-// Copyright (c) ALTAP, spol. s r.o. All rights reserved.
+// Copyright (c) 2023 Open Salamander Authors
 //
-// This is a part of the Altap Salamander SDK library.
-//
-// The SDK is provided "AS IS" and without warranty of any kind and 
-// ALTAP EXPRESSLY DISCLAIMS ALL WARRANTIES, EXPRESS AND IMPLIED, INCLUDING,
-// BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS
-// FOR A PARTICULAR PURPOSE and NON-INFRINGEMENT.
+// This is a part of the Open Salamander SDK library.
 //
 //****************************************************************************
 
-#ifndef __DBG_H
-#define __DBG_H
+#pragma once
 
 // definice maker TRACE_I, TRACE_IW, TRACE_E, TRACE_EW, TRACE_C, TRACE_CW a CALL_STACK_MESSAGEXXX pro pluginy,
 // v pluginu je treba definovat promennou SalamanderDebug (typ viz nize) a
@@ -41,13 +38,13 @@
 //                                 ochotni ignorovat zpomaleni jen v debug verzi, release verze je rychla)
 
 // globalni promenna s interfacem CSalamanderDebugAbstract
-extern CSalamanderDebugAbstract *SalamanderDebug;
+extern CSalamanderDebugAbstract* SalamanderDebug;
 
 // kopie z spl_com.h: globalni promenna s verzi Salamandera, ve kterem je tento plugin nacteny
 extern int SalamanderVersion;
 
 #ifndef __WFILE__
-#define __WFILE__WIDEN2(x) L ## x
+#define __WFILE__WIDEN2(x) L##x
 #define __WFILE__WIDEN(x) __WFILE__WIDEN2(x)
 #define __WFILE__ __WFILE__WIDEN(__FILE__)
 #endif // __WFILE__
@@ -57,105 +54,108 @@ extern int SalamanderVersion;
 // C__StringStreamBuf
 //
 
-class C__StringStreamBuf: public std::streambuf
+class C__StringStreamBuf : public std::streambuf
 {
 private:
-  enum
-  {
-    MINSIZE = 32,
-    STARTSIZE = 100
-  };
+    enum
+    {
+        MINSIZE = 32,
+        STARTSIZE = 100
+    };
 
 public:
-  // allocate new character array and setup pointers in base class
-  C__StringStreamBuf()
-  {
-    char *ptr = static_cast<char *>(GlobalAlloc(GMEM_FIXED, STARTSIZE));
-    setp(ptr, ptr + STARTSIZE);
-  }
-
-  // discard any allocated buffer and clear pointers
-  virtual ~C__StringStreamBuf()
-  {
-    GlobalFree(pbase());
-    setp(0, 0);
-  }
-
-  // return pointer to the beginning of the data, terminated by null
-  const char *c_str()
-  {
-    // add trailing null
-    sputc('\0');
-
-    // decrement the pointer back, trailing null is not part of the data
-    pbump(-1);
-
-    // and return the data
-    return static_cast<const char *>(pbase());
-  }
-
-  // return the length of the string currently in the buffer
-  size_t length() const
-    { return pptr() - pbase(); }
-
-  // just reset pointers to pretend the buffer is empty
-  void erase()
-    { pbump(-static_cast<int>(length())); }
-
-protected:
-
-  // store the element in the buffer, growing it if neccessary
-  virtual int_type overflow(int_type element = traits_type::eof())
-  {
-    // if EOF, just return success
-    if (traits_type::eq_int_type(traits_type::eof(), element))
-      return traits_type::not_eof(element);
-
-    // grow the buffer, if needed
-    if (pptr() == 0 || epptr() <= pptr())
+    // allocate new character array and setup pointers in base class
+    C__StringStreamBuf()
     {
-      // grow by 50 per cent
-      size_t oldsize = pptr() == 0 ? 0 : epptr() - pbase();
-      size_t newsize = oldsize;
-      size_t inc = newsize / 2 < MINSIZE ? MINSIZE : newsize / 2;
-
-      // if increment causes overflow, halve it
-      while (0 < inc && INT_MAX - inc < newsize)
-        inc /= 2;
-
-      // buffer too large
-      if (0 >= inc)
-        return traits_type::eof();
-
-      // allocate new character array
-      newsize += inc;
-      char *ptr = static_cast<char *>(GlobalAlloc(GMEM_FIXED, newsize));
-      if (ptr == 0)
-        return traits_type::eof();
-
-      // copy data and dealocate old buffer, if neccessary
-      if (pbase())
-      {
-#ifdef __BORLANDC__
-        traits_type::copy(ptr, pbase(), oldsize);
-#else // __BORLANDC__
-        traits_type::_Copy_s(ptr, newsize, pbase(), oldsize);
-#endif // __BORLANDC__
-        GlobalFree(pbase());
-      }
-
-      // update pointers
-      setp(ptr, ptr + newsize);
-      pbump((int)oldsize); // FIXME_X64 - je pretypovani na (int) OK?
+        char* ptr = static_cast<char*>(GlobalAlloc(GMEM_FIXED, STARTSIZE));
+        setp(ptr, ptr + STARTSIZE);
     }
 
-    // store the character
-    *pptr() = traits_type::to_char_type(element);
-    pbump(1);
+    // discard any allocated buffer and clear pointers
+    virtual ~C__StringStreamBuf()
+    {
+        GlobalFree(pbase());
+        setp(0, 0);
+    }
 
-    // return success
-    return element;
-  }
+    // return pointer to the beginning of the data, terminated by null
+    const char* c_str()
+    {
+        // add trailing null
+        sputc('\0');
+
+        // decrement the pointer back, trailing null is not part of the data
+        pbump(-1);
+
+        // and return the data
+        return static_cast<const char*>(pbase());
+    }
+
+    // return the length of the string currently in the buffer
+    size_t length() const
+    {
+        return pptr() - pbase();
+    }
+
+    // just reset pointers to pretend the buffer is empty
+    void erase()
+    {
+        pbump(-static_cast<int>(length()));
+    }
+
+protected:
+    // store the element in the buffer, growing it if neccessary
+    virtual int_type overflow(int_type element = traits_type::eof())
+    {
+        // if EOF, just return success
+        if (traits_type::eq_int_type(traits_type::eof(), element))
+            return traits_type::not_eof(element);
+
+        // grow the buffer, if needed
+        if (pptr() == 0 || epptr() <= pptr())
+        {
+            // grow by 50 per cent
+            size_t oldsize = pptr() == 0 ? 0 : epptr() - pbase();
+            size_t newsize = oldsize;
+            size_t inc = newsize / 2 < MINSIZE ? MINSIZE : newsize / 2;
+
+            // if increment causes overflow, halve it
+            while (0 < inc && INT_MAX - inc < newsize)
+                inc /= 2;
+
+            // buffer too large
+            if (0 >= inc)
+                return traits_type::eof();
+
+            // allocate new character array
+            newsize += inc;
+            char* ptr = static_cast<char*>(GlobalAlloc(GMEM_FIXED, newsize));
+            if (ptr == 0)
+                return traits_type::eof();
+
+            // copy data and dealocate old buffer, if neccessary
+            if (pbase())
+            {
+#ifdef __BORLANDC__
+                traits_type::copy(ptr, pbase(), oldsize);
+#else  // __BORLANDC__
+                traits_type::_Copy_s(ptr, newsize, pbase(), oldsize);
+#endif // __BORLANDC__
+                GlobalFree(pbase());
+            }
+
+            // update pointers
+            setp(ptr, ptr + newsize);
+            pbump((int)oldsize); // FIXME_X64 - je pretypovani na (int) OK?
+        }
+
+        // store the character
+        *pptr() = traits_type::to_char_type(element);
+        pbump(1);
+
+        // return success
+        return element;
+    }
 };
 
 //*****************************************************************************
@@ -163,105 +163,108 @@ protected:
 // C__StringStreamBufW
 //
 
-class C__StringStreamBufW: public std::wstreambuf
+class C__StringStreamBufW : public std::wstreambuf
 {
 private:
-  enum
-  {
-    MINSIZE = 32,
-    STARTSIZE = 100
-  };
+    enum
+    {
+        MINSIZE = 32,
+        STARTSIZE = 100
+    };
 
 public:
-  // allocate new character array and setup pointers in base class
-  C__StringStreamBufW()
-  {
-    wchar_t *ptr = static_cast<wchar_t *>(GlobalAlloc(GMEM_FIXED, sizeof(wchar_t) * STARTSIZE));
-    setp(ptr, ptr + STARTSIZE);
-  }
-
-  // discard any allocated buffer and clear pointers
-  virtual ~C__StringStreamBufW()
-  {
-    GlobalFree(pbase());
-    setp(0, 0);
-  }
-
-  // return pointer to the beginning of the data, terminated by null
-  const wchar_t *c_str()
-  {
-    // add trailing null
-    sputc(L'\0');
-
-    // decrement the pointer back, trailing null is not part of the data
-    pbump(-1);
-
-    // and return the data
-    return static_cast<const wchar_t *>(pbase());
-  }
-
-  // return the length of the string currently in the buffer
-  size_t length() const
-    { return pptr() - pbase(); }
-
-  // just reset pointers to pretend the buffer is empty
-  void erase()
-    { pbump(-static_cast<int>(length())); }
-
-protected:
-
-  // store the element in the buffer, growing it if neccessary
-  virtual int_type overflow(int_type element = traits_type::eof())
-  {
-    // if EOF, just return success
-    if (traits_type::eq_int_type(traits_type::eof(), element))
-      return traits_type::not_eof(element);
-
-    // grow the buffer, if needed
-    if (pptr() == 0 || epptr() <= pptr())
+    // allocate new character array and setup pointers in base class
+    C__StringStreamBufW()
     {
-      // grow by 50 per cent
-      size_t oldsize = pptr() == 0 ? 0 : epptr() - pbase();
-      size_t newsize = oldsize;
-      size_t inc = newsize / 2 < MINSIZE ? MINSIZE : newsize / 2;
-
-      // if increment causes overflow, halve it
-      while (0 < inc && INT_MAX - inc < newsize)
-        inc /= 2;
-
-      // buffer too large
-      if (0 >= inc)
-        return traits_type::eof();
-
-      // allocate new character array
-      newsize += inc;
-      wchar_t *ptr = static_cast<wchar_t *>(GlobalAlloc(GMEM_FIXED, sizeof(wchar_t) * newsize));
-      if (ptr == 0)
-        return traits_type::eof();
-
-      // copy data and dealocate old buffer, if neccessary
-      if (pbase())
-      {
-#ifdef __BORLANDC__
-        traits_type::copy(ptr, pbase(), oldsize);
-#else // __BORLANDC__
-        traits_type::_Copy_s(ptr, newsize, pbase(), oldsize);
-#endif // __BORLANDC__
-        GlobalFree(pbase());
-      }
-
-      // update pointers
-      setp(ptr, ptr + newsize);
-      pbump((int)oldsize);
+        wchar_t* ptr = static_cast<wchar_t*>(GlobalAlloc(GMEM_FIXED, sizeof(wchar_t) * STARTSIZE));
+        setp(ptr, ptr + STARTSIZE);
     }
 
-    // store the character
-    *pptr() = traits_type::to_char_type(element);
-    pbump(1);
+    // discard any allocated buffer and clear pointers
+    virtual ~C__StringStreamBufW()
+    {
+        GlobalFree(pbase());
+        setp(0, 0);
+    }
 
-    // return success
-    return element;
-  }
+    // return pointer to the beginning of the data, terminated by null
+    const wchar_t* c_str()
+    {
+        // add trailing null
+        sputc(L'\0');
+
+        // decrement the pointer back, trailing null is not part of the data
+        pbump(-1);
+
+        // and return the data
+        return static_cast<const wchar_t*>(pbase());
+    }
+
+    // return the length of the string currently in the buffer
+    size_t length() const
+    {
+        return pptr() - pbase();
+    }
+
+    // just reset pointers to pretend the buffer is empty
+    void erase()
+    {
+        pbump(-static_cast<int>(length()));
+    }
+
+protected:
+    // store the element in the buffer, growing it if neccessary
+    virtual int_type overflow(int_type element = traits_type::eof())
+    {
+        // if EOF, just return success
+        if (traits_type::eq_int_type(traits_type::eof(), element))
+            return traits_type::not_eof(element);
+
+        // grow the buffer, if needed
+        if (pptr() == 0 || epptr() <= pptr())
+        {
+            // grow by 50 per cent
+            size_t oldsize = pptr() == 0 ? 0 : epptr() - pbase();
+            size_t newsize = oldsize;
+            size_t inc = newsize / 2 < MINSIZE ? MINSIZE : newsize / 2;
+
+            // if increment causes overflow, halve it
+            while (0 < inc && INT_MAX - inc < newsize)
+                inc /= 2;
+
+            // buffer too large
+            if (0 >= inc)
+                return traits_type::eof();
+
+            // allocate new character array
+            newsize += inc;
+            wchar_t* ptr = static_cast<wchar_t*>(GlobalAlloc(GMEM_FIXED, sizeof(wchar_t) * newsize));
+            if (ptr == 0)
+                return traits_type::eof();
+
+            // copy data and dealocate old buffer, if neccessary
+            if (pbase())
+            {
+#ifdef __BORLANDC__
+                traits_type::copy(ptr, pbase(), oldsize);
+#else  // __BORLANDC__
+                traits_type::_Copy_s(ptr, newsize, pbase(), oldsize);
+#endif // __BORLANDC__
+                GlobalFree(pbase());
+            }
+
+            // update pointers
+            setp(ptr, ptr + newsize);
+            pbump((int)oldsize);
+        }
+
+        // store the character
+        *pptr() = traits_type::to_char_type(element);
+        pbump(1);
+
+        // return success
+        return element;
+    }
 };
 
 //*****************************************************************************
@@ -269,23 +272,30 @@ protected:
 // C__TraceStream
 //
 
-class C__TraceStream: public std::ostream
+class C__TraceStream : public std::ostream
 {
-  private:
-    std::ostream &operator <<(const wchar_t *str) {return *this;}
+private:
+    std::ostream& operator<<(const wchar_t* str) { return *this; }
 
-  public:
-    C__TraceStream(C__StringStreamBuf *buf): std::ostream(buf) {}
+public:
+    C__TraceStream(C__StringStreamBuf* buf) : std::ostream(buf) {}
 
-    std::ostream &operator <<(char i) {return *(std::ostream *)this << i;}
-    std::ostream &operator <<(unsigned char i) {return *(std::ostream *)this << i;}
-    std::ostream &operator <<(wchar_t i) {return *(std::ostream *)this << i;}
-    std::ostream &operator <<(int i) {return *(std::ostream *)this << i;}
-    std::ostream &operator <<(unsigned int i) {return *(std::ostream *)this << i;}
-    std::ostream &operator <<(float i) {return *(std::ostream *)this << i;}
-    std::ostream &operator <<(double i) {return *(std::ostream *)this << i;}
-    std::ostream &operator <<(__int64 i) {return *(std::ostream *)this << i;}
-    std::ostream &operator <<(unsigned __int64 i) {return *(std::ostream *)this << i;}
+    std::ostream& operator<<(bool v) { return static_cast<std::ostream&>(*this) << v; }
+    std::ostream& operator<<(char v) { return static_cast<std::ostream&>(*this) << v; }
+    std::ostream& operator<<(unsigned char v) { return static_cast<std::ostream&>(*this) << v; }
+    std::ostream& operator<<(short v) { return static_cast<std::ostream&>(*this) << v; }
+    std::ostream& operator<<(unsigned short v) { return static_cast<std::ostream&>(*this) << v; }
+    std::ostream& operator<<(int v) { return static_cast<std::ostream&>(*this) << v; }
+    std::ostream& operator<<(unsigned int v) { return static_cast<std::ostream&>(*this) << v; }
+    std::ostream& operator<<(long v) { return static_cast<std::ostream&>(*this) << v; }
+    std::ostream& operator<<(unsigned long v) { return static_cast<std::ostream&>(*this) << v; }
+    std::ostream& operator<<(__int64 v) { return static_cast<std::ostream&>(*this) << v; }
+    std::ostream& operator<<(unsigned __int64 v) { return static_cast<std::ostream&>(*this) << v; }
+    std::ostream& operator<<(float v) { return static_cast<std::ostream&>(*this) << v; }
+    std::ostream& operator<<(double v) { return static_cast<std::ostream&>(*this) << v; }
+    std::ostream& operator<<(long double v) { return static_cast<std::ostream&>(*this) << v; }
+    std::ostream& operator<<(const void* v) { return static_cast<std::ostream&>(*this) << v; }
+    std::ostream& operator<<(const char* v) { return static_cast<std::ostream&>(*this) << v; }
 };
 
 //*****************************************************************************
@@ -293,29 +303,37 @@ class C__TraceStream: public std::ostream
 // C__TraceStreamW
 //
 
-class C__TraceStreamW: public std::wostream
+class C__TraceStreamW : public std::wostream
 {
-  private:
-    std::wostream &operator <<(const char *str) {return *this;}
+private:
+    std::wostream& operator<<(const char* str) { return *this; }
 
-  public:
-    C__TraceStreamW(C__StringStreamBufW *buf): std::wostream(buf) {}
+public:
+    C__TraceStreamW(C__StringStreamBufW* buf) : std::wostream(buf) {}
 
-    std::wostream &operator <<(char i) {return *(std::wostream *)this << i;}
-    std::wostream &operator <<(unsigned char i) {return *(std::wostream *)this << i;}
-    std::wostream &operator <<(wchar_t i) {return *(std::wostream *)this << i;}
-    std::wostream &operator <<(int i) {return *(std::wostream *)this << i;}
-    std::wostream &operator <<(unsigned int i) {return *(std::wostream *)this << i;}
-    std::wostream &operator <<(float i) {return *(std::wostream *)this << i;}
-    std::wostream &operator <<(double i) {return *(std::wostream *)this << i;}
-    std::wostream &operator <<(__int64 i) {return *(std::wostream *)this << i;}
-    std::wostream &operator <<(unsigned __int64 i) {return *(std::wostream *)this << i;}
+    std::wostream& operator<<(bool v) { return static_cast<std::wostream&>(*this) << v; }
+    std::wostream& operator<<(char v) { return static_cast<std::wostream&>(*this) << v; }
+    std::wostream& operator<<(unsigned char v) { return static_cast<std::wostream&>(*this) << v; }
+    std::wostream& operator<<(wchar_t v) { return static_cast<std::wostream&>(*this) << v; }
+    std::wostream& operator<<(short v) { return static_cast<std::wostream&>(*this) << v; }
+    std::wostream& operator<<(unsigned short v) { return static_cast<std::wostream&>(*this) << v; }
+    std::wostream& operator<<(int v) { return static_cast<std::wostream&>(*this) << v; }
+    std::wostream& operator<<(unsigned int v) { return static_cast<std::wostream&>(*this) << v; }
+    std::wostream& operator<<(long v) { return static_cast<std::wostream&>(*this) << v; }
+    std::wostream& operator<<(unsigned long v) { return static_cast<std::wostream&>(*this) << v; }
+    std::wostream& operator<<(__int64 v) { return static_cast<std::wostream&>(*this) << v; }
+    std::wostream& operator<<(unsigned __int64 v) { return static_cast<std::wostream&>(*this) << v; }
+    std::wostream& operator<<(float v) { return static_cast<std::wostream&>(*this) << v; }
+    std::wostream& operator<<(double v) { return static_cast<std::wostream&>(*this) << v; }
+    std::wostream& operator<<(long double v) { return static_cast<std::wostream&>(*this) << v; }
+    std::wostream& operator<<(const void* v) { return static_cast<std::wostream&>(*this) << v; }
+    std::wostream& operator<<(const wchar_t* v) { return static_cast<std::wostream&>(*this) << v; }
 };
 
 // NOT SUPPORTED (just to produce link error)
 // if error occurs, it may be invalid combination of WCHAR / char usage in TRACE macros
-std::ostream &operator <<(std::ostream &out, const wchar_t *str);
-std::wostream &operator <<(std::wostream &out, const char *str);
+std::ostream& operator<<(std::ostream& out, const wchar_t* str);
+std::wostream& operator<<(std::wostream& out, const char* str);
 
 //
 // ****************************************************************************
@@ -327,17 +345,26 @@ std::wostream &operator <<(std::wostream &out, const char *str);
 
 class CWStr
 {
-  protected:
+protected:
     BOOL IsOK;
-    WCHAR *AllocBuf;
-    const WCHAR *Str;
+    WCHAR* AllocBuf;
+    const WCHAR* Str;
 
-  public:
-    CWStr(const char *s);
-    CWStr(const WCHAR *s) {IsOK = TRUE; AllocBuf = NULL; Str = s;}
-    ~CWStr() {if (AllocBuf != NULL) free(AllocBuf);}
+public:
+    CWStr(const char* s);
+    CWStr(const WCHAR* s)
+    {
+        IsOK = TRUE;
+        AllocBuf = NULL;
+        Str = s;
+    }
+    ~CWStr()
+    {
+        if (AllocBuf != NULL)
+            free(AllocBuf);
+    }
 
-    const WCHAR *c_str() {return IsOK ? (const WCHAR *)(AllocBuf != NULL ? AllocBuf : Str) : L"Error in CWStr()";}
+    const WCHAR* c_str() { return IsOK ? (const WCHAR*)(AllocBuf != NULL ? AllocBuf : Str) : L"Error in CWStr()"; }
 };
 
 //
@@ -372,10 +399,10 @@ inline void __TraceEmptyFunction() {}
 //#define TRACE_MCW(file, line, str) DebugBreak()
 //#define TRACE_C(str) DebugBreak()
 //#define TRACE_CW(str) DebugBreak()
-#define TRACE_MC(file, line, str) (*((int *)NULL) = 0x666)
-#define TRACE_MCW(file, line, str) (*((int *)NULL) = 0x666)
-#define TRACE_C(str) (*((int *)NULL) = 0x666)
-#define TRACE_CW(str) (*((int *)NULL) = 0x666)
+#define TRACE_MC(file, line, str) (*((int*)NULL) = 0x666)
+#define TRACE_MCW(file, line, str) (*((int*)NULL) = 0x666)
+#define TRACE_C(str) (*((int*)NULL) = 0x666)
+#define TRACE_CW(str) (*((int*)NULL) = 0x666)
 #define ConnectToTraceServer() __TraceEmptyFunction()
 #define SetTraceThreadName(name) __TraceEmptyFunction()
 #define SetTraceThreadNameW(name) __TraceEmptyFunction()
@@ -383,13 +410,17 @@ inline void __TraceEmptyFunction() {}
 #else // TRACE_ENABLE
 
 // info-trace, manualne zadana pozice v souboru
-#define TRACE_MI(file, line, str)                                              \
-  (::EnterCriticalSection(&__Trace.CriticalSection), __Trace.OStream() << str, \
-   __Trace).SetInfo(file, line).SendMessageToServer(TRUE)
+#define TRACE_MI(file, line, str) \
+    (::EnterCriticalSection(&__Trace.CriticalSection), __Trace.OStream() << str, \
+     __Trace) \
+        .SetInfo(file, line) \
+        .SendMessageToServer(TRUE)
 
-#define TRACE_MIW(file, line, str)                                              \
-  (::EnterCriticalSection(&__Trace.CriticalSection), __Trace.OStreamW() << str, \
-   __Trace).SetInfoW(file, line).SendMessageToServer(TRUE, TRUE)
+#define TRACE_MIW(file, line, str) \
+    (::EnterCriticalSection(&__Trace.CriticalSection), __Trace.OStreamW() << str, \
+     __Trace) \
+        .SetInfoW(file, line) \
+        .SendMessageToServer(TRUE, TRUE)
 
 // info-trace
 #define TRACE_I(str) TRACE_MI(__FILE__, __LINE__, str)
@@ -400,13 +431,17 @@ inline void __TraceEmptyFunction() {}
 #define TRACE_WW(str) TRACE_IW(str)
 
 // error-trace, manualne zadana pozice v souboru
-#define TRACE_ME(file, line, str)                                              \
-  (::EnterCriticalSection(&__Trace.CriticalSection), __Trace.OStream() << str, \
-   __Trace).SetInfo(file, line).SendMessageToServer(FALSE)
+#define TRACE_ME(file, line, str) \
+    (::EnterCriticalSection(&__Trace.CriticalSection), __Trace.OStream() << str, \
+     __Trace) \
+        .SetInfo(file, line) \
+        .SendMessageToServer(FALSE)
 
-#define TRACE_MEW(file, line, str)                                              \
-  (::EnterCriticalSection(&__Trace.CriticalSection), __Trace.OStreamW() << str, \
-   __Trace).SetInfoW(file, line).SendMessageToServer(FALSE, TRUE)
+#define TRACE_MEW(file, line, str) \
+    (::EnterCriticalSection(&__Trace.CriticalSection), __Trace.OStreamW() << str, \
+     __Trace) \
+        .SetInfoW(file, line) \
+        .SendMessageToServer(FALSE, TRUE)
 
 // error-trace
 #define TRACE_E(str) TRACE_ME(__FILE__, __LINE__, str)
@@ -421,15 +456,19 @@ inline void __TraceEmptyFunction() {}
 // funkce, ze ktere volame TRACE_C/MC, nepouziva stary jednoduchy model ukladani
 // a prace s EBP/ESP (to zalezi na kompileru a zaplych optimalizacich), proto
 // aspon prozatim pouzivame stary primitivni zpusob crashe zapisem na NULL
-#define TRACE_MC(file, line, str)                                               \
-  ((::EnterCriticalSection(&__Trace.CriticalSection), __Trace.OStream() << str, \
-    __Trace).SetInfo(file, line).SendMessageToServer(FALSE, FALSE, TRUE),       \
-    *((int *)NULL) = 0x666)
+#define TRACE_MC(file, line, str) \
+    ((::EnterCriticalSection(&__Trace.CriticalSection), __Trace.OStream() << str, \
+      __Trace) \
+         .SetInfo(file, line) \
+         .SendMessageToServer(FALSE, FALSE, TRUE), \
+     *((int*)NULL) = 0x666)
 
-#define TRACE_MCW(file, line, str)                                               \
-  ((::EnterCriticalSection(&__Trace.CriticalSection), __Trace.OStreamW() << str, \
-    __Trace).SetInfoW(file, line).SendMessageToServer(FALSE, TRUE, TRUE),        \
-    *((int *)NULL) = 0x666)
+#define TRACE_MCW(file, line, str) \
+    ((::EnterCriticalSection(&__Trace.CriticalSection), __Trace.OStreamW() << str, \
+      __Trace) \
+         .SetInfoW(file, line) \
+         .SendMessageToServer(FALSE, TRUE, TRUE), \
+     *((int*)NULL) = 0x666)
 
 // fatal-error-trace (CRASHING TRACE)
 #define TRACE_C(str) TRACE_MC(__FILE__, __LINE__, str)
@@ -442,27 +481,27 @@ inline void __TraceEmptyFunction() {}
 
 class C__Trace
 {
-  public:
+public:
     CRITICAL_SECTION CriticalSection;
 
-  protected:
-    const char *File;                    // pomocne promenne pro predani jmena souboru (ANSI)
-    const WCHAR *FileW;                  // pomocne promenne pro predani jmena souboru (unicode)
+protected:
+    const char* File;                    // pomocne promenne pro predani jmena souboru (ANSI)
+    const WCHAR* FileW;                  // pomocne promenne pro predani jmena souboru (unicode)
     int Line;                            // a cisla radku, odkud se vola TRACE_X()
     C__StringStreamBuf TraceStringBuf;   // string buffer drzici data trace streamu (ANSI)
     C__StringStreamBufW TraceStringBufW; // string buffer drzici data trace streamu (unicode)
     C__TraceStream TraceStrStream;       // vlastni trace stream (ANSI)
     C__TraceStreamW TraceStrStreamW;     // vlastni trace stream (unicode)
 
-  public:
+public:
     C__Trace();
     ~C__Trace();
 
-    C__Trace &SetInfo(const char *file, int line);
-    C__Trace &SetInfoW(const WCHAR *file, int line);
+    C__Trace& SetInfo(const char* file, int line);
+    C__Trace& SetInfoW(const WCHAR* file, int line);
 
-    C__TraceStream &OStream() { return TraceStrStream; }
-    C__TraceStreamW &OStreamW() { return TraceStrStreamW; }
+    C__TraceStream& OStream() { return TraceStrStream; }
+    C__TraceStreamW& OStreamW() { return TraceStrStreamW; }
     void SendMessageToServer(BOOL information, BOOL unicode = FALSE, BOOL crash = FALSE);
 };
 
@@ -480,48 +519,48 @@ extern C__Trace __Trace;
 class CCallStackMessage
 {
 #if (defined(_DEBUG) || defined(CALLSTK_MEASURETIMES)) && !defined(CALLSTK_DISABLEMEASURETIMES)
-  protected:
+protected:
     CCallStackMsgContext CallStkMsgContext;
 #endif // (defined(_DEBUG) || defined(CALLSTK_MEASURETIMES)) && !defined(CALLSTK_DISABLEMEASURETIMES)
 
-  public:
+public:
 #if (defined(_DEBUG) || defined(CALLSTK_MEASURETIMES)) && !defined(CALLSTK_DISABLEMEASURETIMES)
     // 'doNotMeasureTimes'==TRUE = nemerit Push tohoto call-stack makra (zrejme dost zpomaluje, ale
     // nechceme ho vyhodit, je prilis dulezite pro debugovani)
 #ifdef __BORLANDC__
-    CCallStackMessage(BOOL doNotMeasureTimes, const char *format, ...)
-#else // __BORLANDC__
-    CCallStackMessage(BOOL doNotMeasureTimes, int dummy, const char *format, ...)
+    CCallStackMessage(BOOL doNotMeasureTimes, const char* format, ...)
+#else  // __BORLANDC__
+    CCallStackMessage(BOOL doNotMeasureTimes, int dummy, const char* format, ...)
 #endif // __BORLANDC__
-#else // (defined(_DEBUG) || defined(CALLSTK_MEASURETIMES)) && !defined(CALLSTK_DISABLEMEASURETIMES)
-    CCallStackMessage(const char *format, ...)
+#else  // (defined(_DEBUG) || defined(CALLSTK_MEASURETIMES)) && !defined(CALLSTK_DISABLEMEASURETIMES)
+    CCallStackMessage(const char* format, ...)
 #endif // (defined(_DEBUG) || defined(CALLSTK_MEASURETIMES)) && !defined(CALLSTK_DISABLEMEASURETIMES)
     {
-      va_list args;
-      va_start(args, format);
+        va_list args;
+        va_start(args, format);
 #if (defined(_DEBUG) || defined(CALLSTK_MEASURETIMES)) && !defined(CALLSTK_DISABLEMEASURETIMES)
-      SalamanderDebug->Push(format, args, &CallStkMsgContext, doNotMeasureTimes);
-#else // (defined(_DEBUG) || defined(CALLSTK_MEASURETIMES)) && !defined(CALLSTK_DISABLEMEASURETIMES)
-      SalamanderDebug->Push(format, args, NULL, TRUE);
+        SalamanderDebug->Push(format, args, &CallStkMsgContext, doNotMeasureTimes);
+#else  // (defined(_DEBUG) || defined(CALLSTK_MEASURETIMES)) && !defined(CALLSTK_DISABLEMEASURETIMES)
+        SalamanderDebug->Push(format, args, NULL, TRUE);
 #endif // (defined(_DEBUG) || defined(CALLSTK_MEASURETIMES)) && !defined(CALLSTK_DISABLEMEASURETIMES)
-      va_end(args);
+        va_end(args);
     }
 
     ~CCallStackMessage()
     {
 #if (defined(_DEBUG) || defined(CALLSTK_MEASURETIMES)) && !defined(CALLSTK_DISABLEMEASURETIMES)
-      SalamanderDebug->Pop(&CallStkMsgContext);
-#else // (defined(_DEBUG) || defined(CALLSTK_MEASURETIMES)) && !defined(CALLSTK_DISABLEMEASURETIMES)
-      SalamanderDebug->Pop(NULL);
+        SalamanderDebug->Pop(&CallStkMsgContext);
+#else  // (defined(_DEBUG) || defined(CALLSTK_MEASURETIMES)) && !defined(CALLSTK_DISABLEMEASURETIMES)
+        SalamanderDebug->Pop(NULL);
 #endif // (defined(_DEBUG) || defined(CALLSTK_MEASURETIMES)) && !defined(CALLSTK_DISABLEMEASURETIMES)
     }
 };
 
-#define CALLSTK_TOKEN(x, y) x ## y
+#define CALLSTK_TOKEN(x, y) x##y
 #define CALLSTK_TOKEN2(x, y) CALLSTK_TOKEN(x, y)
 #ifdef __BORLANDC__
-#define CALLSTK_UNIQUE(varname) CALLSTK_TOKEN2(varname, __LINE__)  // __COUNTER__ je MSVC only
-#else // __BORLANDC__
+#define CALLSTK_UNIQUE(varname) CALLSTK_TOKEN2(varname, __LINE__) // __COUNTER__ je MSVC only
+#else                                                             // __BORLANDC__
 #define CALLSTK_UNIQUE(varname) CALLSTK_TOKEN2(varname, __COUNTER__)
 #endif // __BORLANDC__
 
@@ -529,7 +568,7 @@ class CCallStackMessage
 
 #ifndef __BORLANDC__
 
-extern BOOL __CallStk_T;  // always TRUE - just to check format string and type of parameters of call-stack macros
+extern BOOL __CallStk_T; // always TRUE - just to check format string and type of parameters of call-stack macros
 
 #define CALL_STACK_MESSAGE1(p1) CCallStackMessage CALLSTK_UNIQUE(_m)(FALSE, 0, p1)
 #define CALL_STACK_MESSAGE2(p1, p2) CCallStackMessage CALLSTK_UNIQUE(_m)(FALSE, (__CallStk_T ? 0 : printf(p1, p2)), p1, p2)
@@ -647,27 +686,27 @@ extern BOOL __CallStk_T;  // always TRUE - just to check format string and type 
 #define CALL_STACK_MESSAGE20(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20) CCallStackMessage CALLSTK_UNIQUE(_m)(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20)
 #define CALL_STACK_MESSAGE21(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21) CCallStackMessage CALLSTK_UNIQUE(_m)(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21)
 
-#define SLOW_CALL_STACK_MESSAGE1   CALL_STACK_MESSAGE1
-#define SLOW_CALL_STACK_MESSAGE2   CALL_STACK_MESSAGE2
-#define SLOW_CALL_STACK_MESSAGE3   CALL_STACK_MESSAGE3
-#define SLOW_CALL_STACK_MESSAGE4   CALL_STACK_MESSAGE4
-#define SLOW_CALL_STACK_MESSAGE5   CALL_STACK_MESSAGE5
-#define SLOW_CALL_STACK_MESSAGE6   CALL_STACK_MESSAGE6
-#define SLOW_CALL_STACK_MESSAGE7   CALL_STACK_MESSAGE7
-#define SLOW_CALL_STACK_MESSAGE8   CALL_STACK_MESSAGE8
-#define SLOW_CALL_STACK_MESSAGE9   CALL_STACK_MESSAGE9
-#define SLOW_CALL_STACK_MESSAGE10  CALL_STACK_MESSAGE10
-#define SLOW_CALL_STACK_MESSAGE11  CALL_STACK_MESSAGE11
-#define SLOW_CALL_STACK_MESSAGE12  CALL_STACK_MESSAGE12
-#define SLOW_CALL_STACK_MESSAGE13  CALL_STACK_MESSAGE13
-#define SLOW_CALL_STACK_MESSAGE14  CALL_STACK_MESSAGE14
-#define SLOW_CALL_STACK_MESSAGE15  CALL_STACK_MESSAGE15
-#define SLOW_CALL_STACK_MESSAGE16  CALL_STACK_MESSAGE16
-#define SLOW_CALL_STACK_MESSAGE17  CALL_STACK_MESSAGE17
-#define SLOW_CALL_STACK_MESSAGE18  CALL_STACK_MESSAGE18
-#define SLOW_CALL_STACK_MESSAGE19  CALL_STACK_MESSAGE19
-#define SLOW_CALL_STACK_MESSAGE20  CALL_STACK_MESSAGE20
-#define SLOW_CALL_STACK_MESSAGE21  CALL_STACK_MESSAGE21
+#define SLOW_CALL_STACK_MESSAGE1 CALL_STACK_MESSAGE1
+#define SLOW_CALL_STACK_MESSAGE2 CALL_STACK_MESSAGE2
+#define SLOW_CALL_STACK_MESSAGE3 CALL_STACK_MESSAGE3
+#define SLOW_CALL_STACK_MESSAGE4 CALL_STACK_MESSAGE4
+#define SLOW_CALL_STACK_MESSAGE5 CALL_STACK_MESSAGE5
+#define SLOW_CALL_STACK_MESSAGE6 CALL_STACK_MESSAGE6
+#define SLOW_CALL_STACK_MESSAGE7 CALL_STACK_MESSAGE7
+#define SLOW_CALL_STACK_MESSAGE8 CALL_STACK_MESSAGE8
+#define SLOW_CALL_STACK_MESSAGE9 CALL_STACK_MESSAGE9
+#define SLOW_CALL_STACK_MESSAGE10 CALL_STACK_MESSAGE10
+#define SLOW_CALL_STACK_MESSAGE11 CALL_STACK_MESSAGE11
+#define SLOW_CALL_STACK_MESSAGE12 CALL_STACK_MESSAGE12
+#define SLOW_CALL_STACK_MESSAGE13 CALL_STACK_MESSAGE13
+#define SLOW_CALL_STACK_MESSAGE14 CALL_STACK_MESSAGE14
+#define SLOW_CALL_STACK_MESSAGE15 CALL_STACK_MESSAGE15
+#define SLOW_CALL_STACK_MESSAGE16 CALL_STACK_MESSAGE16
+#define SLOW_CALL_STACK_MESSAGE17 CALL_STACK_MESSAGE17
+#define SLOW_CALL_STACK_MESSAGE18 CALL_STACK_MESSAGE18
+#define SLOW_CALL_STACK_MESSAGE19 CALL_STACK_MESSAGE19
+#define SLOW_CALL_STACK_MESSAGE20 CALL_STACK_MESSAGE20
+#define SLOW_CALL_STACK_MESSAGE21 CALL_STACK_MESSAGE21
 
 #endif // (defined(_DEBUG) || defined(CALLSTK_MEASURETIMES)) && !defined(CALLSTK_DISABLEMEASURETIMES)
 
@@ -695,53 +734,53 @@ extern BOOL __CallStk_T;  // always TRUE - just to check format string and type 
 #define CALL_STACK_MESSAGE20(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20)
 #define CALL_STACK_MESSAGE21(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21)
 
-#define SLOW_CALL_STACK_MESSAGE1   CALL_STACK_MESSAGE1
-#define SLOW_CALL_STACK_MESSAGE2   CALL_STACK_MESSAGE2
-#define SLOW_CALL_STACK_MESSAGE3   CALL_STACK_MESSAGE3
-#define SLOW_CALL_STACK_MESSAGE4   CALL_STACK_MESSAGE4
-#define SLOW_CALL_STACK_MESSAGE5   CALL_STACK_MESSAGE5
-#define SLOW_CALL_STACK_MESSAGE6   CALL_STACK_MESSAGE6
-#define SLOW_CALL_STACK_MESSAGE7   CALL_STACK_MESSAGE7
-#define SLOW_CALL_STACK_MESSAGE8   CALL_STACK_MESSAGE8
-#define SLOW_CALL_STACK_MESSAGE9   CALL_STACK_MESSAGE9
-#define SLOW_CALL_STACK_MESSAGE10  CALL_STACK_MESSAGE10
-#define SLOW_CALL_STACK_MESSAGE11  CALL_STACK_MESSAGE11
-#define SLOW_CALL_STACK_MESSAGE12  CALL_STACK_MESSAGE12
-#define SLOW_CALL_STACK_MESSAGE13  CALL_STACK_MESSAGE13
-#define SLOW_CALL_STACK_MESSAGE14  CALL_STACK_MESSAGE14
-#define SLOW_CALL_STACK_MESSAGE15  CALL_STACK_MESSAGE15
-#define SLOW_CALL_STACK_MESSAGE16  CALL_STACK_MESSAGE16
-#define SLOW_CALL_STACK_MESSAGE17  CALL_STACK_MESSAGE17
-#define SLOW_CALL_STACK_MESSAGE18  CALL_STACK_MESSAGE18
-#define SLOW_CALL_STACK_MESSAGE19  CALL_STACK_MESSAGE19
-#define SLOW_CALL_STACK_MESSAGE20  CALL_STACK_MESSAGE20
-#define SLOW_CALL_STACK_MESSAGE21  CALL_STACK_MESSAGE21
+#define SLOW_CALL_STACK_MESSAGE1 CALL_STACK_MESSAGE1
+#define SLOW_CALL_STACK_MESSAGE2 CALL_STACK_MESSAGE2
+#define SLOW_CALL_STACK_MESSAGE3 CALL_STACK_MESSAGE3
+#define SLOW_CALL_STACK_MESSAGE4 CALL_STACK_MESSAGE4
+#define SLOW_CALL_STACK_MESSAGE5 CALL_STACK_MESSAGE5
+#define SLOW_CALL_STACK_MESSAGE6 CALL_STACK_MESSAGE6
+#define SLOW_CALL_STACK_MESSAGE7 CALL_STACK_MESSAGE7
+#define SLOW_CALL_STACK_MESSAGE8 CALL_STACK_MESSAGE8
+#define SLOW_CALL_STACK_MESSAGE9 CALL_STACK_MESSAGE9
+#define SLOW_CALL_STACK_MESSAGE10 CALL_STACK_MESSAGE10
+#define SLOW_CALL_STACK_MESSAGE11 CALL_STACK_MESSAGE11
+#define SLOW_CALL_STACK_MESSAGE12 CALL_STACK_MESSAGE12
+#define SLOW_CALL_STACK_MESSAGE13 CALL_STACK_MESSAGE13
+#define SLOW_CALL_STACK_MESSAGE14 CALL_STACK_MESSAGE14
+#define SLOW_CALL_STACK_MESSAGE15 CALL_STACK_MESSAGE15
+#define SLOW_CALL_STACK_MESSAGE16 CALL_STACK_MESSAGE16
+#define SLOW_CALL_STACK_MESSAGE17 CALL_STACK_MESSAGE17
+#define SLOW_CALL_STACK_MESSAGE18 CALL_STACK_MESSAGE18
+#define SLOW_CALL_STACK_MESSAGE19 CALL_STACK_MESSAGE19
+#define SLOW_CALL_STACK_MESSAGE20 CALL_STACK_MESSAGE20
+#define SLOW_CALL_STACK_MESSAGE21 CALL_STACK_MESSAGE21
 
 #endif // CALLSTK_DISABLE
 
 #ifdef _DEBUG
 
-#define DEBUG_SLOW_CALL_STACK_MESSAGE1   SLOW_CALL_STACK_MESSAGE1
-#define DEBUG_SLOW_CALL_STACK_MESSAGE2   SLOW_CALL_STACK_MESSAGE2
-#define DEBUG_SLOW_CALL_STACK_MESSAGE3   SLOW_CALL_STACK_MESSAGE3
-#define DEBUG_SLOW_CALL_STACK_MESSAGE4   SLOW_CALL_STACK_MESSAGE4
-#define DEBUG_SLOW_CALL_STACK_MESSAGE5   SLOW_CALL_STACK_MESSAGE5
-#define DEBUG_SLOW_CALL_STACK_MESSAGE6   SLOW_CALL_STACK_MESSAGE6
-#define DEBUG_SLOW_CALL_STACK_MESSAGE7   SLOW_CALL_STACK_MESSAGE7
-#define DEBUG_SLOW_CALL_STACK_MESSAGE8   SLOW_CALL_STACK_MESSAGE8
-#define DEBUG_SLOW_CALL_STACK_MESSAGE9   SLOW_CALL_STACK_MESSAGE9
-#define DEBUG_SLOW_CALL_STACK_MESSAGE10  SLOW_CALL_STACK_MESSAGE10
-#define DEBUG_SLOW_CALL_STACK_MESSAGE11  SLOW_CALL_STACK_MESSAGE11
-#define DEBUG_SLOW_CALL_STACK_MESSAGE12  SLOW_CALL_STACK_MESSAGE12
-#define DEBUG_SLOW_CALL_STACK_MESSAGE13  SLOW_CALL_STACK_MESSAGE13
-#define DEBUG_SLOW_CALL_STACK_MESSAGE14  SLOW_CALL_STACK_MESSAGE14
-#define DEBUG_SLOW_CALL_STACK_MESSAGE15  SLOW_CALL_STACK_MESSAGE15
-#define DEBUG_SLOW_CALL_STACK_MESSAGE16  SLOW_CALL_STACK_MESSAGE16
-#define DEBUG_SLOW_CALL_STACK_MESSAGE17  SLOW_CALL_STACK_MESSAGE17
-#define DEBUG_SLOW_CALL_STACK_MESSAGE18  SLOW_CALL_STACK_MESSAGE18
-#define DEBUG_SLOW_CALL_STACK_MESSAGE19  SLOW_CALL_STACK_MESSAGE19
-#define DEBUG_SLOW_CALL_STACK_MESSAGE20  SLOW_CALL_STACK_MESSAGE20
-#define DEBUG_SLOW_CALL_STACK_MESSAGE21  SLOW_CALL_STACK_MESSAGE21
+#define DEBUG_SLOW_CALL_STACK_MESSAGE1 SLOW_CALL_STACK_MESSAGE1
+#define DEBUG_SLOW_CALL_STACK_MESSAGE2 SLOW_CALL_STACK_MESSAGE2
+#define DEBUG_SLOW_CALL_STACK_MESSAGE3 SLOW_CALL_STACK_MESSAGE3
+#define DEBUG_SLOW_CALL_STACK_MESSAGE4 SLOW_CALL_STACK_MESSAGE4
+#define DEBUG_SLOW_CALL_STACK_MESSAGE5 SLOW_CALL_STACK_MESSAGE5
+#define DEBUG_SLOW_CALL_STACK_MESSAGE6 SLOW_CALL_STACK_MESSAGE6
+#define DEBUG_SLOW_CALL_STACK_MESSAGE7 SLOW_CALL_STACK_MESSAGE7
+#define DEBUG_SLOW_CALL_STACK_MESSAGE8 SLOW_CALL_STACK_MESSAGE8
+#define DEBUG_SLOW_CALL_STACK_MESSAGE9 SLOW_CALL_STACK_MESSAGE9
+#define DEBUG_SLOW_CALL_STACK_MESSAGE10 SLOW_CALL_STACK_MESSAGE10
+#define DEBUG_SLOW_CALL_STACK_MESSAGE11 SLOW_CALL_STACK_MESSAGE11
+#define DEBUG_SLOW_CALL_STACK_MESSAGE12 SLOW_CALL_STACK_MESSAGE12
+#define DEBUG_SLOW_CALL_STACK_MESSAGE13 SLOW_CALL_STACK_MESSAGE13
+#define DEBUG_SLOW_CALL_STACK_MESSAGE14 SLOW_CALL_STACK_MESSAGE14
+#define DEBUG_SLOW_CALL_STACK_MESSAGE15 SLOW_CALL_STACK_MESSAGE15
+#define DEBUG_SLOW_CALL_STACK_MESSAGE16 SLOW_CALL_STACK_MESSAGE16
+#define DEBUG_SLOW_CALL_STACK_MESSAGE17 SLOW_CALL_STACK_MESSAGE17
+#define DEBUG_SLOW_CALL_STACK_MESSAGE18 SLOW_CALL_STACK_MESSAGE18
+#define DEBUG_SLOW_CALL_STACK_MESSAGE19 SLOW_CALL_STACK_MESSAGE19
+#define DEBUG_SLOW_CALL_STACK_MESSAGE20 SLOW_CALL_STACK_MESSAGE20
+#define DEBUG_SLOW_CALL_STACK_MESSAGE21 SLOW_CALL_STACK_MESSAGE21
 
 #else _DEBUG
 
@@ -779,8 +818,6 @@ extern BOOL __CallStk_T;  // always TRUE - just to check format string and type 
 
 // nepouzivat pokud uz se SalamanderDebug->TraceAttachThread pro tento thread volalo (primo
 // nebo napr. pri startu threadu pres CThreadQueue::StartThread)
-inline void TraceAttachCurrentThread() {SalamanderDebug->TraceAttachThread(GetCurrentThread(), GetCurrentThreadId());}
+inline void TraceAttachCurrentThread() { SalamanderDebug->TraceAttachThread(GetCurrentThread(), GetCurrentThreadId()); }
 
-inline void SetThreadNameInVCAndTrace(const char *name) {SalamanderDebug->SetThreadNameInVCAndTrace(name);}
-
-#endif // __DBG_H
+inline void SetThreadNameInVCAndTrace(const char* name) { SalamanderDebug->SetThreadNameInVCAndTrace(name); }

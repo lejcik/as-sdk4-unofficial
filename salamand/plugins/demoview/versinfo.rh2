@@ -1,17 +1,14 @@
-//****************************************************************************
+﻿//****************************************************************************
 //
-// Copyright (c) ALTAP, spol. s r.o. All rights reserved.
+// Copyright (c) 2023 Open Salamander Authors
 //
-// This is a part of the Altap Salamander SDK library.
-//
-// The SDK is provided "AS IS" and without warranty of any kind and 
-// ALTAP EXPRESSLY DISCLAIMS ALL WARRANTIES, EXPRESS AND IMPLIED, INCLUDING,
-// BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS
-// FOR A PARTICULAR PURPOSE and NON-INFRINGEMENT.
+// This is a part of the Open Salamander SDK library.
 //
 //****************************************************************************
 
-#pragma once
+// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+#ifndef __DEMOVIEW_VERSINFO_RH2
+#define __DEMOVIEW_VERSINFO_RH2
 
 #if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
 #error this file is not editable by Microsoft Visual C++
@@ -26,10 +23,10 @@
 
 #include "spl_vers.h" // vytahneme cisla verzi + buildu
 
-#define VERSINFO_COPYRIGHT   "Copyright � 2008-2019 ALTAP"
-#define VERSINFO_COMPANY     "ALTAP"
+#define VERSINFO_COPYRIGHT   "Copyright © 2008-2023 Open Salamander Authors"
+#define VERSINFO_COMPANY     "Open Salamander"
 
-#define VERSINFO_DESCRIPTION "Sample plugin for Altap Salamander"
+#define VERSINFO_DESCRIPTION "Sample plugin for Open Salamander"
 
 #ifdef _LANG
 #define VERSINFO_INTERNAL    "ENGLISH"
@@ -42,3 +39,5 @@
 // for SLG translators
 #define VERSINFO_SLG_WEB     "www.altap.cz"
 #define VERSINFO_SLG_COMMENT "English version"
+
+#endif // __DEMOVIEW_VERSINFO_RH2

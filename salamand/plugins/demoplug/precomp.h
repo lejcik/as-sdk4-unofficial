@@ -1,13 +1,11 @@
+﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 //****************************************************************************
 //
-// Copyright (c) ALTAP, spol. s r.o. All rights reserved.
+// Copyright (c) 2023 Open Salamander Authors
 //
-// This is a part of the Altap Salamander SDK library.
-//
-// The SDK is provided "AS IS" and without warranty of any kind and 
-// ALTAP EXPRESSLY DISCLAIMS ALL WARRANTIES, EXPRESS AND IMPLIED, INCLUDING,
-// BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS
-// FOR A PARTICULAR PURPOSE and NON-INFRINGEMENT.
+// This is a part of the Open Salamander SDK library.
 //
 //****************************************************************************
 
@@ -29,19 +27,19 @@
 #include <stdio.h>
 #include <time.h>
 
-#if defined(_DEBUG) && defined(_MSC_VER)  // without passing file+line to 'new' operator, list of memory leaks shows only 'crtdbg.h(552)'
-#define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
+#if defined(_DEBUG) && defined(_MSC_VER) // without passing file+line to 'new' operator, list of memory leaks shows only 'crtdbg.h(552)'
+#define new new (_NORMAL_BLOCK, __FILE__, __LINE__)
 #endif
 
-// If DEMOPLUG_COMPATIBLE_WITH_400 is defined, plugin is compiled as compatible with Salamander 4.0
+// If DEMOPLUG_COMPATIBLE_WITH_500 is defined, plugin is compiled as compatible with Salamander 5.0
 // (otherwise it is compiled for current version of Salamander and later).
-// NOTE: the ideal is to define DEMOPLUG_COMPATIBLE_WITH_400 for whole plugin project
+// NOTE: the ideal is to define DEMOPLUG_COMPATIBLE_WITH_500 for whole plugin project
 //       in Project Settings. DemoPlug defines it here just to make adding/removing easier.
-#define DEMOPLUG_COMPATIBLE_WITH_400
+#define DEMOPLUG_COMPATIBLE_WITH_500
 
-#ifdef DEMOPLUG_COMPATIBLE_WITH_400
-#define SALSDK_COMPATIBLE_WITH_VER 100    // 100 = Altap Salamander 4.0 (SDK will be defined to be compatible with version 4.0)
-#endif // DEMOPLUG_COMPATIBLE_WITH_400
+#ifdef DEMOPLUG_COMPATIBLE_WITH_500
+#define SALSDK_COMPATIBLE_WITH_VER 103 // 103 = Open Salamander 5.0 (SDK will be defined to be compatible with version 5.0)
+#endif                                 // DEMOPLUG_COMPATIBLE_WITH_500
 
 #include "versinfo.rh2"
 

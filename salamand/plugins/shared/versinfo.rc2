@@ -1,13 +1,8 @@
-//****************************************************************************
+﻿//****************************************************************************
 //
-// Copyright (c) ALTAP, spol. s r.o. All rights reserved.
+// Copyright (c) 2023 Open Salamander Authors
 //
-// This is a part of the Altap Salamander SDK library.
-//
-// The SDK is provided "AS IS" and without warranty of any kind and 
-// ALTAP EXPRESSLY DISCLAIMS ALL WARRANTIES, EXPRESS AND IMPLIED, INCLUDING,
-// BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS
-// FOR A PARTICULAR PURPOSE and NON-INFRINGEMENT.
+// This is a part of the Open Salamander SDK library.
 //
 //****************************************************************************
 
@@ -28,7 +23,7 @@
 // pri prekladu SLG je v projektu definovana konstanta _LANG
 //
 // VarFileInfo\[Translation, Author, Email, Web, Comment, HelpDir] umi nastavovat
-// Altap Translator; originalni SLG je anglicke
+// Translator; originalni SLG je anglicke
 // VarFileInfo\Translation je zobrazovano ve vlastnostech souboru
 // na strance Version jako "Language"
 //
@@ -61,7 +56,7 @@ BEGIN
             VALUE "OriginalFilename", VERSINFO_ORIGINAL "\0"
             VALUE "LegalCopyright", VERSINFO_COPYRIGHT "\0"
             VALUE "ProductVersion", VERSINFO_SALAMANDER_VERSION "\0"
-            VALUE "ProductName", "Altap Salamander\0"
+            VALUE "ProductName", "Open Salamander\0"
 #ifdef _LANG
             VALUE "Comments", "Language resources\0"
             VALUE "SLGAuthor", VERSINFO_COMPANY "\0"

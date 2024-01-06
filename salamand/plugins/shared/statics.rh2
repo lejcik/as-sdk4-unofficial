@@ -1,17 +1,14 @@
-//****************************************************************************
+﻿//****************************************************************************
 //
-// Copyright (c) ALTAP, spol. s r.o. All rights reserved.
+// Copyright (c) 2023 Open Salamander Authors
 //
-// This is a part of the Altap Salamander SDK library.
-//
-// The SDK is provided "AS IS" and without warranty of any kind and 
-// ALTAP EXPRESSLY DISCLAIMS ALL WARRANTIES, EXPRESS AND IMPLIED, INCLUDING,
-// BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS
-// FOR A PARTICULAR PURPOSE and NON-INFRINGEMENT.
+// This is a part of the Open Salamander SDK library.
 //
 //****************************************************************************
 
-#pragma once
+// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+#ifndef __SHARED_STATICS_RH2
+#define __SHARED_STATICS_RH2
 
 #if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
 #error this file is not editable by Microsoft Visual C++
@@ -59,3 +56,5 @@
 #define IDC_STATIC_38       (IDC_STATIC_1+37)
 #define IDC_STATIC_39       (IDC_STATIC_1+38)
 #define IDC_STATIC_40       (IDC_STATIC_1+39)
+
+#endif // __SHARED_STATICS_RH2

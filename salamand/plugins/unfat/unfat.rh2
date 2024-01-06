@@ -1,17 +1,14 @@
-//****************************************************************************
+﻿//****************************************************************************
 //
-// Copyright (c) ALTAP, spol. s r.o. All rights reserved.
+// Copyright (c) 2023 Open Salamander Authors
 //
-// This is a part of the Altap Salamander SDK library.
-//
-// The SDK is provided "AS IS" and without warranty of any kind and 
-// ALTAP EXPRESSLY DISCLAIMS ALL WARRANTIES, EXPRESS AND IMPLIED, INCLUDING,
-// BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS
-// FOR A PARTICULAR PURPOSE and NON-INFRINGEMENT.
+// This is a part of the Open Salamander SDK library.
 //
 //****************************************************************************
 
-#pragma once
+// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
+#ifndef __UNFAT_RH2
+#define __UNFAT_RH2
 
 #if defined(APSTUDIO_INVOKED) && !defined(APSTUDIO_READONLY_SYMBOLS)
 #error this file is not editable by Microsoft Visual C++
@@ -36,3 +33,5 @@
 #define IDS_ERROR_MBR_UNSUPPORTED   1108
 #define IDS_EXTRACTING_ARCHIVE      1109
 #define IDS_EXTRACTING              1110
+
+#endif // __UNFAT_RH2

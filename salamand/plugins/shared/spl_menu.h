@@ -1,21 +1,18 @@
+﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 //****************************************************************************
 //
-// Copyright (c) ALTAP, spol. s r.o. All rights reserved.
+// Copyright (c) 2023 Open Salamander Authors
 //
-// This is a part of the Altap Salamander SDK library.
-//
-// The SDK is provided "AS IS" and without warranty of any kind and 
-// ALTAP EXPRESSLY DISCLAIMS ALL WARRANTIES, EXPRESS AND IMPLIED, INCLUDING,
-// BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS
-// FOR A PARTICULAR PURPOSE and NON-INFRINGEMENT.
+// This is a part of the Open Salamander SDK library.
 //
 //****************************************************************************
 
-#ifndef __SPL_MENU_H
-#define __SPL_MENU_H
+#pragma once
 
 #ifdef _MSC_VER
-#pragma pack(push, enter_include_spl_menu)   // aby byly struktury nezavisle na nastavenem zarovnavani
+#pragma pack(push, enter_include_spl_menu) // aby byly struktury nezavisle na nastavenem zarovnavani
 #pragma pack(4)
 #endif // _MSC_VER
 #ifdef __BORLANDC__
@@ -35,15 +32,15 @@ class CSalamanderForOperationsAbstract;
 
 class CSalamanderBuildMenuAbstract
 {
-  public:
+public:
     // ikony se zadavaji metodou CSalamanderBuildMenuAbstract::SetIconListForMenu, zbytek
     // popisu viz CSalamanderConnectAbstract::AddMenuItem
-    virtual void WINAPI AddMenuItem(int iconIndex, const char *name, DWORD hotKey, int id, BOOL callGetState,
+    virtual void WINAPI AddMenuItem(int iconIndex, const char* name, DWORD hotKey, int id, BOOL callGetState,
                                     DWORD state_or, DWORD state_and, DWORD skillLevel) = 0;
 
     // ikony se zadavaji metodou CSalamanderBuildMenuAbstract::SetIconListForMenu, zbytek
     // popisu viz CSalamanderConnectAbstract::AddSubmenuStart
-    virtual void WINAPI AddSubmenuStart(int iconIndex, const char *name, int id, BOOL callGetState,
+    virtual void WINAPI AddSubmenuStart(int iconIndex, const char* name, int id, BOOL callGetState,
                                         DWORD state_or, DWORD state_and, DWORD skillLevel) = 0;
 
     // popis viz CSalamanderConnectAbstract::AddSubmenuEnd
@@ -52,9 +49,9 @@ class CSalamanderBuildMenuAbstract
     // nastavi bitmapu s ikonami pluginu pro menu; bitmapu je treba alokovat pomoci volani
     // CSalamanderGUIAbstract::CreateIconList() a nasledne vytvorit a naplnit pomoci
     // metod CGUIIconListAbstract interfacu; rozmery ikonek musi byt 16x16 bodu;
-    // Salamander si objekt bitmapy prebira do sve spravy, plugin ji po zavolani 
+    // Salamander si objekt bitmapy prebira do sve spravy, plugin ji po zavolani
     // teto funkce nesmi destruovat; Salamander ji drzi jen v pameti, nikam se neuklada
-    virtual void WINAPI SetIconListForMenu(CGUIIconListAbstract *iconList) = 0;
+    virtual void WINAPI SetIconListForMenu(CGUIIconListAbstract* iconList) = 0;
 };
 
 //
@@ -63,19 +60,19 @@ class CSalamanderBuildMenuAbstract
 //
 
 // flagy stavu polozek v menu (pro pluginy rozsireni menu)
-#define MENU_ITEM_STATE_ENABLED   0x01   // enablovana, bez tohoto flagu je polozka disablovana
-#define MENU_ITEM_STATE_CHECKED   0x02   // pred polozkou je "check" nebo "radio" znacka
-#define MENU_ITEM_STATE_RADIO     0x04   // bez MENU_ITEM_STATE_CHECKED se ignoruje,
-                                         // "radio" znacka, bez tohoto flagu "check" znacka
-#define MENU_ITEM_STATE_HIDDEN    0x08   // polozka se v menu vubec nema objevit
+#define MENU_ITEM_STATE_ENABLED 0x01 // enablovana, bez tohoto flagu je polozka disablovana
+#define MENU_ITEM_STATE_CHECKED 0x02 // pred polozkou je "check" nebo "radio" znacka
+#define MENU_ITEM_STATE_RADIO 0x04   // bez MENU_ITEM_STATE_CHECKED se ignoruje, \
+                                     // "radio" znacka, bez tohoto flagu "check" znacka
+#define MENU_ITEM_STATE_HIDDEN 0x08  // polozka se v menu vubec nema objevit
 
 class CPluginInterfaceForMenuExtAbstract
 {
 #ifdef INSIDE_SALAMANDER
-  private:        // ochrana proti nespravnemu primemu volani metod (viz CPluginInterfaceForMenuExtEncapsulation)
+private: // ochrana proti nespravnemu primemu volani metod (viz CPluginInterfaceForMenuExtEncapsulation)
     friend class CPluginInterfaceForMenuExtEncapsulation;
-#else // INSIDE_SALAMANDER
-  public:
+#else  // INSIDE_SALAMANDER
+public:
 #endif // INSIDE_SALAMANDER
 
     // vraci stav polozky menu s identifikacnim cislem 'id'; navratova hodnota je kombinaci
@@ -96,7 +93,7 @@ class CPluginInterfaceForMenuExtAbstract
     //           CSalamanderGeneralAbstract::SetUserWorkedOnPanelPath pro aktualni panel,
     //           jinak nebude cesta v tomto panelu vlozena do seznamu pracovnich
     //           adresaru - List of Working Directories (Alt+F12)
-    virtual BOOL WINAPI ExecuteMenuItem(CSalamanderForOperationsAbstract *salamander, HWND parent,
+    virtual BOOL WINAPI ExecuteMenuItem(CSalamanderForOperationsAbstract* salamander, HWND parent,
                                         int id, DWORD eventMask) = 0;
 
     // zobrazi napovedu pro prikaz menu s identifikacnim cislem 'id' (user stiskne Shift+F1,
@@ -112,7 +109,7 @@ class CPluginInterfaceForMenuExtAbstract
     // aby jim zustavaly uzivatelem pridelene hotkeys a aby pripadne fungovaly jako posledni
     // pouzity prikaz (viz Plugins / Last Command); 'parent' je parent messageboxu, 'salamander'
     // je sada metod pro stavbu menu
-    virtual void WINAPI BuildMenu(HWND parent, CSalamanderBuildMenuAbstract *salamander) = 0;
+    virtual void WINAPI BuildMenu(HWND parent, CSalamanderBuildMenuAbstract* salamander) = 0;
 };
 
 #ifdef _MSC_VER
@@ -121,5 +118,3 @@ class CPluginInterfaceForMenuExtAbstract
 #ifdef __BORLANDC__
 #pragma option -a
 #endif // __BORLANDC__
-
-#endif // __SPL_MENU_H

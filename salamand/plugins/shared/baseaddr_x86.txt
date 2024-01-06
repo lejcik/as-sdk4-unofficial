@@ -49,7 +49,6 @@ unmime          0x21700000
 lang_unmime     0x31700000
 splitcbn        0x21800000
 lang_splitcbn   0x31800000
-muires          0x21900000
 automation      0x21a00000
 lang_automation 0x31a00000
 folders         0x22000000
@@ -83,8 +82,6 @@ lang_undbx      0x38400000
 symbian         0x28600000
 unfat           0x28700000
 lang_unfat      0x38700000
-encrypt         0x28800000
-lang_encrypt    0x38800000
 winscp          0x28900000
 lang_winscp     0x38900000
 winscp          0x28d00000
@@ -92,7 +89,6 @@ nethood         0x28e00000
 lang_nethood    0x38e00000
 7zwrapper       0x28f00000
 salmon          0x29000000
-saladmin        0x29100000
 fcremote        0x29200000
 sqlite          0x29300000
 salpvenv        0x29400000      ; dummy - x86 version doesn't exist

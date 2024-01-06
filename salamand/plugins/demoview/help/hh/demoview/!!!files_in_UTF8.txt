@@ -1,7 +1,0 @@
-All HTML help pages are in UTF8 encoding, so you must work with them only
-in editor supporting UTF8. Moreover pages do not contain BOM, so UTF8 must
-be selected manually in most of editors.
-
-We recommend to use freeware text editor SciTE (http://scintilla.sourceforge.net/SciTE.html),
-it will open all files in this directory in UTF8 automatically because this
-is defined in SciTE.properties file.

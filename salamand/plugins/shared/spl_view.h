@@ -1,21 +1,18 @@
+﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 //****************************************************************************
 //
-// Copyright (c) ALTAP, spol. s r.o. All rights reserved.
+// Copyright (c) 2023 Open Salamander Authors
 //
-// This is a part of the Altap Salamander SDK library.
-//
-// The SDK is provided "AS IS" and without warranty of any kind and 
-// ALTAP EXPRESSLY DISCLAIMS ALL WARRANTIES, EXPRESS AND IMPLIED, INCLUDING,
-// BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS
-// FOR A PARTICULAR PURPOSE and NON-INFRINGEMENT.
+// This is a part of the Open Salamander SDK library.
 //
 //****************************************************************************
 
-#ifndef __SPL_VIEW_H
-#define __SPL_VIEW_H
+#pragma once
 
 #ifdef _MSC_VER
-#pragma pack(push, enter_include_spl_view)   // aby byly struktury nezavisle na nastavenem zarovnavani
+#pragma pack(push, enter_include_spl_view) // aby byly struktury nezavisle na nastavenem zarovnavani
 #pragma pack(4)
 #endif // _MSC_VER
 #ifdef __BORLANDC__
@@ -32,10 +29,10 @@ struct CSalamanderPluginViewerData;
 class CPluginInterfaceForViewerAbstract
 {
 #ifdef INSIDE_SALAMANDER
-  private:        // ochrana proti nespravnemu primemu volani metod (viz CPluginInterfaceForViewerEncapsulation)
+private: // ochrana proti nespravnemu primemu volani metod (viz CPluginInterfaceForViewerEncapsulation)
     friend class CPluginInterfaceForViewerEncapsulation;
-#else // INSIDE_SALAMANDER
-  public:
+#else  // INSIDE_SALAMANDER
+public:
 #endif // INSIDE_SALAMANDER
 
     // funkce pro "file viewer", vola se pri pozadavku na otevreni viewru a nacteni souboru
@@ -54,9 +51,9 @@ class CPluginInterfaceForViewerAbstract
     // 'enumFilesCurrentIndex' je index oteviraneho souboru ve zdroji (panelu nebo Find okne), je-li -1,
     // neni zdroj nebo index znamy; vraci TRUE pri uspechu (FALSE znamena neuspech, 'lock' a
     // 'lockOwner' v tomto pripade nemaji zadny vyznam)
-    virtual BOOL WINAPI ViewFile(const char *name, int left, int top, int width, int height,
-                                 UINT showCmd, BOOL alwaysOnTop, BOOL returnLock, HANDLE *lock,
-                                 BOOL *lockOwner, CSalamanderPluginViewerData *viewerData,
+    virtual BOOL WINAPI ViewFile(const char* name, int left, int top, int width, int height,
+                                 UINT showCmd, BOOL alwaysOnTop, BOOL returnLock, HANDLE* lock,
+                                 BOOL* lockOwner, CSalamanderPluginViewerData* viewerData,
                                  int enumFilesSourceUID, int enumFilesCurrentIndex) = 0;
 
     // funkce pro "file viewer", vola se pri pozadavku na otevreni viewru a nacteni souboru
@@ -65,7 +62,7 @@ class CPluginInterfaceForViewerAbstract
     // soubor 'name' zobrazitelny (napr. soubor ma odpovidajici signaturu) ve vieweru
     // a pokud je, vraci TRUE; pokud vrati FALSE, zkusi Salamander pro 'name' najit jiny
     // viewer (v prioritnim seznamu vieweru, viz konfiguracni stranka Viewers)
-    virtual BOOL WINAPI CanViewFile(const char *name) = 0;
+    virtual BOOL WINAPI CanViewFile(const char* name) = 0;
 };
 
 #ifdef _MSC_VER
@@ -74,5 +71,3 @@ class CPluginInterfaceForViewerAbstract
 #ifdef __BORLANDC__
 #pragma option -a
 #endif // __BORLANDC__
-
-#endif // __SPL_VIEW_H

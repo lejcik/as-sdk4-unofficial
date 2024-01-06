@@ -1,18 +1,15 @@
+﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 //****************************************************************************
 //
-// Copyright (c) ALTAP, spol. s r.o. All rights reserved.
+// Copyright (c) 2023 Open Salamander Authors
 //
-// This is a part of the Altap Salamander SDK library.
-//
-// The SDK is provided "AS IS" and without warranty of any kind and 
-// ALTAP EXPRESSLY DISCLAIMS ALL WARRANTIES, EXPRESS AND IMPLIED, INCLUDING,
-// BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS
-// FOR A PARTICULAR PURPOSE and NON-INFRINGEMENT.
+// This is a part of the Open Salamander SDK library.
 //
 //****************************************************************************
 
-#ifndef __AUXTOOLS_H
-#define __AUXTOOLS_H
+#pragma once
 
 //
 // ****************************************************************************
@@ -21,34 +18,40 @@
 
 struct CThreadQueueItem
 {
-  HANDLE Thread;
-  DWORD ThreadID;          // jen pro ladici ucely (nalezeni threadu v seznamu threadu v debuggeru)
-  int Locks;               // pocet zamku, je-li > 0 nesmime zavrit 'Thread'
-  CThreadQueueItem *Next;
+    HANDLE Thread;
+    DWORD ThreadID; // jen pro ladici ucely (nalezeni threadu v seznamu threadu v debuggeru)
+    int Locks;      // pocet zamku, je-li > 0 nesmime zavrit 'Thread'
+    CThreadQueueItem* Next;
 
-  CThreadQueueItem(HANDLE thread, DWORD tid) {Thread = thread; ThreadID = tid; Next = NULL; Locks = 0;}
+    CThreadQueueItem(HANDLE thread, DWORD tid)
+    {
+        Thread = thread;
+        ThreadID = tid;
+        Next = NULL;
+        Locks = 0;
+    }
 };
 
 class CThreadQueue
 {
-  protected:
-    const char *QueueName;  // jmeno fronty (jen pro debugovaci ucely)
-    CThreadQueueItem *Head;
-    HANDLE Continue;  // musime pockat na predani dat do startovaneho threadu
+protected:
+    const char* QueueName; // jmeno fronty (jen pro debugovaci ucely)
+    CThreadQueueItem* Head;
+    HANDLE Continue; // musime pockat na predani dat do startovaneho threadu
 
-    struct CCS  // pristup z vice threadu -> nutna synchronizace
+    struct CCS // pristup z vice threadu -> nutna synchronizace
     {
-      CRITICAL_SECTION cs;
+        CRITICAL_SECTION cs;
 
-      CCS() {InitializeCriticalSection(&cs);}
-      ~CCS() {DeleteCriticalSection(&cs);}
+        CCS() { InitializeCriticalSection(&cs); }
+        ~CCS() { DeleteCriticalSection(&cs); }
 
-      void Enter() {EnterCriticalSection(&cs);}
-      void Leave() {LeaveCriticalSection(&cs);}
+        void Enter() { EnterCriticalSection(&cs); }
+        void Leave() { LeaveCriticalSection(&cs); }
     } CS;
 
-  public:
-    CThreadQueue(const char *queueName /* napr. "DemoPlug Viewers" */);
+public:
+    CThreadQueue(const char* queueName /* napr. "DemoPlug Viewers" */);
     ~CThreadQueue();
 
     // spusti funkci 'body' s parametrem 'param' v nove vytvorenem threadu se zasobnikem
@@ -65,8 +68,8 @@ class CThreadQueue
     //         navratem ze StartThread() a z jineho threadu se vola StartThread() nebo
     //         KillAll()
     // mozne volat z libovolneho threadu
-    HANDLE StartThread(unsigned (WINAPI *body)(void *), void *param, unsigned stack_size = 0,
-                       HANDLE *threadHandle = NULL, DWORD *threadID = NULL);
+    HANDLE StartThread(unsigned(WINAPI* body)(void*), void* param, unsigned stack_size = 0,
+                       HANDLE* threadHandle = NULL, DWORD* threadID = NULL);
 
     // ceka na ukonceni threadu z teto fronty; 'thread' je handle threadu, ktery jiz muze
     // byt i zavreny (zavira tento objekt pri volani StartThread a KillAll); pokud se
@@ -89,12 +92,12 @@ class CThreadQueue
     // mozne volat z libovolneho threadu
     BOOL KillAll(BOOL force, int waitTime = 1000, int forceWaitTime = 200, DWORD exitCode = 666);
 
-  protected:   // vnitrni nesynchronizovane metody
-    BOOL Add(CThreadQueueItem *item);  // prida polozku do fronty, vraci uspech
-    BOOL FindAndLockItem(HANDLE thread);  // najde polozku pro 'thread' ve fronte a zamkne ji
+protected:                                                 // vnitrni nesynchronizovane metody
+    BOOL Add(CThreadQueueItem* item);                      // prida polozku do fronty, vraci uspech
+    BOOL FindAndLockItem(HANDLE thread);                   // najde polozku pro 'thread' ve fronte a zamkne ji
     void UnlockItem(HANDLE thread, BOOL deleteIfUnlocked); // odemkne polozku pro 'thread' ve fronte, pripadne ji smaze
-    void ClearFinishedThreads();  // vyradi z fronty thready, ktere jiz dobehly
-    static DWORD WINAPI CThreadQueue::ThreadBase(void *param);  // univerzalni body threadu
+    void ClearFinishedThreads();                           // vyradi z fronty thready, ktere jiz dobehly
+    static DWORD WINAPI ThreadBase(void* param);           // univerzalni body threadu
 };
 
 //
@@ -106,18 +109,18 @@ class CThreadQueue
 
 class CThread
 {
-  public:
+public:
     // handle threadu (NULL = thread jeste nebezi/nebezel), POZOR: po ukonceni threadu se
     // sam zavira (je neplatny), navic tento objekt uz je dealokovany
     HANDLE Thread;
 
-  protected:
-    char Name[101];  // buffer pro jmeno threadu (pouziva se v TRACE a CALL-STACK pro identifikaci threadu)
-    // POZOR: pokud budou data threadu obsahovat odkazy na stack nebo jine docasne objekty,
-    //        je potreba zajistit, aby se s temito odkazy pracovalo jen po dobu jejich platnosti
+protected:
+    char Name[101]; // buffer pro jmeno threadu (pouziva se v TRACE a CALL-STACK pro identifikaci threadu)
+                    // POZOR: pokud budou data threadu obsahovat odkazy na stack nebo jine docasne objekty,
+                    //        je potreba zajistit, aby se s temito odkazy pracovalo jen po dobu jejich platnosti
 
-  public:
-    CThread(const char *name = NULL);
+public:
+    CThread(const char* name = NULL);
     virtual ~CThread() {} // aby se spravne volaly destruktory potomku
 
     // vytvoreni (start) threadu ve fronte threadu 'queue'; 'stack_size' je velikost zasobniku
@@ -129,19 +132,17 @@ class CThread
     //        to same plati pro vraceny handle threadu (pouzivat jen na testy na NULL a pro volani
     //        metod CThreadQueue: WaitForExit() a KillThread())
     // mozne volat z libovolneho threadu
-    HANDLE Create(CThreadQueue &queue, unsigned stack_size = 0, DWORD *threadID = NULL);
+    HANDLE Create(CThreadQueue& queue, unsigned stack_size = 0, DWORD* threadID = NULL);
 
     // vraci 'Thread' viz vyse
-    HANDLE GetHandle() {return Thread;}
+    HANDLE GetHandle() { return Thread; }
 
     // vraci jmeno threadu
-    const char *GetName() {return Name;}
+    const char* GetName() { return Name; }
 
     // tato metoda obsahuje telo threadu
     virtual unsigned Body() = 0;
 
-  protected:
-    static unsigned WINAPI UniversalBody(void *param);    // pomocna metoda pro spousteni threadu
+protected:
+    static unsigned WINAPI UniversalBody(void* param); // pomocna metoda pro spousteni threadu
 };
-
-#endif // __AUXTOOLS_H

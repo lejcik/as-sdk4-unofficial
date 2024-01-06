@@ -1,13 +1,11 @@
+﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 //****************************************************************************
 //
-// Copyright (c) ALTAP, spol. s r.o. All rights reserved.
+// Copyright (c) 2023 Open Salamander Authors
 //
-// This is a part of the Altap Salamander SDK library.
-//
-// The SDK is provided "AS IS" and without warranty of any kind and 
-// ALTAP EXPRESSLY DISCLAIMS ALL WARRANTIES, EXPRESS AND IMPLIED, INCLUDING,
-// BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS
-// FOR A PARTICULAR PURPOSE and NON-INFRINGEMENT.
+// This is a part of the Open Salamander SDK library.
 //
 //****************************************************************************
 
@@ -19,35 +17,34 @@
 //
 
 CCommonDialog::CCommonDialog(HINSTANCE hInstance, int resID, HWND hParent, CObjectOrigin origin)
-: CDialog(hInstance, resID, hParent, origin)
+    : CDialog(hInstance, resID, hParent, origin)
 {
 }
 
 CCommonDialog::CCommonDialog(HINSTANCE hInstance, int resID, int helpID, HWND hParent, CObjectOrigin origin)
-: CDialog(hInstance, resID, helpID, hParent, origin)
+    : CDialog(hInstance, resID, helpID, hParent, origin)
 {
 }
 
 INT_PTR
 CCommonDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-  switch (uMsg)
-  {
+    switch (uMsg)
+    {
     case WM_INITDIALOG:
     {
-      // horizontalni i vertikalni vycentrovani dialogu k parentu
-      if (Parent != NULL)
-        SalamanderGeneral->MultiMonCenterWindow(HWindow, Parent, TRUE);
-      break; // chci focus od DefDlgProc
+        // horizontalni i vertikalni vycentrovani dialogu k parentu
+        if (Parent != NULL)
+            SalamanderGeneral->MultiMonCenterWindow(HWindow, Parent, TRUE);
+        break; // chci focus od DefDlgProc
     }
-  }
-  return CDialog::DialogProc(uMsg, wParam, lParam);
+    }
+    return CDialog::DialogProc(uMsg, wParam, lParam);
 }
 
-void
-CCommonDialog::NotifDlgJustCreated()
+void CCommonDialog::NotifDlgJustCreated()
 {
-  SalamanderGUI->ArrangeHorizontalLines(HWindow);
+    SalamanderGUI->ArrangeHorizontalLines(HWindow);
 }
 
 //
@@ -55,10 +52,9 @@ CCommonDialog::NotifDlgJustCreated()
 // CCommonPropSheetPage
 //
 
-void
-CCommonPropSheetPage::NotifDlgJustCreated()
+void CCommonPropSheetPage::NotifDlgJustCreated()
 {
-  SalamanderGUI->ArrangeHorizontalLines(HWindow);
+    SalamanderGUI->ArrangeHorizontalLines(HWindow);
 }
 
 //
@@ -67,15 +63,14 @@ CCommonPropSheetPage::NotifDlgJustCreated()
 //
 
 CConfigPageViewer::CConfigPageViewer()
-  : CCommonPropSheetPage(NULL, HLanguage, IDD_CFGPAGEVIEWER, IDD_CFGPAGEVIEWER, PSP_HASHELP, NULL)
+    : CCommonPropSheetPage(NULL, HLanguage, IDD_CFGPAGEVIEWER, IDD_CFGPAGEVIEWER, PSP_HASHELP, NULL)
 {
 }
 
-void
-CConfigPageViewer::Transfer(CTransferInfo &ti)
+void CConfigPageViewer::Transfer(CTransferInfo& ti)
 {
-  ti.RadioButton(IDC_CFG_SAVEPOSONCLOSE, 1, CfgSavePosition);
-  ti.RadioButton(IDC_CFG_SETBYMAINWINDOW, 0, CfgSavePosition);
+    ti.RadioButton(IDC_CFG_SAVEPOSONCLOSE, 1, CfgSavePosition);
+    ti.RadioButton(IDC_CFG_SETBYMAINWINDOW, 0, CfgSavePosition);
 }
 
 //
@@ -84,33 +79,33 @@ CConfigPageViewer::Transfer(CTransferInfo &ti)
 //
 
 // pomocny objekt pro centrovani konfiguracniho dialogu k parentovi
-class CCenteredPropertyWindow: public CWindow
+class CCenteredPropertyWindow : public CWindow
 {
-  protected:
+protected:
     virtual LRESULT WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
-      switch (uMsg)
-      {
+        switch (uMsg)
+        {
         case WM_WINDOWPOSCHANGING:
         {
-          WINDOWPOS *pos = (WINDOWPOS *)lParam;
-          if (pos->flags & SWP_SHOWWINDOW)
-          {
-            HWND hParent = GetParent(HWindow);
-            if (hParent != NULL)
-              SalamanderGeneral->MultiMonCenterWindow(HWindow, hParent, TRUE);
-          }
-          break;
+            WINDOWPOS* pos = (WINDOWPOS*)lParam;
+            if (pos->flags & SWP_SHOWWINDOW)
+            {
+                HWND hParent = GetParent(HWindow);
+                if (hParent != NULL)
+                    SalamanderGeneral->MultiMonCenterWindow(HWindow, hParent, TRUE);
+            }
+            break;
         }
 
-        case WM_APP + 1000:   // mame se odpojit od dialogu (uz je vycentrovano)
+        case WM_APP + 1000: // mame se odpojit od dialogu (uz je vycentrovano)
         {
-          DetachWindow();
-          delete this;  // trochu prasarna, ale uz se 'this' nikdo ani nedotkne, takze pohoda
-          return 0;
+            DetachWindow();
+            delete this; // trochu prasarna, ale uz se 'this' nikdo ani nedotkne, takze pohoda
+            return 0;
         }
-      }
-      return CWindow::WindowProc(uMsg, wParam, lParam);
+        }
+        return CWindow::WindowProc(uMsg, wParam, lParam);
     }
 };
 
@@ -135,32 +130,35 @@ typedef struct DLGTEMPLATEEX
 // pomocny call-back pro centrovani konfiguracniho dialogu k parentovi a vyhozeni '?' buttonku z captionu
 int CALLBACK CenterCallback(HWND HWindow, UINT uMsg, LPARAM lParam)
 {
-  if (uMsg == PSCB_INITIALIZED)   // pripojime se na dialog
-  {
-    CCenteredPropertyWindow *wnd = new CCenteredPropertyWindow;
-    if (wnd != NULL)
+    if (uMsg == PSCB_INITIALIZED) // pripojime se na dialog
     {
-      wnd->AttachToWindow(HWindow);
-      if (wnd->HWindow == NULL) delete wnd;  // okno neni pripojeny, zrusime ho uz tady
-      else
-      {
-        PostMessage(wnd->HWindow, WM_APP + 1000, 0, 0);  // pro odpojeni CCenteredPropertyWindow od dialogu
-      }
+        CCenteredPropertyWindow* wnd = new CCenteredPropertyWindow;
+        if (wnd != NULL)
+        {
+            wnd->AttachToWindow(HWindow);
+            if (wnd->HWindow == NULL)
+                delete wnd; // okno neni pripojeny, zrusime ho uz tady
+            else
+            {
+                PostMessage(wnd->HWindow, WM_APP + 1000, 0, 0); // pro odpojeni CCenteredPropertyWindow od dialogu
+            }
+        }
     }
-  }
-  if (uMsg == PSCB_PRECREATE)   // odstraneni '?' buttonku z headeru property sheetu
-  {
-    // Remove the DS_CONTEXTHELP style from the dialog box template
-    if (((LPDLGTEMPLATEEX)lParam)->signature == 0xFFFF) ((LPDLGTEMPLATEEX)lParam)->style &= ~DS_CONTEXTHELP;
-    else ((LPDLGTEMPLATE)lParam)->style &= ~DS_CONTEXTHELP;
-  }
-  return 0;
+    if (uMsg == PSCB_PRECREATE) // odstraneni '?' buttonku z headeru property sheetu
+    {
+        // Remove the DS_CONTEXTHELP style from the dialog box template
+        if (((LPDLGTEMPLATEEX)lParam)->signature == 0xFFFF)
+            ((LPDLGTEMPLATEEX)lParam)->style &= ~DS_CONTEXTHELP;
+        else
+            ((LPDLGTEMPLATE)lParam)->style &= ~DS_CONTEXTHELP;
+    }
+    return 0;
 }
 
 CConfigDialog::CConfigDialog(HWND parent)
-           : CPropertyDialog(parent, HLanguage, LoadStr(IDS_CFG_TITLE),
-                             LastCfgPage, PSH_USECALLBACK | PSH_NOAPPLYNOW | PSH_HASHELP,
-                             NULL, &LastCfgPage, CenterCallback)
+    : CPropertyDialog(parent, HLanguage, LoadStr(IDS_CFG_TITLE),
+                      LastCfgPage, PSH_USECALLBACK | PSH_NOAPPLYNOW | PSH_HASHELP,
+                      NULL, &LastCfgPage, CenterCallback)
 {
-  Add(&PageViewer);
+    Add(&PageViewer);
 }

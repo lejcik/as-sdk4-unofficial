@@ -1,21 +1,18 @@
+﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 //****************************************************************************
 //
-// Copyright (c) ALTAP, spol. s r.o. All rights reserved.
+// Copyright (c) 2023 Open Salamander Authors
 //
-// This is a part of the Altap Salamander SDK library.
-//
-// The SDK is provided "AS IS" and without warranty of any kind and 
-// ALTAP EXPRESSLY DISCLAIMS ALL WARRANTIES, EXPRESS AND IMPLIED, INCLUDING,
-// BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS
-// FOR A PARTICULAR PURPOSE and NON-INFRINGEMENT.
+// This is a part of the Open Salamander SDK library.
 //
 //****************************************************************************
 
-#ifndef __SPL_ARC_H
-#define __SPL_ARC_H
+#pragma once
 
 #ifdef _MSC_VER
-#pragma pack(push, enter_include_spl_arc)   // aby byly struktury nezavisle na nastavenem zarovnavani
+#pragma pack(push, enter_include_spl_arc) // aby byly struktury nezavisle na nastavenem zarovnavani
 #pragma pack(4)
 #endif // _MSC_VER
 #ifdef __BORLANDC__
@@ -34,10 +31,10 @@ class CPluginDataInterfaceAbstract;
 class CPluginInterfaceForArchiverAbstract
 {
 #ifdef INSIDE_SALAMANDER
-  private:        // ochrana proti nespravnemu primemu volani metod (viz CPluginInterfaceForArchiverEncapsulation)
+private: // ochrana proti nespravnemu primemu volani metod (viz CPluginInterfaceForArchiverEncapsulation)
     friend class CPluginInterfaceForArchiverEncapsulation;
-#else // INSIDE_SALAMANDER
-  public:
+#else  // INSIDE_SALAMANDER
+public:
 #endif // INSIDE_SALAMANDER
 
     // funkce pro "panel archiver view"; vola se pro nacteni obsahu archivu 'fileName';
@@ -51,9 +48,9 @@ class CPluginInterfaceForArchiverAbstract
     // ListArchive neni volan pro soubory nulove delky, ty maji automaticky prazdny obsah,
     // pri pakovani do takovych souboru se soubor pred volanim PackToArchive smaze (pro
     // kompatibilitu s externimi pakovaci)
-    virtual BOOL WINAPI ListArchive(CSalamanderForOperationsAbstract *salamander, const char *fileName,
-                                    CSalamanderDirectoryAbstract *dir,
-                                    CPluginDataInterfaceAbstract *&pluginData) = 0;
+    virtual BOOL WINAPI ListArchive(CSalamanderForOperationsAbstract* salamander, const char* fileName,
+                                    CSalamanderDirectoryAbstract* dir,
+                                    CPluginDataInterfaceAbstract*& pluginData) = 0;
 
     // funkce pro "panel archiver view", vola se pri pozadavku na rozpakovani souboru/adresaru
     // z archivu 'fileName' do adresare 'targetDir' z cesty v archivu 'archiveRoot'; 'pluginData'
@@ -64,10 +61,10 @@ class CPluginInterfaceForArchiverAbstract
     // pouzit Cancel, mohl byt pouzit Skip) - zdroj operace v panelu je odznacen, jinak vraci
     // FALSE (neprovede se odznaceni); 'salamander' je sada uzitecnych metod vyvezenych ze
     // Salamandera
-    virtual BOOL WINAPI UnpackArchive(CSalamanderForOperationsAbstract *salamander, const char *fileName,
-                                      CPluginDataInterfaceAbstract *pluginData, const char *targetDir,
-                                      const char *archiveRoot, SalEnumSelection next,
-                                      void *nextParam) = 0;
+    virtual BOOL WINAPI UnpackArchive(CSalamanderForOperationsAbstract* salamander, const char* fileName,
+                                      CPluginDataInterfaceAbstract* pluginData, const char* targetDir,
+                                      const char* archiveRoot, SalEnumSelection next,
+                                      void* nextParam) = 0;
 
     // funkce pro "panel archiver view", vola se pri pozadavku na rozpakovani jednoho souboru pro view/edit
     // z archivu 'fileName' do adresare 'targetDir'; jmeno souboru v archivu je 'nameInArchive';
@@ -81,10 +78,10 @@ class CPluginInterfaceForArchiverAbstract
     // "renaming not supported" se zobrazi ze Salamandera); vraci TRUE pri uspesnem rozpakovani souboru
     // (soubor je na zadane ceste, nebyl pouzit Cancel ani Skip), 'salamander' je sada uzitecnych metod
     // vyvezenych ze Salamandera
-    virtual BOOL WINAPI UnpackOneFile(CSalamanderForOperationsAbstract *salamander, const char *fileName,
-                                      CPluginDataInterfaceAbstract *pluginData, const char *nameInArchive,
-                                      const CFileData *fileData, const char *targetDir,
-                                      const char *newFileName, BOOL *renamingNotSupported) = 0;
+    virtual BOOL WINAPI UnpackOneFile(CSalamanderForOperationsAbstract* salamander, const char* fileName,
+                                      CPluginDataInterfaceAbstract* pluginData, const char* nameInArchive,
+                                      const CFileData* fileData, const char* targetDir,
+                                      const char* newFileName, BOOL* renamingNotSupported) = 0;
 
     // funkce pro "panel archiver edit" a "custom archiver pack", vola se pri pozadavku na zapakovani
     // souboru/adresaru do archivu 'fileName' na cestu 'archiveRoot', soubory/adresare jsou zadany
@@ -93,9 +90,9 @@ class CPluginInterfaceForArchiverAbstract
     // pokud se podari zapakovat/odstranit vsechny soubory/adresare (nebyl pouzit Cancel, mohl byt
     // pouzit Skip) - zdroj operace v panelu je odznacen, jinak vraci FALSE (neprovede se odznaceni),
     // 'salamander' je sada uzitecnych metod vyvezenych ze Salamandera
-    virtual BOOL WINAPI PackToArchive(CSalamanderForOperationsAbstract *salamander, const char *fileName,
-                                      const char *archiveRoot, BOOL move, const char *sourcePath,
-                                      SalEnumSelection2 next, void *nextParam) = 0;
+    virtual BOOL WINAPI PackToArchive(CSalamanderForOperationsAbstract* salamander, const char* fileName,
+                                      const char* archiveRoot, BOOL move, const char* sourcePath,
+                                      SalEnumSelection2 next, void* nextParam) = 0;
 
     // funkce pro "panel archiver edit", vola se pri pozadavku na smazani souboru/adresaru z archivu
     // 'fileName'; soubory/adresare jsou zadany cestou 'archiveRoot' a enumeracni funkci 'next'
@@ -105,9 +102,9 @@ class CPluginInterfaceForArchiverAbstract
     // podari smazat vsechny soubory/adresare (nebyl pouzit Cancel, mohl byt pouzit Skip) - zdroj
     // operace v panelu je odznacen, jinak vraci FALSE (neprovede se odznaceni); 'salamander' je sada
     // uzitecnych metod vyvezenych ze Salamandera
-    virtual BOOL WINAPI DeleteFromArchive(CSalamanderForOperationsAbstract *salamander, const char *fileName,
-                                          CPluginDataInterfaceAbstract *pluginData, const char *archiveRoot,
-                                          SalEnumSelection next, void *nextParam) = 0;
+    virtual BOOL WINAPI DeleteFromArchive(CSalamanderForOperationsAbstract* salamander, const char* fileName,
+                                          CPluginDataInterfaceAbstract* pluginData, const char* archiveRoot,
+                                          SalEnumSelection next, void* nextParam) = 0;
 
     // funkce pro "custom archiver unpack"; vola se pri pozadavku na rozbaleni souboru/adresaru z archivu
     // 'fileName' do adresare 'targetDir'; soubory/adresare jsou zadany maskou 'mask'; vraci TRUE pokud
@@ -116,13 +113,13 @@ class CPluginInterfaceForArchiverAbstract
     // (vcetne null-terminatoru; neni-li vicesvazkovy, bude tam jen 'fileName'), vrati-li se z teto funkce
     // TRUE (uspesne rozbaleni), dojde nasledne ke smazani vsech souboru z 'archiveVolumes';
     // 'salamander' je sada uzitecnych metod vyvezenych ze Salamandera
-    virtual BOOL WINAPI UnpackWholeArchive(CSalamanderForOperationsAbstract *salamander, const char *fileName,
-                                           const char *mask, const char *targetDir, BOOL delArchiveWhenDone,
-                                           CDynamicString *archiveVolumes) = 0;
+    virtual BOOL WINAPI UnpackWholeArchive(CSalamanderForOperationsAbstract* salamander, const char* fileName,
+                                           const char* mask, const char* targetDir, BOOL delArchiveWhenDone,
+                                           CDynamicString* archiveVolumes) = 0;
 
     // funkce pro "panel archiver view/edit", vola se pred zavrenim panelu s archivem
     // POZOR: pokud se nepodari otevrit novou cestu, archiv muze v panelu zustat (nezavisle na tom,
-    //        co vrati CanCloseArchive); metodu tedy nelze pouzit pro destrukci kontextu; 
+    //        co vrati CanCloseArchive); metodu tedy nelze pouzit pro destrukci kontextu;
     //        je urcena napriklad pro optimalizaci operace Delete z archivu, kdy muze pri
     //        jeho opousteni nabidnou "setreseni" archivu
     //        pro destrukci kontextu lze pouzit metodu CPluginInterfaceAbstract::ReleasePluginDataInterface,
@@ -132,7 +129,7 @@ class CPluginInterfaceForArchiverAbstract
     // vraci TRUE pokud je zavreni mozne, je-li 'force' TRUE, vraci TRUE vzdy; pokud probiha
     // critical shutdown (vice viz CSalamanderGeneralAbstract::IsCriticalShutdown), nema
     // smysl se usera na cokoliv ptat
-    virtual BOOL WINAPI CanCloseArchive(CSalamanderForOperationsAbstract *salamander, const char *fileName,
+    virtual BOOL WINAPI CanCloseArchive(CSalamanderForOperationsAbstract* salamander, const char* fileName,
                                         BOOL force, int panel) = 0;
 
     // zjisti pozadovane nastaveni disk-cache (disk-cache se pouziva pro docasne kopie
@@ -153,7 +150,7 @@ class CPluginInterfaceForArchiverAbstract
     // 'cacheCopies' FALSE, budou se kopie mazat hned jakmile se uvolni (napr. jakmile se zavre
     // viewer), je-li 'cacheCopies' TRUE, budou se kopie mazat az pri prekroceni limitni velikosti
     // cache nebo pri zavreni archivu
-    virtual BOOL WINAPI GetCacheInfo(char *tempPath, BOOL *ownDelete, BOOL *cacheCopies) = 0;
+    virtual BOOL WINAPI GetCacheInfo(char* tempPath, BOOL* ownDelete, BOOL* cacheCopies) = 0;
 
     // pouziva se jen pokud metoda GetCacheInfo vraci v parametru 'ownDelete' TRUE:
     // smaze docasnou kopii vypakovanou z tohoto archivu (pozor na read-only soubory,
@@ -171,7 +168,7 @@ class CPluginInterfaceForArchiverAbstract
     // (pokud zpravu distribuuje message-loopa uvnitr pluginu), dalsi vstup do DeleteTmpCopy
     // je vylouceny, protoze do ukonceni volani DeleteTmpCopy disk-cache zadne dalsi zpravy
     // neposila
-    virtual void WINAPI DeleteTmpCopy(const char *fileName, BOOL firstFile) = 0;
+    virtual void WINAPI DeleteTmpCopy(const char* fileName, BOOL firstFile) = 0;
 
     // pouziva se jen pokud metoda GetCacheInfo vraci v parametru 'ownDelete' TRUE:
     // pri unloadu pluginu zjisti, jestli se ma volat DeleteTmpCopy pro kopie, ktere jsou
@@ -193,5 +190,3 @@ class CPluginInterfaceForArchiverAbstract
 #ifdef __BORLANDC__
 #pragma option -a
 #endif // __BORLANDC__
-
-#endif // __SPL_ARC_H

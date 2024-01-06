@@ -1,21 +1,18 @@
+﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 //****************************************************************************
 //
-// Copyright (c) ALTAP, spol. s r.o. All rights reserved.
+// Copyright (c) 2023 Open Salamander Authors
 //
-// This is a part of the Altap Salamander SDK library.
-//
-// The SDK is provided "AS IS" and without warranty of any kind and 
-// ALTAP EXPRESSLY DISCLAIMS ALL WARRANTIES, EXPRESS AND IMPLIED, INCLUDING,
-// BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS
-// FOR A PARTICULAR PURPOSE and NON-INFRINGEMENT.
+// This is a part of the Open Salamander SDK library.
 //
 //****************************************************************************
 
-#ifndef __SPL_THUM_H
-#define __SPL_THUM_H
+#pragma once
 
 #ifdef _MSC_VER
-#pragma pack(push, enter_include_spl_thum)   // aby byly struktury nezavisle na nastavenem zarovnavani
+#pragma pack(push, enter_include_spl_thum) // aby byly struktury nezavisle na nastavenem zarovnavani
 #pragma pack(4)
 #endif // _MSC_VER
 #ifdef __BORLANDC__
@@ -29,10 +26,10 @@
 
 // informace o obrazku, ze ktereho generujeme thumbnail, tyto flagy se pouzivaji
 // v CSalamanderThumbnailMakerAbstract::SetParameters():
-#define SSTHUMB_MIRROR_HOR   1  // obrazek je potreba horizontalne zrcadlit
-#define SSTHUMB_MIRROR_VERT  2  // obrazek je potreba vertikalne zrcadlit
-#define SSTHUMB_ROTATE_90CW  4  // obrazek je potreba otocit o 90 stupnu ve smeru hodinovych rucicek
-#define SSTHUMB_ROTATE_180   (SSTHUMB_MIRROR_VERT | SSTHUMB_MIRROR_HOR) // obrazek je potreba otocit o 180 stupnu
+#define SSTHUMB_MIRROR_HOR 1                                            // obrazek je potreba horizontalne zrcadlit
+#define SSTHUMB_MIRROR_VERT 2                                           // obrazek je potreba vertikalne zrcadlit
+#define SSTHUMB_ROTATE_90CW 4                                           // obrazek je potreba otocit o 90 stupnu ve smeru hodinovych rucicek
+#define SSTHUMB_ROTATE_180 (SSTHUMB_MIRROR_VERT | SSTHUMB_MIRROR_HOR)   // obrazek je potreba otocit o 180 stupnu
 #define SSTHUMB_ROTATE_90CCW (SSTHUMB_ROTATE_90CW | SSTHUMB_ROTATE_180) // obrazek je potreba otocit o 90 stupnu proti smeru hodinovych rucicek
 // obrazek je v horsi kvalite nebo mensi nez je potreba, Salamander po dokonceni prvniho kola
 // ziskavani "rychlych" thumbnailu zkusi pro tento obrazek ziskat "kvalitni" thumbnail
@@ -40,7 +37,7 @@
 
 class CSalamanderThumbnailMakerAbstract
 {
-  public:
+public:
     // nastaveni parametru zpracovani obrazku pri tvorbe thumbnailu; nutne volat
     // jako prvni metodu tohoto rozhrani; 'picWidth' a 'picHeight' jsou rozmery
     // zpracovavaneho obrazku (v bodech); 'flags' je kombinace flagu SSTHUMB_XXX,
@@ -70,13 +67,13 @@ class CSalamanderThumbnailMakerAbstract
     // metody ProcessBuffer overovat, zda se nacitani nema prerusit.
     // Pokud je treba provest casove narocnejsi operace pred volanim metody SetParameters
     // nebo pred volanim ProcessBuffer, je behem teto doby nutne obcas volat GetCancelProcessing.
-    virtual BOOL WINAPI ProcessBuffer(void *buffer, int rowsCount) = 0;
+    virtual BOOL WINAPI ProcessBuffer(void* buffer, int rowsCount) = 0;
 
     // vraci vlastni buffer o velikosti potrebne k ulozeni 'rowsCount' radku obrazku
     // (4 * 'rowsCount' * 'picWidth' bytu); je-li objekt v chybovem stavu (po volani
     // SetError), vraci NULL;
     // plugin nesmi dealokovat ziskany buffer (dealokuje se v Salamanderovi automaticky)
-    virtual void * WINAPI GetBuffer(int rowsCount) = 0;
+    virtual void* WINAPI GetBuffer(int rowsCount) = 0;
 
     // oznameni chyby pri ziskavani obrazku (thumbnail je povazovan za vadny
     // a nepouzije se), ostatni metody tohoto rozhrani budou od chvile volani
@@ -104,10 +101,10 @@ class CSalamanderThumbnailMakerAbstract
 class CPluginInterfaceForThumbLoaderAbstract
 {
 #ifdef INSIDE_SALAMANDER
-  private:        // ochrana proti nespravnemu primemu volani metod (viz CPluginInterfaceForThumbLoaderEncapsulation)
+private: // ochrana proti nespravnemu primemu volani metod (viz CPluginInterfaceForThumbLoaderEncapsulation)
     friend class CPluginInterfaceForThumbLoaderEncapsulation;
-#else // INSIDE_SALAMANDER
-  public:
+#else  // INSIDE_SALAMANDER
+public:
 #endif // INSIDE_SALAMANDER
 
     // nacte thumbnail pro soubor 'filename'; 'thumbWidth' a 'thumbHeight' jsou
@@ -136,8 +133,8 @@ class CPluginInterfaceForThumbLoaderAbstract
     //     - pokud vrati FALSE, uklid a odchod (preruseni z duvodu zmeny cesty)
     //     - pokracovat ve SMYCCE, dokud nebude cely obrazek predan
     //   - uklid a odchod
-    virtual BOOL WINAPI LoadThumbnail(const char *filename, int thumbWidth, int thumbHeight,
-                                      CSalamanderThumbnailMakerAbstract *thumbMaker,
+    virtual BOOL WINAPI LoadThumbnail(const char* filename, int thumbWidth, int thumbHeight,
+                                      CSalamanderThumbnailMakerAbstract* thumbMaker,
                                       BOOL fastThumbnail) = 0;
 };
 
@@ -147,5 +144,3 @@ class CPluginInterfaceForThumbLoaderAbstract
 #ifdef __BORLANDC__
 #pragma option -a
 #endif // __BORLANDC__
-
-#endif // __SPL_THUM_H

@@ -14,7 +14,7 @@ Menu Extension:
 Go to menu Plugins > DemoPlug. You can notice that some items are
 disabled, this is test of menu item enablers (e.g. "File on Disk" item
 is enabled only if focus in active panel is on some file on disk). See
-also "Controls provided by Altap Salamander" item, there are some special
+also "Controls provided by Open Salamander" item, there are some special
 dialog controls that we have implemented and you can use them in plugins.
 
 File System:

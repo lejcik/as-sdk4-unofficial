@@ -1,16 +1,15 @@
+﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 //****************************************************************************
 //
-// Copyright (c) ALTAP, spol. s r.o. All rights reserved.
+// Copyright (c) 2023 Open Salamander Authors
 //
-// This is a part of the Altap Salamander SDK library.
-//
-// The SDK is provided "AS IS" and without warranty of any kind and 
-// ALTAP EXPRESSLY DISCLAIMS ALL WARRANTIES, EXPRESS AND IMPLIED, INCLUDING,
-// BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS
-// FOR A PARTICULAR PURPOSE and NON-INFRINGEMENT.
+// This is a part of the Open Salamander SDK library.
 //
 //****************************************************************************
 
+// WARNING: cannot be replaced by "#pragma once" because it is included from .rc file and it seems resource compiler does not support "#pragma once"
 #ifndef __SPL_VERS_H
 #define __SPL_VERS_H
 
@@ -22,24 +21,24 @@
 #define VERSINFO_xstr(s) VERSINFO_str(s)
 #define VERSINFO_str(s) #s
 
-#define VERSINFO_SALAMANDER_MAJOR       4
-#define VERSINFO_SALAMANDER_MINORA      0
-#define VERSINFO_SALAMANDER_MINORB      0
+#define VERSINFO_SALAMANDER_MAJOR 5
+#define VERSINFO_SALAMANDER_MINORA 0
+#define VERSINFO_SALAMANDER_MINORB 0
 
-#if (VERSINFO_SALAMANDER_MINORB == 0)  // nulu na setinach nepiseme 2.50 -> 2.5
-#define VERSINFO_SALAMANDER_VERSION     VERSINFO_xstr(VERSINFO_SALAMANDER_MAJOR) "." VERSINFO_xstr(VERSINFO_SALAMANDER_MINORA) VERSINFO_BETAVERSION_TXT
-#define VERSINFO_SAL_SHORT_VERSION      VERSINFO_xstr(VERSINFO_SALAMANDER_MAJOR) VERSINFO_xstr(VERSINFO_SALAMANDER_MINORA) VERSINFO_BETAVERSIONSHORT_TXT
+#if (VERSINFO_SALAMANDER_MINORB == 0) // nulu na setinach nepiseme 2.50 -> 2.5
+#define VERSINFO_SALAMANDER_VERSION VERSINFO_xstr(VERSINFO_SALAMANDER_MAJOR) "." VERSINFO_xstr(VERSINFO_SALAMANDER_MINORA) VERSINFO_BETAVERSION_TXT
+#define VERSINFO_SAL_SHORT_VERSION VERSINFO_xstr(VERSINFO_SALAMANDER_MAJOR) VERSINFO_xstr(VERSINFO_SALAMANDER_MINORA) VERSINFO_BETAVERSIONSHORT_TXT
 #else
-#define VERSINFO_SALAMANDER_VERSION     VERSINFO_xstr(VERSINFO_SALAMANDER_MAJOR) "." VERSINFO_xstr(VERSINFO_SALAMANDER_MINORA) VERSINFO_xstr(VERSINFO_SALAMANDER_MINORB) VERSINFO_BETAVERSION_TXT
-#define VERSINFO_SAL_SHORT_VERSION      VERSINFO_xstr(VERSINFO_SALAMANDER_MAJOR) VERSINFO_xstr(VERSINFO_SALAMANDER_MINORA) VERSINFO_xstr(VERSINFO_SALAMANDER_MINORB) VERSINFO_BETAVERSIONSHORT_TXT
+#define VERSINFO_SALAMANDER_VERSION VERSINFO_xstr(VERSINFO_SALAMANDER_MAJOR) "." VERSINFO_xstr(VERSINFO_SALAMANDER_MINORA) VERSINFO_xstr(VERSINFO_SALAMANDER_MINORB) VERSINFO_BETAVERSION_TXT
+#define VERSINFO_SAL_SHORT_VERSION VERSINFO_xstr(VERSINFO_SALAMANDER_MAJOR) VERSINFO_xstr(VERSINFO_SALAMANDER_MINORA) VERSINFO_xstr(VERSINFO_SALAMANDER_MINORB) VERSINFO_BETAVERSIONSHORT_TXT
 #endif
 
-#ifdef VERSINFO_MAJOR  // je definovane jen pokud se pouziva z pluginu
-#if (VERSINFO_MINORB == 0)  // nulu na setinach nepiseme 2.50 -> 2.5
-#define VERSINFO_VERSION             VERSINFO_xstr(VERSINFO_MAJOR) "." VERSINFO_xstr(VERSINFO_MINORA) VERSINFO_BETAVERSION_TXT
+#ifdef VERSINFO_MAJOR      // je definovane jen pokud se pouziva z pluginu
+#if (VERSINFO_MINORB == 0) // nulu na setinach nepiseme 2.50 -> 2.5
+#define VERSINFO_VERSION VERSINFO_xstr(VERSINFO_MAJOR) "." VERSINFO_xstr(VERSINFO_MINORA) VERSINFO_BETAVERSION_TXT
 #define VERSINFO_VERSION_NO_PLATFORM VERSINFO_xstr(VERSINFO_MAJOR) "." VERSINFO_xstr(VERSINFO_MINORA) VERSINFO_BETAVERSION_TXT_NO_PLATFORM
 #else
-#define VERSINFO_VERSION             VERSINFO_xstr(VERSINFO_MAJOR) "." VERSINFO_xstr(VERSINFO_MINORA) VERSINFO_xstr(VERSINFO_MINORB) VERSINFO_BETAVERSION_TXT
+#define VERSINFO_VERSION VERSINFO_xstr(VERSINFO_MAJOR) "." VERSINFO_xstr(VERSINFO_MINORA) VERSINFO_xstr(VERSINFO_MINORB) VERSINFO_BETAVERSION_TXT
 #define VERSINFO_VERSION_NO_PLATFORM VERSINFO_xstr(VERSINFO_MAJOR) "." VERSINFO_xstr(VERSINFO_MINORA) VERSINFO_xstr(VERSINFO_MINORB) VERSINFO_BETAVERSION_TXT_NO_PLATFORM
 #endif
 #endif
@@ -49,7 +48,6 @@
 #else // _WIN64
 #define SAL_VER_PLATFORM "x86"
 #endif // _WIN64
-
 
 // VERSINFO_BUILDNUMBER:
 //
@@ -97,11 +95,11 @@
 // 180 - 4.0
 // 181 - 4.0 (SDK)
 // 182 - 4.0 (CB182)
+// 183 - 5.0
 
 // ! DULEZITE: nova cisla buildu je nutne zapsat do vetve "default", a pak
 //             teprve do vedlejsi vetve (kompletni seznam je jen v "default" vetvi)
-#define VERSINFO_BUILDNUMBER     182
-
+#define VERSINFO_BUILDNUMBER 183
 
 // VERSINFO_BETAVERSION_TXT:
 //
@@ -114,12 +112,12 @@
 // priklady ("x86" je pro 32-bit verzi, "x64" pro 64-bit verzi, v nasledujicich prikladech jsou
 // x86/x64 zamenne): " (x86)" (pro release verze), " beta 2 (x64)", " beta 2 (SDK x86)",
 // " RC1 (x64)", " beta 2 (IB21 x86)", " beta 2 (DB21 x64)", " beta 2 (PB21 x86)"
-#define VERSINFO_BETAVERSION_TXT             " (CB182 " SAL_VER_PLATFORM ")"
-#define VERSINFO_BETAVERSION_TXT_NO_PLATFORM "(CB182)" // kopie radku vyse + smazat SAL_VER_PLATFORM + je-li zavorka prazdna, smazat ji + smazat nadbytecne mezery
+#define VERSINFO_BETAVERSION_TXT " (" SAL_VER_PLATFORM ")"
+#define VERSINFO_BETAVERSION_TXT_NO_PLATFORM "" // kopie radku vyse + smazat SAL_VER_PLATFORM + je-li zavorka prazdna, smazat ji + smazat nadbytecne mezery
 
 // priklady (x86/x64 viz predchozi odstavec): "x86" (pro release verze), "B2x64", "B2SDKx86",
 // "RC1x64", "B2IB21x86", "B2DB21x64", "B2PB21x86"
-#define VERSINFO_BETAVERSIONSHORT_TXT "CB182" SAL_VER_PLATFORM
+#define VERSINFO_BETAVERSIONSHORT_TXT SAL_VER_PLATFORM
 
 // LAST_VERSION_OF_SALAMANDER:
 //
@@ -192,8 +190,9 @@
 //             teprve do vedlejsi vetve (kompletni seznam je jen v "default" vetvi)
 //   101 - 4.0 beta 1 (DB177)
 //   102 - 4.0
+//   103 - 5.0
 
-#define LAST_VERSION_OF_SALAMANDER         102
-#define REQUIRE_LAST_VERSION_OF_SALAMANDER "This plugin requires Altap Salamander 4.0 (" SAL_VER_PLATFORM ") or later."
+#define LAST_VERSION_OF_SALAMANDER 103
+#define REQUIRE_LAST_VERSION_OF_SALAMANDER "This plugin requires Open Salamander 5.0 (" SAL_VER_PLATFORM ") or later."
 
 #endif // __SPL_VERS_H

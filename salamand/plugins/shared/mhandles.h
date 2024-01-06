@@ -1,18 +1,15 @@
+﻿// SPDX-FileCopyrightText: 2023 Open Salamander Authors
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 //****************************************************************************
 //
-// Copyright (c) ALTAP, spol. s r.o. All rights reserved.
+// Copyright (c) 2023 Open Salamander Authors
 //
-// This is a part of the Altap Salamander SDK library.
-//
-// The SDK is provided "AS IS" and without warranty of any kind and 
-// ALTAP EXPRESSLY DISCLAIMS ALL WARRANTIES, EXPRESS AND IMPLIED, INCLUDING,
-// BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS
-// FOR A PARTICULAR PURPOSE and NON-INFRINGEMENT.
+// This is a part of the Open Salamander SDK library.
 //
 //****************************************************************************
 
-#ifndef __MHANDLES_H
-#define __MHANDLES_H
+#pragma once
 
 // makro MHANDLES_ENABLE - zapina monitorovani handlu
 // POZOR: volat HANDLES_CAN_USE_TRACE() tesne po inicializaci "dbg.h" modulu
@@ -51,233 +48,233 @@ inline void __HandlesEmptyFunction() {}
 
 enum C__HandlesOutputType
 {
-  __otMessages,
-  __otQuiet
+    __otMessages,
+    __otQuiet
 };
 
 enum C__HandlesType
 {
-  __htHandle_comp_with_CloseHandle,   // handle kompatibilni s CloseHandle() a DuplicateHandle()
-  __htHandle_comp_with_DeleteObject,  // handle kompatibilni s DeleteObject() a GetStockObject()
-  __htKey,
-  __htIcon,
-  __htGlobal,
-  __htMetaFile,
-  __htEnhMetaFile,
-  __htCursor,
-  __htViewOfFile,
-  __htAccel,
-  __htCriticalSection,
-  __htEnterCriticalSection,
-  __htFindFile,
-  __htFiber,
-  __htThreadLocalStorage,
-  __htLibrary,
-  __htGlobalLock,
-  __htChangeNotification,
-  __htEnvStrings,
-  __htLocal,
-  __htLocalLock,
-  __htDropTarget,
+    __htHandle_comp_with_CloseHandle,  // handle kompatibilni s CloseHandle() a DuplicateHandle()
+    __htHandle_comp_with_DeleteObject, // handle kompatibilni s DeleteObject() a GetStockObject()
+    __htKey,
+    __htIcon,
+    __htGlobal,
+    __htMetaFile,
+    __htEnhMetaFile,
+    __htCursor,
+    __htViewOfFile,
+    __htAccel,
+    __htCriticalSection,
+    __htEnterCriticalSection,
+    __htFindFile,
+    __htFiber,
+    __htThreadLocalStorage,
+    __htLibrary,
+    __htGlobalLock,
+    __htChangeNotification,
+    __htEnvStrings,
+    __htLocal,
+    __htLocalLock,
+    __htDropTarget,
 
-  __htDC,
-  __htPen,
-  __htBrush,
-  __htFont,
-  __htBitmap,
-  __htRegion,
-  __htPalette,
+    __htDC,
+    __htPen,
+    __htBrush,
+    __htFont,
+    __htBitmap,
+    __htRegion,
+    __htPalette,
 
-  __htFile,
-  __htThread,
-  __htProcess,
-  __htEvent,
-  __htMutex,
-  __htSemaphore,
-  __htWaitableTimer,
-  __htFileMapping,
-  __htMailslot,
-  __htReadPipe,
-  __htWritePipe,
-  __htServerNamedPipe,
-  __htConsoleScreenBuffer,
-  __htDeferWindowPos,
-  __htThreadToken,
-  __htProcessToken,
+    __htFile,
+    __htThread,
+    __htProcess,
+    __htEvent,
+    __htMutex,
+    __htSemaphore,
+    __htWaitableTimer,
+    __htFileMapping,
+    __htMailslot,
+    __htReadPipe,
+    __htWritePipe,
+    __htServerNamedPipe,
+    __htConsoleScreenBuffer,
+    __htDeferWindowPos,
+    __htThreadToken,
+    __htProcessToken,
 
-  __htCount
+    __htCount
 };
 
 enum C__HandlesOrigin
 {
-  __hoUnknown,
-  __hoCreateFile,
-  __hoCreateBrushIndirect,
-  __hoGetDC,
-  __hoCreateCompatibleBitmap,
-  __hoCreatePen,
-  __hoBeginPaint,
-  __hoCreateCompatibleDC,
-  __hoCreateRectRgn,
-  __hoCreateBitmap,
-  __hoCreateBitmapIndirect,
-  __hoCreateMetaFile,
-  __hoCreateEnhMetaFile,
-  __hoCloseMetaFile,
-  __hoCloseEnhMetaFile,
-  __hoCopyMetaFile,
-  __hoCopyEnhMetaFile,
-  __hoGetEnhMetaFile,
-  __hoSetWinMetaFileBits,
-  __hoCreateIcon,
-  __hoCreateIconIndirect,
-  __hoCreateIconFromResource,
-  __hoCreateIconFromResourceEx,
-  __hoCopyIcon,
-  __hoCreateFont,
-  __hoCreateFontIndirect,
-  __hoCreateDC,
-  __hoGetDCEx,
-  __hoGetWindowDC,
-  __hoCopyImage,
-  __hoCreateCursor,
-  __hoRegCreateKey,
-  __hoRegCreateKeyEx,
-  __hoRegOpenKey,
-  __hoRegOpenKeyEx,
-  __hoRegConnectRegistry,
-  __hoCreateIC,
-  __hoCreateSolidBrush,
-  __hoCreateHatchBrush,
-  __hoCreatePatternBrush,
-  __hoCreateDIBPatternBrush,
-  __hoCreateDIBPatternBrushPt,
-  __hoCreateDIBitmap,
-  __hoCreateDIBSection,
-  __hoCreateDiscardableBitmap,
-  __hoCreateMappedBitmap,
-  __hoLoadBitmap,
-  __hoCreatePenIndirect,
-  __hoCreateRectRgnIndirect,
-  __hoCreateEllipticRgn,
-  __hoCreateEllipticRgnIndirect,
-  __hoCreatePolyPolygonRgn,
-  __hoCreatePolygonRgn,
-  __hoCreateRoundRectRgn,
-  __hoCreatePalette,
-  __hoCreateHalftonePalette,
-  __hoCreateThread,
-  __hoCreateRemoteThread,
-  __hoCreateProcess,
-  __hoOpenProcess,
-  __hoCreateMutex,
-  __hoOpenMutex,
-  __hoCreateEvent,
-  __hoOpenEvent,
-  __hoCreateSemaphore,
-  __hoOpenSemaphore,
-  __hoCreateWaitableTimer,
-  __hoOpenWaitableTimer,
-  __hoCreateFileMapping,
-  __hoOpenFileMapping,
-  __hoCreateMailslot,
-  __hoCreatePipe,
-  __hoCreateNamedPipe,
-  __hoCreateConsoleScreenBuffer,
-  __hoDuplicateHandle,
-  __hoMapViewOfFile,
-  __hoMapViewOfFileEx,
-  __hoCreateAcceleratorTable,
-  __hoLoadAccelerators,
-  __hoEnterCriticalSection,
-  __hoInitializeCriticalSection,
-  __hoTryEnterCriticalSection,
-  __hoFindFirstFile,
-  __hoCreateFiber,
-  __hoTlsAlloc,
-  __hoLoadLibrary,
-  __hoLoadLibraryEx,
-  __hoGlobalAlloc,
-  __hoGlobalReAlloc,
-  __hoGlobalLock,
-  __hoFindFirstChangeNotification,
-  __hoGetEnvironmentStrings,
-  __hoLocalAlloc,
-  __hoLocalReAlloc,
-  __hoLocalLock,
-  __hoLoadImage,
-  __hoLoadIcon,
-  __ho_lcreat,
-  __hoOpenFile,
-  __ho_lopen,
-  __ho_beginthreadex,
-  __hoRegisterDragDrop,
-  __hoGetStockObject,
-  __hoBeginDeferWindowPos,
-  __hoDeferWindowPos,
-  __hoOpenThreadToken,
-  __hoOpenProcessToken,
+    __hoUnknown,
+    __hoCreateFile,
+    __hoCreateBrushIndirect,
+    __hoGetDC,
+    __hoCreateCompatibleBitmap,
+    __hoCreatePen,
+    __hoBeginPaint,
+    __hoCreateCompatibleDC,
+    __hoCreateRectRgn,
+    __hoCreateBitmap,
+    __hoCreateBitmapIndirect,
+    __hoCreateMetaFile,
+    __hoCreateEnhMetaFile,
+    __hoCloseMetaFile,
+    __hoCloseEnhMetaFile,
+    __hoCopyMetaFile,
+    __hoCopyEnhMetaFile,
+    __hoGetEnhMetaFile,
+    __hoSetWinMetaFileBits,
+    __hoCreateIcon,
+    __hoCreateIconIndirect,
+    __hoCreateIconFromResource,
+    __hoCreateIconFromResourceEx,
+    __hoCopyIcon,
+    __hoCreateFont,
+    __hoCreateFontIndirect,
+    __hoCreateDC,
+    __hoGetDCEx,
+    __hoGetWindowDC,
+    __hoCopyImage,
+    __hoCreateCursor,
+    __hoRegCreateKey,
+    __hoRegCreateKeyEx,
+    __hoRegOpenKey,
+    __hoRegOpenKeyEx,
+    __hoRegConnectRegistry,
+    __hoCreateIC,
+    __hoCreateSolidBrush,
+    __hoCreateHatchBrush,
+    __hoCreatePatternBrush,
+    __hoCreateDIBPatternBrush,
+    __hoCreateDIBPatternBrushPt,
+    __hoCreateDIBitmap,
+    __hoCreateDIBSection,
+    __hoCreateDiscardableBitmap,
+    __hoCreateMappedBitmap,
+    __hoLoadBitmap,
+    __hoCreatePenIndirect,
+    __hoCreateRectRgnIndirect,
+    __hoCreateEllipticRgn,
+    __hoCreateEllipticRgnIndirect,
+    __hoCreatePolyPolygonRgn,
+    __hoCreatePolygonRgn,
+    __hoCreateRoundRectRgn,
+    __hoCreatePalette,
+    __hoCreateHalftonePalette,
+    __hoCreateThread,
+    __hoCreateRemoteThread,
+    __hoCreateProcess,
+    __hoOpenProcess,
+    __hoCreateMutex,
+    __hoOpenMutex,
+    __hoCreateEvent,
+    __hoOpenEvent,
+    __hoCreateSemaphore,
+    __hoOpenSemaphore,
+    __hoCreateWaitableTimer,
+    __hoOpenWaitableTimer,
+    __hoCreateFileMapping,
+    __hoOpenFileMapping,
+    __hoCreateMailslot,
+    __hoCreatePipe,
+    __hoCreateNamedPipe,
+    __hoCreateConsoleScreenBuffer,
+    __hoDuplicateHandle,
+    __hoMapViewOfFile,
+    __hoMapViewOfFileEx,
+    __hoCreateAcceleratorTable,
+    __hoLoadAccelerators,
+    __hoEnterCriticalSection,
+    __hoInitializeCriticalSection,
+    __hoTryEnterCriticalSection,
+    __hoFindFirstFile,
+    __hoCreateFiber,
+    __hoTlsAlloc,
+    __hoLoadLibrary,
+    __hoLoadLibraryEx,
+    __hoGlobalAlloc,
+    __hoGlobalReAlloc,
+    __hoGlobalLock,
+    __hoFindFirstChangeNotification,
+    __hoGetEnvironmentStrings,
+    __hoLocalAlloc,
+    __hoLocalReAlloc,
+    __hoLocalLock,
+    __hoLoadImage,
+    __hoLoadIcon,
+    __ho_lcreat,
+    __hoOpenFile,
+    __ho_lopen,
+    __ho_beginthreadex,
+    __hoRegisterDragDrop,
+    __hoGetStockObject,
+    __hoBeginDeferWindowPos,
+    __hoDeferWindowPos,
+    __hoOpenThreadToken,
+    __hoOpenProcessToken,
 };
 
 struct C__HandlesHandle
 {
-  C__HandlesType Type;
-  C__HandlesOrigin Origin;
-  HANDLE Handle;    // univerzalni, pro vsechny druhy handlu
+    C__HandlesType Type;
+    C__HandlesOrigin Origin;
+    HANDLE Handle; // univerzalni, pro vsechny druhy handlu
 
-  C__HandlesHandle() {}
+    C__HandlesHandle() {}
 
-  C__HandlesHandle(C__HandlesType type, C__HandlesOrigin origin, HANDLE handle)
-  {
-    Type = type;
-    Origin = origin;
-    Handle = handle;
-  }
+    C__HandlesHandle(C__HandlesType type, C__HandlesOrigin origin, HANDLE handle)
+    {
+        Type = type;
+        Origin = origin;
+        Handle = handle;
+    }
 };
 
 struct C__HandlesData
 {
-  const char *File;
-  int Line;
-  C__HandlesHandle Handle;
+    const char* File;
+    int Line;
+    C__HandlesHandle Handle;
 };
 
 class C_HandlesDataArray
 {
-  public:
+public:
     int Count;
 
-  protected:
-    C__HandlesData *Data;
+protected:
+    C__HandlesData* Data;
     int Available;
 
-  public:
+public:
     C_HandlesDataArray();
     ~C_HandlesDataArray();
 
-    int Add(const C__HandlesData &member);
+    int Add(const C__HandlesData& member);
     void Delete(int index);
-    C__HandlesData &operator [](int index) {return Data[index];}
+    C__HandlesData& operator[](int index) { return Data[index]; }
 
-  protected:
+protected:
     void EnlargeArray();
     void Move(int direction, int first, int count);
 };
 
 class C__Messages
 {
-  public:
+public:
     C__Messages();
     ~C__Messages();
 
-    int MessageBoxT(LPCTSTR lpText,     // address of text in message box
-                    LPCTSTR lpCaption,  // address of title of message box
-                    UINT uType);        // style of message box
+    int MessageBoxT(LPCTSTR lpText,    // address of text in message box
+                    LPCTSTR lpCaption, // address of title of message box
+                    UINT uType);       // style of message box
 
-    int MessageBox(HWND hWnd,          // handle of owner window
-                   LPCTSTR lpText,     // address of text in message box
-                   LPCTSTR lpCaption,  // address of title of message box
-                   UINT uType);        // style of message box
+    int MessageBox(HWND hWnd,         // handle of owner window
+                   LPCTSTR lpText,    // address of text in message box
+                   LPCTSTR lpCaption, // address of title of message box
+                   UINT uType);       // style of message box
 };
 
 #ifdef __BORLANDC__
@@ -286,45 +283,45 @@ typedef unsigned int uintptr_t;
 
 class C__Handles
 {
-  public:
+public:
     // objekty pro praci s messageboxy, zde je jen pro zaruceni poradi konstrukce/destrukce
     std::ostream __MessagesStrStream;
     C__Messages __Messages;
 
-  protected:
-    C_HandlesDataArray Handles;               // vsechny kontrolovane handly
-    C__HandlesData TemporaryHandle;           // pri vkladani nastaven z SetInfo()
-    C__HandlesOutputType OutputType;          // typ vystupu hlasek
-    CRITICAL_SECTION CriticalSection;         // pro synchronizaci multi-threadu
-    BOOL CanUseTrace;                         // TRUE az po inicializaci "dbg.h" modulu, az bude mozne pouzivat TRACE_ makra
+protected:
+    C_HandlesDataArray Handles;       // vsechny kontrolovane handly
+    C__HandlesData TemporaryHandle;   // pri vkladani nastaven z SetInfo()
+    C__HandlesOutputType OutputType;  // typ vystupu hlasek
+    CRITICAL_SECTION CriticalSection; // pro synchronizaci multi-threadu
+    BOOL CanUseTrace;                 // TRUE az po inicializaci "dbg.h" modulu, az bude mozne pouzivat TRACE_ makra
 
-  public:
+public:
     C__Handles();
 
     ~C__Handles();
 
-    C__Handles &SetInfo(const char *file, int line,
+    C__Handles& SetInfo(const char* file, int line,
                         C__HandlesOutputType outputType = __otMessages);
 
     void InformationsToTrace(BOOL detail);
 
-    void SetCanUseTrace() {CanUseTrace = TRUE;}
+    void SetCanUseTrace() { CanUseTrace = TRUE; }
 
     // Auxiliary functions:
 
     void CheckCreate(BOOL success, C__HandlesType type,
                      C__HandlesOrigin origin, const HANDLE handle,
                      DWORD error = ERROR_SUCCESS, BOOL synchronize = TRUE,
-                     const char *params = NULL);
+                     const char* params = NULL);
 
     void CheckClose(BOOL success, const HANDLE handle, C__HandlesType expType,
-                    const char *function, DWORD error = ERROR_SUCCESS,
+                    const char* function, DWORD error = ERROR_SUCCESS,
                     BOOL synchronize = TRUE);
 
     // Monitored functions:
 
     HDC BeginPaint(HWND hwnd, LPPAINTSTRUCT lpPaint);
-    BOOL EndPaint(HWND hWnd, CONST PAINTSTRUCT *lpPaint);
+    BOOL EndPaint(HWND hWnd, CONST PAINTSTRUCT* lpPaint);
 
     HANDLE CreateThread(LPSECURITY_ATTRIBUTES lpThreadAttributes,
                         DWORD dwStackSize,
@@ -411,7 +408,7 @@ class C__Handles
 
     BOOL CloseHandle(HANDLE hObject);
 
-    HBRUSH CreateBrushIndirect(CONST LOGBRUSH *lplb);
+    HBRUSH CreateBrushIndirect(CONST LOGBRUSH* lplb);
 
     HBRUSH CreateSolidBrush(COLORREF crColor);
 
@@ -421,21 +418,21 @@ class C__Handles
 
     HBRUSH CreateDIBPatternBrush(HGLOBAL hglbDIBPacked, UINT fuColorSpec);
 
-    HBRUSH CreateDIBPatternBrushPt(CONST VOID *lpPackedDIB, UINT iUsage);
+    HBRUSH CreateDIBPatternBrushPt(CONST VOID* lpPackedDIB, UINT iUsage);
 
     HBITMAP CreateBitmap(int nWidth, int nHeight, UINT cPlanes,
-                         UINT cBitsPerPel, CONST VOID *lpvBits);
+                         UINT cBitsPerPel, CONST VOID* lpvBits);
 
-    HBITMAP CreateBitmapIndirect(CONST BITMAP *lpbm);
+    HBITMAP CreateBitmapIndirect(CONST BITMAP* lpbm);
 
     HBITMAP CreateCompatibleBitmap(HDC hdc, int nWidth, int nHeight);
 
-    HBITMAP CreateDIBitmap(HDC hdc, CONST BITMAPINFOHEADER *lpbmih,
-                           DWORD fdwInit, CONST VOID *lpbInit,
-                           CONST BITMAPINFO *lpbmi, UINT fuUsage);
+    HBITMAP CreateDIBitmap(HDC hdc, CONST BITMAPINFOHEADER* lpbmih,
+                           DWORD fdwInit, CONST VOID* lpbInit,
+                           CONST BITMAPINFO* lpbmi, UINT fuUsage);
 
-    HBITMAP CreateDIBSection(HDC hdc, CONST BITMAPINFO *pbmi, UINT iUsage,
-                             VOID **ppvBits, HANDLE hSection, DWORD dwOffset);
+    HBITMAP CreateDIBSection(HDC hdc, CONST BITMAPINFO* pbmi, UINT iUsage,
+                             VOID** ppvBits, HANDLE hSection, DWORD dwOffset);
 
     HBITMAP CreateDiscardableBitmap(HDC hdc, int nWidth, int nHeight);
 
@@ -446,22 +443,22 @@ class C__Handles
 
     HPEN CreatePen(int fnPenStyle, int nWidth, COLORREF crColor);
 
-    HPEN CreatePenIndirect(CONST LOGPEN *lplgpn);
+    HPEN CreatePenIndirect(CONST LOGPEN* lplgpn);
 
     HRGN CreateRectRgn(int nLeftRect, int nTopRect, int nRightRect,
                        int nBottomRect);
 
-    HRGN CreateRectRgnIndirect(CONST RECT *lprc);
+    HRGN CreateRectRgnIndirect(CONST RECT* lprc);
 
     HRGN CreateEllipticRgn(int nLeftRect, int nTopRect, int nRightRect,
                            int nBottomRect);
 
-    HRGN CreateEllipticRgnIndirect(CONST RECT *lprc);
+    HRGN CreateEllipticRgnIndirect(CONST RECT* lprc);
 
-    HRGN CreatePolyPolygonRgn(CONST POINT *lppt, CONST INT *lpPolyCounts,
+    HRGN CreatePolyPolygonRgn(CONST POINT* lppt, CONST INT* lpPolyCounts,
                               int nCount, int fnPolyFillMode);
 
-    HRGN CreatePolygonRgn(CONST POINT *lppt, int cPoints, int fnPolyFillMode);
+    HRGN CreatePolygonRgn(CONST POINT* lppt, int cPoints, int fnPolyFillMode);
 
     HRGN CreateRoundRectRgn(int nLeftRect, int nTopRect, int nRightRect,
                             int nBottomRect, int nWidthEllipse,
@@ -473,9 +470,9 @@ class C__Handles
                      DWORD fdwOutputPrecision, DWORD fdwClipPrecision,
                      DWORD fdwQuality, DWORD fdwPitchAndFamily, LPCTSTR lpszFace);
 
-    HFONT CreateFontIndirect(CONST LOGFONT *lplf);
+    HFONT CreateFontIndirect(CONST LOGFONT* lplf);
 
-    HPALETTE CreatePalette(CONST LOGPALETTE *lplgpl);
+    HPALETTE CreatePalette(CONST LOGPALETTE* lplgpl);
 
     HPALETTE CreateHalftonePalette(HDC hdc);
 
@@ -492,18 +489,18 @@ class C__Handles
     int ReleaseDC(HWND hWnd, HDC hDC);
 
     HDC CreateDC(LPCTSTR lpszDriver, LPCTSTR lpszDevice, LPCTSTR lpszOutput,
-                 CONST DEVMODE *lpInitData);
+                 CONST DEVMODE* lpInitData);
 
     HDC CreateCompatibleDC(HDC hdc);
 
     HDC CreateIC(LPCTSTR lpszDriver, LPCTSTR lpszDevice, LPCTSTR lpszOutput,
-                 CONST DEVMODE *lpdvmInit);
+                 CONST DEVMODE* lpdvmInit);
 
     BOOL DeleteDC(HDC hdc);
 
     HDC CreateMetaFile(LPCTSTR lpszFile);
 
-    HDC CreateEnhMetaFile(HDC hdcRef, LPCTSTR lpFilename, CONST RECT *lpRect,
+    HDC CreateEnhMetaFile(HDC hdcRef, LPCTSTR lpFilename, CONST RECT* lpRect,
                           LPCTSTR lpDescription);
 
     HMETAFILE CloseMetaFile(HDC hdc);
@@ -516,16 +513,16 @@ class C__Handles
 
     HENHMETAFILE GetEnhMetaFile(LPCTSTR lpszMetaFile);
 
-    HENHMETAFILE SetWinMetaFileBits(UINT cbBuffer, CONST BYTE *lpbBuffer,
-                                    HDC hdcRef, CONST METAFILEPICT *lpmfp);
+    HENHMETAFILE SetWinMetaFileBits(UINT cbBuffer, CONST BYTE* lpbBuffer,
+                                    HDC hdcRef, CONST METAFILEPICT* lpmfp);
 
     BOOL DeleteMetaFile(HMETAFILE hmf);
 
     BOOL DeleteEnhMetaFile(HENHMETAFILE hemf);
 
     HICON CreateIcon(HINSTANCE hInstance, int nWidth, int nHeight,
-                     BYTE cPlanes, BYTE cBitsPixel, CONST BYTE *lpbANDbits,
-                     CONST BYTE *lpbXORbits);
+                     BYTE cPlanes, BYTE cBitsPixel, CONST BYTE* lpbANDbits,
+                     CONST BYTE* lpbXORbits);
 
     HICON CreateIconIndirect(PICONINFO piconinfo);
 
@@ -549,8 +546,8 @@ class C__Handles
                      int cxDesired, int cyDesired, UINT fuLoad);
 
     HCURSOR CreateCursor(HINSTANCE hInst, int xHotSpot, int yHotSpot,
-                         int nWidth, int nHeight, CONST VOID *pvANDPlane,
-                         CONST VOID *pvXORPlane);
+                         int nWidth, int nHeight, CONST VOID* pvANDPlane,
+                         CONST VOID* pvXORPlane);
 
     BOOL DestroyCursor(HCURSOR hCursor);
 
@@ -658,12 +655,12 @@ class C__Handles
 
     HFILE _lclose(HFILE hFile);
 
-    uintptr_t _beginthreadex(void *security, unsigned stack_size,
-                             unsigned (__stdcall *start_address)(void *),
-                             void *arglist, unsigned initflag,
-                             unsigned *thrdid);
+    uintptr_t _beginthreadex(void* security, unsigned stack_size,
+                             unsigned(__stdcall* start_address)(void*),
+                             void* arglist, unsigned initflag,
+                             unsigned* thrdid);
 
-    HRESULT RegisterDragDrop(HWND hwnd, IDropTarget * pDropTarget);
+    HRESULT RegisterDragDrop(HWND hwnd, IDropTarget* pDropTarget);
 
     HRESULT RevokeDragDrop(HWND hwnd);
 
@@ -679,17 +676,15 @@ class C__Handles
 
     BOOL OpenProcessToken(HANDLE ProcessHandle, DWORD DesiredAccess, PHANDLE TokenHandle);
 
-  protected:
-    void AddHandle(C__HandlesHandle handle);        // prida TemporaryHandle
+protected:
+    void AddHandle(C__HandlesHandle handle); // prida TemporaryHandle
 
     // vyjme handle, pri uspechu vraci TRUE
-    BOOL DeleteHandle(C__HandlesType &type, HANDLE handle,
-                      C__HandlesOrigin *origin,
+    BOOL DeleteHandle(C__HandlesType& type, HANDLE handle,
+                      C__HandlesOrigin* origin,
                       C__HandlesType expType);
 };
 
 extern C__Handles __Handles;
 
 #endif // MHANDLES_ENABLE
-
-#endif // __MHANDLES_H
